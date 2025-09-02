@@ -343,7 +343,10 @@ export const getRewards = async (req: AdminRequest, res: Response) => {
             id: true,
             name: true,
             email: true,
-            role: true
+            role: true,
+            phoneNumber: true,
+            bankCode: true,
+            accountNumber: true
           }
         }
       },
@@ -489,7 +492,9 @@ export const getCancellationRequests = async (req: AdminRequest, res: Response) 
             id: true,
             name: true,
             email: true,
-            phoneNumber: true
+            phoneNumber: true,
+            bankCode: true,
+            accountNumber: true
           }
         },
         _count: {
