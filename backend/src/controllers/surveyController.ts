@@ -809,17 +809,13 @@ export const requestSurveyCancellation = async (req: AuthRequest, res: Response)
       });
     }
 
-    // 환불액 계산 (수정된 로직)
-    // 올바른 환불액 = 총 예산 - 지급된 리워드
+    // 환불액 계산 (원래 로직이 맞음)
+    // 미진행분에 대한 리워드 + 해당 수수료만 환불
     const completedResponses = survey.responses.length;
-    const totalBudget = survey.totalBudget || Math.round(survey.reward * survey.maxParticipants * 1.1);
-    const paidRewards = completedResponses * survey.reward;
-    const totalRefund = totalBudget - paidRewards;
-    
-    // 세부 계산 (표시용)
     const remainingSlots = survey.maxParticipants - completedResponses;
     const refundRewards = remainingSlots * survey.reward;
-    const refundFee = totalRefund - refundRewards;
+    const refundFee = refundRewards * 0.1; // 미진행분에 대한 10% 수수료
+    const totalRefund = refundRewards + refundFee;
 
     // 중단 요청 생성
     const cancellationRequest = await prisma.surveyCancellationRequest.create({
