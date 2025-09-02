@@ -567,13 +567,17 @@ export const getCancellationRequestStats = async (req: AdminRequest, res: Respon
 
     let pendingRefundAmount = 0;
     for (const survey of pendingSurveys) {
-      const totalBudget = survey.totalBudget || 0;
       const rewardPerResponse = survey.reward || 0;
       const completedResponses = survey.responses.length;
-      const totalRewardsPaid = completedResponses * rewardPerResponse;
-      const platformFeeRate = 0.05;
-      const platformFee = totalBudget * platformFeeRate;
-      const refundAmount = Math.max(0, totalBudget - totalRewardsPaid - platformFee);
+      // maxParticipants를 totalBudget에서 역산
+      const maxParticipants = Math.round((survey.totalBudget || 0) / (rewardPerResponse * 1.1));
+      
+      // 올바른 환불 계산: 미진행분 리워드 + 해당 수수료
+      const remainingSlots = maxParticipants - completedResponses;
+      const refundRewards = remainingSlots * rewardPerResponse;
+      const refundFee = refundRewards * 0.1; // 미진행분에 대한 10% 수수료
+      const refundAmount = Math.max(0, refundRewards + refundFee);
+      
       pendingRefundAmount += refundAmount;
     }
 
