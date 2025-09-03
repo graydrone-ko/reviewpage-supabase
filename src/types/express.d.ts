@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { User } from '@prisma/client';
+import { User } from '../generated/prisma';
 
 declare global {
   namespace Express {
@@ -11,8 +11,17 @@ declare global {
 
 export interface AuthRequest extends Request {
   user: User;
+  body: any;
+  params: any;
+  query: any;
+  headers: any;
 }
 
 export interface AdminRequest extends Request {
   user: User;
+  body: any;
+  params: any;
+  query: any;
+  headers: any;
+  header: (name: string) => string | undefined;
 }
