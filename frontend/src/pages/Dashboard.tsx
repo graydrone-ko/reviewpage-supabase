@@ -415,6 +415,8 @@ const Dashboard: React.FC = () => {
                   const completed = selectedSurvey.responseCount || 0;
                   const total = selectedSurvey.maxParticipants || 50;
                   const remaining = total - completed;
+                  
+                  // 원래 로직이 맞음: 미진행분 리워드 + 해당 수수료
                   const refundRewards = remaining * selectedSurvey.reward;
                   const refundFee = refundRewards * 0.1;
                   const totalRefund = refundRewards + refundFee;

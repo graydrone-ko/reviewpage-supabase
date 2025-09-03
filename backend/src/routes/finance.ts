@@ -3,6 +3,7 @@ import {
   getFinanceStats, 
   getPayments, 
   getWithdrawals, 
+  getTransactions,
   approveWithdrawal,
   rejectWithdrawal,
   exportFinanceData
@@ -18,10 +19,13 @@ router.use(requireRole(['ADMIN']));
 // Finance statistics
 router.get('/stats', getFinanceStats);
 
-// Payment records
+// Unified transaction records
+router.get('/transactions', getTransactions);
+
+// Legacy payment records (for backwards compatibility)
 router.get('/payments', getPayments);
 
-// Withdrawal records
+// Legacy withdrawal records (for backwards compatibility)
 router.get('/withdrawals', getWithdrawals);
 
 // Withdrawal management

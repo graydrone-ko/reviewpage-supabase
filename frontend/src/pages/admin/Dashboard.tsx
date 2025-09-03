@@ -23,6 +23,10 @@ interface DashboardStats {
     pending: number;
     paid: number;
   };
+  notifications: {
+    pendingWithdrawals: number;
+    pendingCancellations: number;
+  };
 }
 
 interface CancellationStats {
@@ -187,8 +191,62 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
+        {/* 알림 섹션 */}
+        {stats.notifications && (stats.notifications.pendingWithdrawals > 0 || stats.notifications.pendingCancellations > 0) && (
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">🔔 대기중인 요청</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {stats.notifications.pendingWithdrawals > 0 && (
+                <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-r-lg">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-orange-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-orange-700">
+                        <strong>{stats.notifications.pendingWithdrawals}건</strong>의 출금 요청이 승인을 기다리고 있습니다.
+                      </p>
+                      <button
+                        onClick={() => navigate('/admin/withdrawal-requests')}
+                        className="mt-2 text-sm text-orange-600 hover:text-orange-800 underline"
+                      >
+                        출금 요청 관리로 이동 →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {stats.notifications.pendingCancellations > 0 && (
+                <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-red-700">
+                        <strong>{stats.notifications.pendingCancellations}건</strong>의 중단 요청이 승인을 기다리고 있습니다.
+                      </p>
+                      <button
+                        onClick={() => navigate('/admin/cancellation-requests')}
+                        className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+                      >
+                        중단 요청 관리로 이동 →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* 빠른 액세스 버튼들 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
           <button
             onClick={() => navigate('/admin/surveys')}
             className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow"
@@ -246,9 +304,29 @@ const AdminDashboard: React.FC = () => {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">중단요청 관리</h3>
               <p className="text-gray-600">설문 중단요청 처리</p>
-              {cancellationStats && cancellationStats.count > 0 && (
+              {stats.notifications && stats.notifications.pendingCancellations > 0 && (
                 <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
-                  {cancellationStats.count}
+                  {stats.notifications.pendingCancellations}
+                </div>
+              )}
+            </div>
+          </button>
+
+          <button
+            onClick={() => navigate('/admin/withdrawal-requests')}
+            className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow relative"
+          >
+            <div className="text-center">
+              <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">출금요청 관리</h3>
+              <p className="text-gray-600">사용자 출금요청 처리</p>
+              {stats.notifications && stats.notifications.pendingWithdrawals > 0 && (
+                <div className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                  {stats.notifications.pendingWithdrawals}
                 </div>
               )}
             </div>

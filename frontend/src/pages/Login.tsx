@@ -1,8 +1,17 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService, LoginData } from '../services/api';
+import { useSEO } from '../hooks/useSEO';
 
 const Login: React.FC = () => {
+  // SEO 최적화
+  useSEO({
+    title: '로그인 - ReviewPage | 설문조사 돈벌기 플랫폼',
+    description: 'ReviewPage 로그인하고 설문조사로 돈벌기 시작하세요. 제품 피드백 설문으로 현금 리워드를 받을 수 있습니다.',
+    keywords: '로그인,설문조사로그인,리워드로그인,설문돈벌기로그인',
+    canonical: 'https://reviewpage.co.kr/login'
+  });
+
   const [formData, setFormData] = useState<LoginData>({
     email: '',
     password: '',

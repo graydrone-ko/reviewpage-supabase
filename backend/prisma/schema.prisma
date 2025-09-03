@@ -9,21 +9,22 @@ datasource db {
 }
 
 model User {
-  id            String           @id @default(cuid())
-  email         String           @unique
-  password      String
-  name          String
-  role          Role             @default(CONSUMER)
-  gender        Gender
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-  accountNumber String
-  bankCode      String
-  birthDate     String
-  phoneNumber   String           @unique
-  rewards       Reward[]
-  responses     SurveyResponse[]
-  surveys       Survey[]
+  id                String              @id @default(cuid())
+  email             String              @unique
+  password          String
+  name              String
+  role              Role                @default(CONSUMER)
+  gender            Gender
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  accountNumber     String
+  bankCode          String
+  birthDate         String
+  phoneNumber       String              @unique
+  rewards           Reward[]
+  responses         SurveyResponse[]
+  surveys           Survey[]
+  withdrawalRequests WithdrawalRequest[]
 
   @@map("users")
 }
@@ -206,4 +207,24 @@ model SurveyCancellationRequest {
   survey       Survey             @relation(fields: [surveyId], references: [id], onDelete: Cascade)
 
   @@map("survey_cancellation_requests")
+}
+
+model WithdrawalRequest {
+  id          String                @id @default(cuid())
+  userId      String
+  amount      Float
+  status      WithdrawalStatus      @default(PENDING)
+  requestedAt DateTime              @default(now())
+  processedAt DateTime?
+  processedBy String?               // 관리자 ID
+  note        String?               // 관리자 메모
+  user        User                  @relation(fields: [userId], references: [id])
+
+  @@map("withdrawal_requests")
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }

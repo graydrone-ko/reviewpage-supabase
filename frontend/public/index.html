@@ -1,30 +1,87 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
+    
+    <!-- 모바일 최적화 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="theme-color" content="#3B82F6" />
+    
+    <!-- SEO 메타 태그 -->
+    <title>ReviewPage - 상세페이지 설문조사로 돈벌기 | 제품 피드백 리워드 플랫폼</title>
+    <meta name="description" content="상세페이지 설문조사 전문 플랫폼! 소비자는 간단한 제품 피드백으로 현금 리워드, 판매자는 고객 의견으로 매출 증대. 지금 시작하세요!" />
+    <meta name="keywords" content="상세페이지설문,설문조사돈벌기,설문리워드사이트,제품피드백설문,온라인부업설문,설문조사현금지급,상품상세페이지개선,이커머스설문플랫폼" />
+    <meta name="author" content="ReviewPage" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- 캐노니컬 URL -->
+    <link rel="canonical" href="https://reviewpage.co.kr" />
+    
+    <!-- Open Graph 메타 태그 -->
+    <meta property="og:title" content="ReviewPage - 상세페이지 설문조사로 돈벌기" />
+    <meta property="og:description" content="제품 피드백 설문으로 현금 리워드를 받으세요. 판매자는 고객 의견으로 매출 증대!" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://reviewpage.co.kr" />
+    <meta property="og:image" content="https://reviewpage.co.kr/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="ReviewPage" />
+    <meta property="og:locale" content="ko_KR" />
+    
+    <!-- Twitter Card 메타 태그 -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ReviewPage - 상세페이지 설문조사 플랫폼" />
+    <meta name="twitter:description" content="설문 참여로 현금 리워드 받기" />
+    <meta name="twitter:image" content="https://reviewpage.co.kr/og-image.jpg" />
+    
+    <!-- 파비콘 및 앱 아이콘 -->
+    <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon-16x16.png" />
+    
+    <!-- PWA 매니페스트 -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
-
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
+    
+    <!-- 프리로드 및 프리커넥트 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- 구조화된 데이터 (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "ReviewPage",
+      "description": "상세페이지 설문조사 전문 플랫폼",
+      "url": "https://reviewpage.co.kr",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://reviewpage.co.kr/search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "ReviewPage",
+      "description": "제품 피드백 설문조사 플랫폼",
+      "url": "https://reviewpage.co.kr",
+      "logo": "https://reviewpage.co.kr/logo.png",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "contact@reviewpage.co.kr",
+        "contactType": "customer service"
+      }
+    }
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

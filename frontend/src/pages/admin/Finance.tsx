@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { API_URL } from '../../services/api';
+import { getBankName, formatAccountNumber, formatPhoneNumber } from '../../utils/banks';
 
 interface FinanceStats {
   totalRevenue: number;      // 총 입금액 (수수료 포함)
@@ -35,11 +36,35 @@ interface WithdrawalRecord {
   type?: string; // 거래 유형 (REFUND, SURVEY_COMPLETION 등)
 }
 
+interface TransactionRecord {
+  id: string;
+  type: 'DEPOSIT' | 'WITHDRAWAL';
+  subType: 'SURVEY_PAYMENT' | 'REFUND' | 'REWARD';
+  amount: number;
+  status: string;
+  createdAt: string;
+  processedAt?: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    phoneNumber?: string;
+    bankCode?: string;
+    accountNumber?: string;
+  };
+  metadata?: {
+    surveyTitle?: string;
+    description?: string;
+  };
+}
+
 const AdminFinance: React.FC = () => {
   const [stats, setStats] = useState<FinanceStats | null>(null);
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [withdrawals, setWithdrawals] = useState<WithdrawalRecord[]>([]);
-  const [activeTab, setActiveTab] = useState<'payments' | 'withdrawals'>('payments');
+  const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
+  const [activeTab, setActiveTab] = useState<'transactions' | 'payments' | 'withdrawals'>('transactions');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
@@ -127,7 +152,13 @@ const AdminFinance: React.FC = () => {
       const paymentsData = await paymentsResponse.json();
       setPayments(paymentsData.payments || []);
 
-      // 출금 내역 조회
+      // 통합 거래 내역 조회
+      const transactionsResponse = await fetch(`${API_URL}/admin/finance/transactions?${params.toString()}`, { headers });
+      if (!transactionsResponse.ok) throw new Error('거래 내역 조회 실패');
+      const transactionsData = await transactionsResponse.json();
+      setTransactions(transactionsData.transactions || []);
+
+      // 출금 내역 조회 (레거시)
       const withdrawalsResponse = await fetch(`${API_URL}/admin/finance/withdrawals?${params.toString()}`, { headers });
       if (!withdrawalsResponse.ok) throw new Error('출금 내역 조회 실패');
       const withdrawalsData = await withdrawalsResponse.json();
@@ -165,7 +196,14 @@ const AdminFinance: React.FC = () => {
   const exportToExcel = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/admin/finance/export?period=${dateRange}&type=${activeTab}`, {
+      let exportType = activeTab;
+      
+      // 통합 거래내역의 경우 전체 데이터 내보내기
+      if (activeTab === 'transactions') {
+        exportType = 'payments'; // 기본적으로 입금 내역을 내보내기
+      }
+      
+      const response = await fetch(`${API_URL}/admin/finance/export?period=${dateRange}&type=${exportType}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -182,7 +220,8 @@ const AdminFinance: React.FC = () => {
       
       // 파일명을 한글로 설정
       const dateStr = new Date().toISOString().split('T')[0];
-      const typeName = activeTab === 'payments' ? '입금내역' : '출금내역';
+      const typeName = activeTab === 'transactions' ? '거래내역' :
+                      activeTab === 'payments' ? '입금내역' : '출금내역';
       a.download = `${typeName}_${dateRange}_${dateStr}.csv`;
       
       document.body.appendChild(a);
@@ -202,6 +241,13 @@ const AdminFinance: React.FC = () => {
   const filteredWithdrawals = withdrawals.filter(withdrawal =>
     withdrawal.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     withdrawal.userEmail.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredTransactions = transactions.filter(transaction =>
+    transaction.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    transaction.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (transaction.metadata?.surveyTitle || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (transaction.metadata?.description || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
@@ -425,6 +471,16 @@ const AdminFinance: React.FC = () => {
           <div className="border-b border-gray-200">
             <nav className="-mb-px flex space-x-8 px-6">
               <button
+                onClick={() => setActiveTab('transactions')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'transactions'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                거래 내역 ({filteredTransactions.length})
+              </button>
+              <button
                 onClick={() => setActiveTab('payments')}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'payments'
@@ -449,7 +505,113 @@ const AdminFinance: React.FC = () => {
 
           {/* 테이블 내용 */}
           <div className="p-6">
-            {activeTab === 'payments' ? (
+            {activeTab === 'transactions' ? (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">거래 유형</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">사용자 정보</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">금액</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">설명</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">날짜</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상태</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredTransactions.map((transaction) => (
+                      <tr key={transaction.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center space-x-2">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              transaction.type === 'DEPOSIT' 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-red-100 text-red-800'
+                            }`}>
+                              {transaction.type === 'DEPOSIT' ? '입금' : '출금'}
+                            </span>
+                            <span className={`inline-flex px-2 py-1 text-xs rounded-full ${
+                              transaction.subType === 'SURVEY_PAYMENT' ? 'bg-blue-100 text-blue-800' :
+                              transaction.subType === 'REFUND' ? 'bg-orange-100 text-orange-800' :
+                              'bg-purple-100 text-purple-800'
+                            }`}>
+                              {transaction.subType === 'SURVEY_PAYMENT' ? '설문결제' : 
+                               transaction.subType === 'REFUND' ? '환불' : '리워드'}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="space-y-2">
+                            <div>
+                              <div className="flex items-center space-x-2">
+                                <span className="text-sm font-medium text-gray-900">{transaction.user.name}</span>
+                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                  transaction.user.role === 'ADMIN' ? 'bg-purple-100 text-purple-800' :
+                                  transaction.user.role === 'SELLER' ? 'bg-blue-100 text-blue-800' :
+                                  'bg-green-100 text-green-800'
+                                }`}>
+                                  {transaction.user.role === 'ADMIN' ? '관리자' :
+                                   transaction.user.role === 'SELLER' ? '판매자' : '소비자'}
+                                </span>
+                              </div>
+                              <div className="text-xs text-gray-500">{transaction.user.email}</div>
+                            </div>
+                            {transaction.user.phoneNumber && (
+                              <div className="text-xs text-gray-600">
+                                📞 {formatPhoneNumber(transaction.user.phoneNumber)}
+                              </div>
+                            )}
+                            {transaction.user.bankCode && transaction.user.accountNumber && (
+                              <div className="bg-blue-50 p-2 rounded border">
+                                <div className="text-xs font-medium text-blue-900">
+                                  🏦 {getBankName(transaction.user.bankCode)}
+                                </div>
+                                <div 
+                                  className="text-xs font-mono text-blue-800 cursor-pointer hover:bg-blue-100 p-1 rounded"
+                                  onClick={() => navigator.clipboard.writeText(transaction.user.accountNumber || '')}
+                                  title="클릭하여 복사"
+                                >
+                                  {formatAccountNumber(transaction.user.accountNumber)}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`text-sm font-medium ${
+                            transaction.type === 'DEPOSIT' ? 'text-green-600' : 'text-red-600'
+                          }`}>
+                            {transaction.type === 'DEPOSIT' ? '+' : '-'}₩{transaction.amount.toLocaleString()}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-gray-900">
+                            {transaction.metadata?.surveyTitle || transaction.metadata?.description || '-'}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <div>{new Date(transaction.createdAt).toLocaleDateString('ko-KR')}</div>
+                          {transaction.processedAt && (
+                            <div className="text-xs text-gray-400">
+                              처리: {new Date(transaction.processedAt).toLocaleDateString('ko-KR')}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            transaction.status === 'COMPLETED' || transaction.status === 'CONFIRMED'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {transaction.status === 'COMPLETED' || transaction.status === 'CONFIRMED' ? '완료' : '대기중'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : activeTab === 'payments' ? (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">

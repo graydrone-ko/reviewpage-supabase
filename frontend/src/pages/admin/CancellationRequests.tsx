@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { API_URL } from '../../services/api';
+import { getBankName, formatAccountNumber, formatPhoneNumber } from '../../utils/banks';
 
 interface CancellationRequest {
   id: string;
@@ -14,6 +15,8 @@ interface CancellationRequest {
     name: string;
     email: string;
     phoneNumber?: string;
+    bankCode?: string;
+    accountNumber?: string;
   };
   _count: {
     responses: number;
@@ -43,17 +46,17 @@ const CancellationRequests: React.FC = () => {
   const [reason, setReason] = useState('');
 
   const calculateRefundAmount = (request: CancellationRequest): number => {
-    const totalBudget = request.totalBudget || 0;
     const rewardPerResponse = request.reward || 0;
     const completedResponses = request._count.responses;
-    const totalRewardsPaid = completedResponses * rewardPerResponse;
+    // maxParticipants를 totalBudget에서 역산 (totalBudget = maxParticipants * reward * 1.1)
+    const maxParticipants = Math.round((request.totalBudget || 0) / (rewardPerResponse * 1.1));
     
-    // 플랫폼 수수료 (5%)
-    const platformFeeRate = 0.05;
-    const platformFee = totalBudget * platformFeeRate;
+    // 올바른 환불 계산: 미진행분 리워드 + 해당 수수료
+    const remainingSlots = maxParticipants - completedResponses;
+    const refundRewards = remainingSlots * rewardPerResponse;
+    const refundFee = refundRewards * 0.1; // 미진행분에 대한 10% 수수료
     
-    // 실제 환불 금액 = 전체 예산 - 지급된 리워드 - 플랫폼 수수료
-    return Math.max(0, totalBudget - totalRewardsPaid - platformFee);
+    return Math.max(0, refundRewards + refundFee);
   };
 
   useEffect(() => {
@@ -257,7 +260,7 @@ const CancellationRequests: React.FC = () => {
                       설문 정보
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      판매자
+                      환불 대상자 정보
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       환불액
@@ -286,9 +289,30 @@ const CancellationRequests: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">{request.seller.name}</div>
-                          <div className="text-sm text-gray-500">{request.seller.email}</div>
+                        <div className="space-y-2">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{request.seller.name}</div>
+                            <div className="text-xs text-gray-500">{request.seller.email}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-gray-600">
+                              📞 {formatPhoneNumber(request.seller.phoneNumber || '')}
+                            </div>
+                          </div>
+                          {request.seller.bankCode && request.seller.accountNumber && (
+                            <div className="bg-blue-50 p-2 rounded border">
+                              <div className="text-xs font-medium text-blue-900">
+                                🏦 {getBankName(request.seller.bankCode)}
+                              </div>
+                              <div 
+                                className="text-xs font-mono text-blue-800 cursor-pointer hover:bg-blue-100 p-1 rounded"
+                                onClick={() => navigator.clipboard.writeText(request.seller.accountNumber || '')}
+                                title="클릭하여 복사"
+                              >
+                                {formatAccountNumber(request.seller.accountNumber)}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

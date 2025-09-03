@@ -8,6 +8,7 @@ import surveyRoutes from './routes/surveys';
 import responseRoutes from './routes/responses';
 import rewardRoutes from './routes/rewards';
 import adminRoutes from './routes/admin';
+import seoRoutes from './routes/seo';
 
 dotenv.config();
 
@@ -22,11 +23,23 @@ const allowedOrigins = [
   'http://localhost:3000', // Local development
   'http://localhost:3001', // Local development backend
   process.env.FRONTEND_URL, // Production frontend URL
+  'https://reviewpage.co.kr', // Production domain
+  'https://www.reviewpage.co.kr', // Production domain with www
 ].filter(Boolean);
 
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL 
+    ? (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        // Check if the origin is allowed
+        if (allowedOrigins.includes(origin)) {
+          return callback(null, true);
+        } else {
+          return callback(new Error('Not allowed by CORS'));
+        }
+      }
     : allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -54,6 +67,9 @@ app.use('/api/surveys', surveyRoutes);
 app.use('/api/responses', responseRoutes);
 app.use('/api/rewards', rewardRoutes);
 app.use('/api/admin', adminRoutes);
+
+// SEO 라우트 (API prefix 없이)
+app.use('/', seoRoutes);
 
 // Error handling middleware
 app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

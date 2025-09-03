@@ -64,6 +64,20 @@ npm test                  # Run tests
 - Custom Prisma output location configured in schema
 - Database URL and JWT secrets required in `.env`
 
+## SEO Optimization (Added)
+- **Meta Tags**: Comprehensive meta tags in `public/index.html` with Korean keywords
+- **Dynamic SEO**: `useSEO` hook for page-specific meta tags
+- **Sitemap**: Dynamic sitemap.xml generation via `/sitemap.xml` API endpoint
+- **Robots.txt**: Dynamic robots.txt generation via `/robots.txt` API endpoint
+- **Structured Data**: JSON-LD markup for organization and website information
+- **Mobile Optimization**: Responsive meta tags and PWA manifest
+- **Open Graph**: Social media sharing optimization
+
+### SEO Files
+- `frontend/src/hooks/useSEO.ts` - Dynamic SEO hook
+- `backend/src/controllers/seoController.ts` - SEO API endpoints
+- `frontend/public/manifest.json` - PWA manifest with Korean content
+
 ## Testing
 No test framework is currently configured. Tests would need to be set up.
 
@@ -73,12 +87,13 @@ No test framework is currently configured. Tests would need to be set up.
 - Frontend uses localStorage for user state management
 - API responses follow consistent JSON structure
 - Role-based component rendering in frontend
+- SEO optimization applied to all major pages
 
-## github 푸쉬를 위해 다음 정보 사용:
-GIT HUB의 Personal Access Token:
-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
+## GitHub Repository
+Github 주소 : https://github.com/graydrone-ko/reviewpage
 
-Github 주소 : https://github.com/graydrone-cloud/reviewpage
+## GitHub Push Configuration
+Personal Access Token은 보안상 별도 관리
 
 ## 원격 저장소에 푸시할 때 먼저 HTTP 버퍼 크기를 늘리고 조금 씩 나누어 푸시할 것. 에러 시 작은 변경사항만 포함하는 새커밋을 만들어 푸시할 것
 

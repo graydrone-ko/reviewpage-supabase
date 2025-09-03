@@ -12,7 +12,10 @@ import {
   getCancellationRequests,
   getCancellationRequestStats,
   processCancellationRequest,
-  getRecentCancellationRequests
+  getRecentCancellationRequests,
+  getWithdrawalRequests,
+  processWithdrawalRequest,
+  getRecentWithdrawalRequests
 } from '../controllers/adminController';
 import financeRoutes from './finance';
 
@@ -42,6 +45,11 @@ router.get('/cancellation-requests', getCancellationRequests);
 router.get('/cancellation-requests/stats', getCancellationRequestStats);
 router.get('/cancellation-requests/recent', getRecentCancellationRequests);
 router.patch('/cancellation-requests/:surveyId/process', processCancellationRequest);
+
+// 출금요청 관리
+router.get('/withdrawal-requests', getWithdrawalRequests);
+router.get('/withdrawal-requests/recent', getRecentWithdrawalRequests);
+router.patch('/withdrawal-requests/:id/process', processWithdrawalRequest);
 
 // 재무 관리
 router.use('/finance', financeRoutes);

@@ -65,6 +65,19 @@ export const getDashboardStats = async (req: AdminRequest, res: Response) => {
       }
     });
 
+    // 출금 요청 통계
+    const pendingWithdrawalRequests = await prisma.withdrawalRequest.count({
+      where: { status: 'PENDING' }
+    });
+
+    // 중단 요청 통계
+    const pendingCancellationRequests = await prisma.survey.count({
+      where: {
+        cancellationStatus: 'PENDING',
+        cancellationRequestedAt: { not: null }
+      }
+    });
+
     res.json({
       users: {
         total: totalUsers,
@@ -85,6 +98,10 @@ export const getDashboardStats = async (req: AdminRequest, res: Response) => {
         total: totalRewards._sum.amount || 0,
         pending: pendingRewards._sum.amount || 0,
         paid: paidRewards._sum.amount || 0
+      },
+      notifications: {
+        pendingWithdrawals: pendingWithdrawalRequests,
+        pendingCancellations: pendingCancellationRequests
       }
     });
 
@@ -651,18 +668,20 @@ export const processCancellationRequest = async (req: AdminRequest, res: Respons
     let refundAmount = 0;
     
     if (action === 'approve') {
-      // 부분 환불 계산 로직
-      const totalBudget = survey.totalBudget || 0;
+      // 올바른 환불 계산 로직 (미진행분 리워드 + 해당 수수료)
       const rewardPerResponse = survey.reward || 0;
       const completedResponses = survey.responses.length;
-      const totalRewardsPaid = completedResponses * rewardPerResponse;
+      const totalBudget = survey.totalBudget || 0;
       
-      // 플랫폼 수수료 (예: 5%)
-      const platformFeeRate = 0.05;
-      const platformFee = totalBudget * platformFeeRate;
+      // maxParticipants를 totalBudget에서 역산 (totalBudget = maxParticipants * reward * 1.1)
+      const maxParticipants = Math.round(totalBudget / (rewardPerResponse * 1.1));
       
-      // 실제 환불 금액 = 전체 예산 - 지급된 리워드 - 플랫폼 수수료
-      refundAmount = Math.max(0, totalBudget - totalRewardsPaid - platformFee);
+      // 미진행분 계산
+      const remainingSlots = maxParticipants - completedResponses;
+      const refundRewards = remainingSlots * rewardPerResponse;
+      const refundFee = refundRewards * 0.1; // 미진행분에 대한 10% 수수료
+      
+      refundAmount = Math.max(0, refundRewards + refundFee);
     }
 
     const updateData: any = {
@@ -767,6 +786,195 @@ export const getRecentCancellationRequests = async (req: AdminRequest, res: Resp
 
   } catch (error) {
     console.error('Get recent cancellation requests error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// 출금 요청 목록 조회
+export const getWithdrawalRequests = async (req: AdminRequest, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const status = req.query.status as string;
+
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+    if (status) {
+      where.status = status;
+    }
+
+    const [withdrawalRequests, total] = await Promise.all([
+      prisma.withdrawalRequest.findMany({
+        where,
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+              phoneNumber: true,
+              bankCode: true,
+              accountNumber: true
+            }
+          }
+        },
+        skip,
+        take: limit,
+        orderBy: { requestedAt: 'desc' }
+      }),
+      prisma.withdrawalRequest.count({ where })
+    ]);
+
+    const pages = Math.ceil(total / limit);
+
+    res.json({
+      requests: withdrawalRequests,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages
+      }
+    });
+
+  } catch (error) {
+    console.error('Get withdrawal requests error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// 출금 요청 처리 (승인/거절)
+export const processWithdrawalRequest = async (req: AdminRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { action, note } = req.body; // action: 'approve' | 'reject'
+
+    if (!['approve', 'reject'].includes(action)) {
+      return res.status(400).json({ error: 'Invalid action. Must be approve or reject' });
+    }
+
+    const withdrawalRequest = await prisma.withdrawalRequest.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    });
+
+    if (!withdrawalRequest) {
+      return res.status(404).json({ error: '출금 요청을 찾을 수 없습니다' });
+    }
+
+    if (withdrawalRequest.status !== 'PENDING') {
+      return res.status(400).json({ error: '이미 처리된 출금 요청입니다' });
+    }
+
+    if (action === 'approve') {
+      // 승인 시 해당 금액만큼의 PENDING 리워드를 PAID로 변경
+      const userRewards = await prisma.reward.findMany({
+        where: {
+          userId: withdrawalRequest.userId,
+          status: 'PENDING'
+        },
+        orderBy: { createdAt: 'asc' }
+      });
+
+      let remainingAmount = withdrawalRequest.amount;
+      const rewardsToUpdate = [];
+
+      for (const reward of userRewards) {
+        if (remainingAmount <= 0) break;
+        
+        if (reward.amount <= remainingAmount) {
+          rewardsToUpdate.push(reward.id);
+          remainingAmount -= reward.amount;
+        }
+      }
+
+      // 선택된 리워드들을 PAID로 업데이트
+      if (rewardsToUpdate.length > 0) {
+        await prisma.reward.updateMany({
+          where: {
+            id: {
+              in: rewardsToUpdate
+            }
+          },
+          data: {
+            status: 'PAID',
+            updatedAt: new Date()
+          }
+        });
+      }
+    }
+
+    // 출금 요청 상태 업데이트
+    const updatedRequest = await prisma.withdrawalRequest.update({
+      where: { id },
+      data: {
+        status: action === 'approve' ? 'APPROVED' : 'REJECTED',
+        processedAt: new Date(),
+        processedBy: req.admin?.id,
+        note: note || null
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
+      }
+    });
+
+    const actionLabel = action === 'approve' ? '승인' : '거절';
+    console.log(`💰 출금 요청 ${actionLabel}: ${updatedRequest.user.name} (${updatedRequest.user.email}) - ₩${updatedRequest.amount.toLocaleString()}`);
+
+    res.json({
+      message: `출금 요청이 ${actionLabel}되었습니다`,
+      request: updatedRequest
+    });
+
+  } catch (error) {
+    console.error('Process withdrawal request error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// 최근 출금 요청 목록 (알림용)
+export const getRecentWithdrawalRequests = async (req: AdminRequest, res: Response) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 5;
+
+    const recentRequests = await prisma.withdrawalRequest.findMany({
+      where: {
+        status: 'PENDING'
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
+      },
+      take: limit,
+      orderBy: { requestedAt: 'desc' }
+    });
+
+    res.json({
+      requests: recentRequests,
+      count: recentRequests.length
+    });
+
+  } catch (error) {
+    console.error('Get recent withdrawal requests error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

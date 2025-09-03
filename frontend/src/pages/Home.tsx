@@ -25,11 +25,12 @@ const Home: React.FC = () => {
       <section className="relative bg-gradient-to-br from-blue-50 to-indigo-100 py-16 sm:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
           <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-            상품 페이지 전환율,<br />
-            <span className="text-indigo-600">진짜 이유를 알고 싶다면?</span>
+            상세페이지 설문조사로 돈벌기,<br />
+            <span className="text-indigo-600">ReviewPage가 답입니다!</span>
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            실제 고객이 직접 평가해주는 상세페이지 분석 서비스
+            제품 피드백 설문조사로 현금 리워드 받고,<br />
+            판매자는 고객 의견으로 매출 증대하는 윈윈 플랫폼
           </p>
           
           <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto mb-8 sm:mb-12">
@@ -64,14 +65,14 @@ const Home: React.FC = () => {
       <section id="benefits" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-gray-900 mb-12 sm:mb-16">
-            구체적인 혜택
+            설문조사 돈벌기 플랫폼의 구체적인 혜택
           </h2>
           
           <div className="grid lg:grid-cols-2 gap-8 sm:gap-12">
             {/* Seller Benefits */}
             <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 transform hover:scale-105 transition-transform duration-200">
               <h3 className="text-xl sm:text-2xl font-bold text-indigo-600 mb-4 sm:mb-6 flex items-center">
-                🎯 판매자 혜택
+                🎯 제품 상세페이지 개선으로 매출 증대
               </h3>
               <ul className="space-y-4">
                 <li className="flex items-start">
@@ -100,7 +101,7 @@ const Home: React.FC = () => {
             {/* Consumer Benefits */}
             <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 transform hover:scale-105 transition-transform duration-200">
               <h3 className="text-xl sm:text-2xl font-bold text-green-600 mb-4 sm:mb-6 flex items-center">
-                💰 소비자 혜택
+                💰 설문 리워드 사이트로 용돈벌기
               </h3>
               <ul className="space-y-4">
                 <li className="flex items-start">
@@ -117,7 +118,7 @@ const Home: React.FC = () => {
                 </li>
                 <li className="flex items-start">
                   <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-4 flex-shrink-0"></div>
-                  <span className="text-gray-700">최소 출금 <strong className="text-green-600">1만원부터 당일 지급</strong></span>
+                  <span className="text-gray-700">최소 출금 <strong className="text-green-600">1만원부터 출금 가능</strong></span>
                 </li>
                 <li className="flex items-start">
                   <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-4 flex-shrink-0"></div>
@@ -133,7 +134,7 @@ const Home: React.FC = () => {
       <section id="how-it-works" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-gray-900 mb-12 sm:mb-16">
-            작동 방식 (간단 3단계)
+            온라인 부업 설문조사 시작하는 방법 (간단 3단계)
           </h2>
           
           <div className="grid lg:grid-cols-2 gap-8 sm:gap-12">

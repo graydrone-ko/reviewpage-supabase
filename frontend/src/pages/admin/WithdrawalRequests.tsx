@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { API_URL } from '../../services/api';
 import { getBankName, formatAccountNumber, formatPhoneNumber } from '../../utils/banks';
 
-interface Reward {
+interface WithdrawalRequest {
   id: string;
+  userId: string;
   amount: number;
-  type: 'SURVEY_COMPLETION' | 'BONUS';
-  status: 'PENDING' | 'PAID';
-  createdAt: string;
-  updatedAt: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  requestedAt: string;
+  processedAt: string | null;
+  processedBy: string | null;
+  note: string | null;
   user: {
     id: string;
     name: string;
@@ -27,8 +29,8 @@ interface PaginationInfo {
   pages: number;
 }
 
-const AdminRewards: React.FC = () => {
-  const [rewards, setRewards] = useState<Reward[]>([]);
+const WithdrawalRequests: React.FC = () => {
+  const [requests, setRequests] = useState<WithdrawalRequest[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,
     limit: 20,
@@ -38,13 +40,13 @@ const AdminRewards: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
-  const [updating, setUpdating] = useState<string | null>(null);
+  const [processing, setProcessing] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchRewards();
+    fetchWithdrawalRequests();
   }, [pagination.page, statusFilter]);
 
-  const fetchRewards = async () => {
+  const fetchWithdrawalRequests = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
@@ -54,7 +56,7 @@ const AdminRewards: React.FC = () => {
         ...(statusFilter && { status: statusFilter })
       });
 
-      const response = await fetch(`${API_URL}/admin/rewards?${params}`, {
+      const response = await fetch(`${API_URL}/admin/withdrawal-requests?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -62,11 +64,11 @@ const AdminRewards: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('리워드 목록 불러오기 실패');
+        throw new Error('출금 요청 목록 불러오기 실패');
       }
 
       const data = await response.json();
-      setRewards(data.rewards);
+      setRequests(data.requests);
       setPagination(data.pagination);
     } catch (err) {
       setError(err instanceof Error ? err.message : '오류가 발생했습니다.');
@@ -75,30 +77,30 @@ const AdminRewards: React.FC = () => {
     }
   };
 
-  const updateRewardStatus = async (rewardId: string, status: 'PENDING' | 'PAID') => {
-    setUpdating(rewardId);
+  const processWithdrawalRequest = async (requestId: string, action: 'approve' | 'reject', note?: string) => {
+    setProcessing(requestId);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/admin/rewards/${rewardId}/status`, {
+      const response = await fetch(`${API_URL}/admin/withdrawal-requests/${requestId}/process`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ status })
+        body: JSON.stringify({ action, note })
       });
 
       if (!response.ok) {
-        throw new Error('리워드 상태 업데이트 실패');
+        throw new Error('출금 요청 처리 실패');
       }
 
       // 목록 새로고침
-      fetchRewards();
-      alert(`리워드 상태가 ${status === 'PAID' ? '지급완료' : '대기중'}으로 변경되었습니다.`);
+      fetchWithdrawalRequests();
+      alert(`출금 요청이 ${action === 'approve' ? '승인' : '거절'}되었습니다.`);
     } catch (err) {
       alert(err instanceof Error ? err.message : '오류가 발생했습니다.');
     } finally {
-      setUpdating(null);
+      setProcessing(null);
     }
   };
 
@@ -119,21 +121,19 @@ const AdminRewards: React.FC = () => {
   const getStatusBadge = (status: string) => {
     const styles = {
       PENDING: 'bg-yellow-100 text-yellow-800',
-      PAID: 'bg-green-100 text-green-800'
+      APPROVED: 'bg-green-100 text-green-800',
+      REJECTED: 'bg-red-100 text-red-800'
     };
     const labels = {
-      PENDING: '지급 대기',
-      PAID: '지급 완료'
+      PENDING: '대기중',
+      APPROVED: '승인됨',
+      REJECTED: '거절됨'
     };
     return (
       <span className={`px-2 py-1 text-xs rounded-full ${styles[status as keyof typeof styles]}`}>
         {labels[status as keyof typeof labels]}
       </span>
     );
-  };
-
-  const getTypeText = (type: string) => {
-    return type === 'SURVEY_COMPLETION' ? '설문 참여' : '보너스';
   };
 
   const getRoleBadge = (role: string) => {
@@ -154,7 +154,7 @@ const AdminRewards: React.FC = () => {
     );
   };
 
-  if (loading && rewards.length === 0) {
+  if (loading && requests.length === 0) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="text-lg">로딩 중...</div>
@@ -174,8 +174,8 @@ const AdminRewards: React.FC = () => {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">리워드 관리</h1>
-          <p className="mt-2 text-gray-600">사용자 리워드를 조회하고 지급 상태를 관리합니다.</p>
+          <h1 className="text-3xl font-bold text-gray-900">출금 요청 관리</h1>
+          <p className="mt-2 text-gray-600">사용자 출금 요청을 조회하고 승인/거절 처리합니다.</p>
         </div>
 
         {/* 필터 및 통계 */}
@@ -192,28 +192,26 @@ const AdminRewards: React.FC = () => {
                 className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">전체</option>
-                <option value="PENDING">지급 대기</option>
-                <option value="PAID">지급 완료</option>
+                <option value="PENDING">대기중</option>
+                <option value="APPROVED">승인됨</option>
+                <option value="REJECTED">거절됨</option>
               </select>
             </div>
             <div className="text-sm text-gray-500">
               총 {pagination.total}건 | 
-              {' '}총 금액: {formatCurrency(rewards.reduce((sum, reward) => sum + reward.amount, 0))}
+              {' '}총 금액: {formatCurrency(requests.reduce((sum, req) => sum + req.amount, 0))}
             </div>
           </div>
         </div>
 
-        {/* 리워드 목록 */}
+        {/* 출금 요청 목록 */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    수급자 정보
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    리워드 정보
+                    요청자 정보
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     금액
@@ -222,7 +220,7 @@ const AdminRewards: React.FC = () => {
                     상태
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    생성일
+                    요청일
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     액션
@@ -230,74 +228,82 @@ const AdminRewards: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {rewards.map((reward) => (
-                  <tr key={reward.id} className="hover:bg-gray-50">
+                {requests.map((request) => (
+                  <tr key={request.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="space-y-2">
                         <div>
                           <div className="flex items-center space-x-2">
-                            <span className="text-sm font-medium text-gray-900">{reward.user.name}</span>
-                            {getRoleBadge(reward.user.role)}
+                            <span className="text-sm font-medium text-gray-900">{request.user.name}</span>
+                            {getRoleBadge(request.user.role)}
                           </div>
-                          <div className="text-xs text-gray-500">{reward.user.email}</div>
+                          <div className="text-xs text-gray-500">{request.user.email}</div>
                         </div>
                         <div>
                           <div className="text-xs text-gray-600">
-                            📞 {formatPhoneNumber(reward.user.phoneNumber || '')}
+                            📞 {formatPhoneNumber(request.user.phoneNumber || '')}
                           </div>
                         </div>
-                        {reward.user.bankCode && reward.user.accountNumber && (
+                        {request.user.bankCode && request.user.accountNumber && (
                           <div className="bg-green-50 p-2 rounded border">
                             <div className="text-xs font-medium text-green-900">
-                              🏦 {getBankName(reward.user.bankCode)}
+                              🏦 {getBankName(request.user.bankCode)}
                             </div>
                             <div 
                               className="text-xs font-mono text-green-800 cursor-pointer hover:bg-green-100 p-1 rounded"
-                              onClick={() => navigator.clipboard.writeText(reward.user.accountNumber || '')}
+                              onClick={() => navigator.clipboard.writeText(request.user.accountNumber || '')}
                               title="클릭하여 복사"
                             >
-                              {formatAccountNumber(reward.user.accountNumber)}
+                              {formatAccountNumber(request.user.accountNumber)}
                             </div>
                           </div>
                         )}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{getTypeText(reward.type)}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
-                        {formatCurrency(reward.amount)}
+                        {formatCurrency(request.amount)}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(reward.status)}
+                      {getStatusBadge(request.status)}
+                      {request.note && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          📝 {request.note}
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div>{formatDate(reward.createdAt)}</div>
-                      {reward.status === 'PAID' && reward.updatedAt !== reward.createdAt && (
+                      <div>{formatDate(request.requestedAt)}</div>
+                      {request.processedAt && (
                         <div className="text-xs text-gray-400">
-                          지급: {formatDate(reward.updatedAt)}
+                          처리: {formatDate(request.processedAt)}
                         </div>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {reward.status === 'PENDING' ? (
-                        <button
-                          onClick={() => updateRewardStatus(reward.id, 'PAID')}
-                          disabled={updating === reward.id}
-                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {updating === reward.id ? '처리 중...' : '지급 완료'}
-                        </button>
+                      {request.status === 'PENDING' ? (
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => processWithdrawalRequest(request.id, 'approve')}
+                            disabled={processing === request.id}
+                            className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {processing === request.id ? '처리 중...' : '승인'}
+                          </button>
+                          <button
+                            onClick={() => {
+                              const note = prompt('거절 사유를 입력하세요 (선택사항):');
+                              processWithdrawalRequest(request.id, 'reject', note || undefined);
+                            }}
+                            disabled={processing === request.id}
+                            className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            거절
+                          </button>
+                        </div>
                       ) : (
-                        <button
-                          onClick={() => updateRewardStatus(reward.id, 'PENDING')}
-                          disabled={updating === reward.id}
-                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {updating === reward.id ? '처리 중...' : '대기로 변경'}
-                        </button>
+                        <span className="text-gray-400">처리됨</span>
                       )}
                     </td>
                   </tr>
@@ -358,4 +364,4 @@ const AdminRewards: React.FC = () => {
   );
 };
 
-export default AdminRewards;
+export default WithdrawalRequests;

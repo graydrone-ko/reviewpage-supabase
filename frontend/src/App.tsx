@@ -20,6 +20,7 @@ import AdminRewards from './pages/admin/Rewards';
 import AdminResponseReview from './pages/admin/ResponseReview';
 import AdminFinance from './pages/admin/Finance';
 import AdminCancellationRequests from './pages/admin/CancellationRequests';
+import AdminWithdrawalRequests from './pages/admin/WithdrawalRequests';
 
 function App() {
   const [user, setUser] = useState<any>(null);
@@ -78,6 +79,7 @@ function App() {
             <Route path="/admin/surveys/:surveyId/responses" element={<AdminResponseReview />} />
             <Route path="/admin/rewards" element={<AdminRewards />} />
             <Route path="/admin/cancellation-requests" element={<AdminCancellationRequests />} />
+            <Route path="/admin/withdrawal-requests" element={<AdminWithdrawalRequests />} />
             <Route path="/admin/finance" element={<AdminFinance />} />
           </Routes>
         </main>

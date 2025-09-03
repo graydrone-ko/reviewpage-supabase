@@ -2,6 +2,30 @@ import { Request, Response } from 'express';
 import { prisma } from '../utils/database';
 import { AuthRequest } from '../middleware/auth';
 
+// 통합 거래 내역 인터페이스
+interface TransactionRecord {
+  id: string;
+  type: 'DEPOSIT' | 'WITHDRAWAL';
+  subType: 'SURVEY_PAYMENT' | 'REFUND' | 'REWARD';
+  amount: number;
+  status: string;
+  createdAt: Date;
+  processedAt?: Date;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    phoneNumber?: string;
+    bankCode?: string;
+    accountNumber?: string;
+  };
+  metadata?: {
+    surveyTitle?: string;
+    description?: string;
+  };
+}
+
 // 날짜 범위 계산 함수
 const getDateFilter = (period: string, startDate?: string, endDate?: string) => {
   // 커스텀 날짜 범위가 제공된 경우
@@ -91,11 +115,28 @@ export const getFinanceStats = async (req: AuthRequest, res: Response) => {
 
     const totalWithdrawn = completedRewards._sum.amount || 0;
 
-    // 수수료 수익 계산 (총 입금액의 10%)
-    const netProfit = surveys.reduce((sum, survey) => {
-      const surveyTotal = survey.reward * survey.maxParticipants;
-      const feeAmount = surveyTotal * 0.1;
-      return sum + feeAmount;
+    // 순수익 계산 (완료된 응답의 수수료만)
+    // SurveyResponse는 생성되면 완료된 것으로 간주 (별도 status 필드 없음)
+    const completedResponses = await prisma.surveyResponse.findMany({
+      where: {
+        ...(dateFilter.createdAt ? { createdAt: dateFilter.createdAt } : {})
+      },
+      include: {
+        survey: {
+          select: {
+            reward: true,
+            status: true
+          }
+        }
+      }
+    });
+
+    // 모든 완료된 응답의 수수료 계산 (설문 상태 무관)
+    // 중단 요청을 해도 이미 완료된 응답의 수수료는 환불되지 않음
+    const netProfit = completedResponses.reduce((sum, response) => {
+      const rewardPerResponse = response.survey.reward || 0;
+      const commission = rewardPerResponse * 0.1; // 완료된 응답당 10% 수수료
+      return sum + commission;
     }, 0);
 
     // 대기 중인 출금 신청
@@ -281,6 +322,140 @@ export const rejectWithdrawal = async (req: AuthRequest, res: Response) => {
 
   } catch (error) {
     console.error('Reject withdrawal error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// 통합 거래 내역 API
+export const getTransactions = async (req: AuthRequest, res: Response) => {
+  try {
+    const period = req.query.period as string || 'month';
+    const status = req.query.status as string || 'all';
+    const type = req.query.type as string || 'all'; // 'DEPOSIT', 'WITHDRAWAL', 'all'
+    const startDate = req.query.startDate as string;
+    const endDate = req.query.endDate as string;
+    const dateFilter = getDateFilter(period, startDate, endDate);
+
+    const transactions: TransactionRecord[] = [];
+
+    // 입금 내역 (설문 승인)
+    if (type === 'all' || type === 'DEPOSIT') {
+      const surveys = await prisma.survey.findMany({
+        where: {
+          status: 'APPROVED',
+          ...dateFilter
+        },
+        include: {
+          seller: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+              phoneNumber: true,
+              bankCode: true,
+              accountNumber: true
+            }
+          }
+        },
+        orderBy: {
+          approvedAt: 'desc'
+        }
+      });
+
+      for (const survey of surveys) {
+        const baseAmount = survey.reward * survey.maxParticipants;
+        const feeAmount = baseAmount * 0.1; // 10% 수수료
+        const totalAmount = baseAmount + feeAmount;
+
+        transactions.push({
+          id: `deposit_${survey.id}`,
+          type: 'DEPOSIT',
+          subType: 'SURVEY_PAYMENT',
+          amount: totalAmount,
+          status: survey.status === 'APPROVED' ? 'COMPLETED' : 'PENDING',
+          createdAt: survey.approvedAt || survey.createdAt,
+          processedAt: survey.approvedAt,
+          user: {
+            id: survey.seller.id,
+            name: survey.seller.name,
+            email: survey.seller.email,
+            role: 'SELLER', // sellers are always SELLER role
+            phoneNumber: survey.seller.phoneNumber,
+            bankCode: survey.seller.bankCode,
+            accountNumber: survey.seller.accountNumber
+          },
+          metadata: {
+            surveyTitle: survey.title,
+            description: `설문 승인 - ${survey.title}`
+          }
+        });
+      }
+    }
+
+    // 출금 내역 (리워드 지급)
+    if (type === 'all' || type === 'WITHDRAWAL') {
+      const rewards = await prisma.reward.findMany({
+        where: {
+          ...dateFilter,
+          ...(status !== 'all' ? { 
+            status: status === 'COMPLETED' ? 'PAID' : 'PENDING' 
+          } : {})
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+              phoneNumber: true,
+              bankCode: true,
+              accountNumber: true
+            }
+          }
+        },
+        orderBy: {
+          updatedAt: 'desc'
+        }
+      });
+
+      for (const reward of rewards) {
+        // 환불의 경우 음수 금액을 가지므로 절댓값으로 표시
+        const amount = Math.abs(reward.amount);
+        const isRefund = reward.type === 'REFUND';
+        
+        transactions.push({
+          id: `withdrawal_${reward.id}`,
+          type: 'WITHDRAWAL',
+          subType: isRefund ? 'REFUND' : 'REWARD',
+          amount: amount,
+          status: reward.status === 'PAID' ? 'COMPLETED' : 'PENDING',
+          createdAt: reward.createdAt,
+          processedAt: reward.status === 'PAID' ? reward.updatedAt : undefined,
+          user: {
+            id: reward.user.id,
+            name: reward.user.name,
+            email: reward.user.email,
+            role: reward.user.role,
+            phoneNumber: reward.user.phoneNumber,
+            bankCode: reward.user.bankCode,
+            accountNumber: reward.user.accountNumber
+          },
+          metadata: {
+            description: isRefund ? '설문 중단 환불' : '설문 참여 리워드'
+          }
+        });
+      }
+    }
+
+    // 시간순 정렬 (최신순)
+    transactions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    res.json({ transactions });
+
+  } catch (error) {
+    console.error('Get transactions error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

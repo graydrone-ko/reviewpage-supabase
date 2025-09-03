@@ -114,21 +114,22 @@ export const requestWithdrawal = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: '출금 요청 금액이 사용 가능한 잔액을 초과합니다.' });
     }
 
-    // Create withdrawal request (in a real app, this would integrate with payment systems)
-    // For now, we'll just mark the rewards as paid
-    await prisma.reward.updateMany({
-      where: {
-        userId: req.user.id,
-        status: 'PENDING'
-      },
+    // 출금 요청을 데이터베이스에 저장
+    const withdrawalRequest = await prisma.withdrawalRequest.create({
       data: {
-        status: 'PAID'
+        userId: req.user.id,
+        amount: amount,
+        status: 'PENDING'
       }
     });
 
+    console.log(`💰 출금 요청 생성됨: ${req.user.name || 'Unknown'} (${req.user.email}) - ₩${amount.toLocaleString()}`);
+    
     res.json({
-      message: 'Withdrawal request submitted successfully',
-      amount
+      message: '출금 신청이 완료되었습니다. 관리자 승인 후 처리됩니다.',
+      amount,
+      requestId: withdrawalRequest.id,
+      note: '2-3 영업일 내에 관리자가 승인 후 지급됩니다.'
     });
 
   } catch (error) {

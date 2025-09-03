@@ -3,8 +3,17 @@ import { Link, useNavigate } from 'react-router-dom';
 import { authService, RegisterData } from '../services/api';
 import { calculateAge, validateBirthDate, formatBirthDate, formatPhoneNumber, validatePhoneNumber } from '../utils/age';
 import { koreanBanks } from '../utils/banks';
+import { useSEO } from '../hooks/useSEO';
 
 const Register: React.FC = () => {
+  // SEO 최적화
+  useSEO({
+    title: '회원가입 - ReviewPage | 설문조사 돈벌기 무료 가입',
+    description: 'ReviewPage 무료 회원가입으로 설문조사 돈벌기를 시작하세요. 제품 피드백 설문 참여로 현금 리워드를 받을 수 있습니다.',
+    keywords: '회원가입,설문조사회원가입,돈벌기가입,리워드사이트가입,무료가입',
+    canonical: 'https://reviewpage.co.kr/register'
+  });
+
   const [formData, setFormData] = useState<RegisterData>({
     email: '',
     password: '',
