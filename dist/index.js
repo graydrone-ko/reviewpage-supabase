@@ -94,8 +94,25 @@ if (process.env.NODE_ENV !== 'production') {
         res.status(404).json({ error: 'Route not found' });
     });
 }
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📖 Environment: ${process.env.NODE_ENV || 'development'}`);
+    
+    // Railway 환경에서 계정 자동 생성
+    if (process.env.NODE_ENV === 'production') {
+        console.log('🔧 Production environment detected, creating test users...');
+        try {
+            const { exec } = require('child_process');
+            exec('node dist/create-test-users.js', (error, stdout, stderr) => {
+                if (error) {
+                    console.log('⚠️ Test users may already exist or script completed');
+                    return;
+                }
+                console.log('✅ Test users creation script executed:', stdout);
+            });
+        } catch (error) {
+            console.log('ℹ️ Test user creation skipped:', error.message);
+        }
+    }
 });
 //# sourceMappingURL=index.js.map
