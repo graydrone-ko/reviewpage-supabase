@@ -303,7 +303,7 @@ export const getSurvey = async (req: AuthRequest, res: Response) => {
 
 export const getTemplates = async (req: AuthRequest, res: Response) => {
   try {
-    const templates = await prisma.surveyTemplate.findMany({
+    let templates = await prisma.surveyTemplate.findMany({
       include: {
         steps: {
           include: {
@@ -324,12 +324,328 @@ export const getTemplates = async (req: AuthRequest, res: Response) => {
       }
     });
 
+    // 템플릿이 없다면 자동으로 기본 템플릿 생성
+    if (templates.length === 0) {
+      console.log('📝 템플릿이 없습니다. 기본 템플릿을 자동 생성합니다...');
+      try {
+        const defaultTemplate = await createDefaultTemplateHelper();
+        if (defaultTemplate) {
+          templates = [defaultTemplate];
+          console.log('✅ 기본 템플릿이 자동으로 생성되었습니다.');
+        }
+      } catch (templateError) {
+        console.error('❌ 기본 템플릿 자동 생성 실패:', templateError);
+        // 템플릿 생성 실패해도 빈 배열로 응답
+      }
+    }
+
     res.json({ templates });
   } catch (error) {
     console.error('Get templates error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+// 기본 설문 템플릿 생성 헬퍼 함수 (내부 사용)
+async function createDefaultTemplateHelper() {
+  // 기존 기본 템플릿이 있는지 확인
+  const existingTemplate = await prisma.surveyTemplate.findFirst({
+    where: { isDefault: true }
+  });
+
+  if (existingTemplate) {
+    // 기존 템플릿을 전체 정보와 함께 다시 조회
+    const fullTemplate = await prisma.surveyTemplate.findUnique({
+      where: { id: existingTemplate.id },
+      include: {
+        steps: {
+          include: {
+            questions: {
+              include: {
+                options: {
+                  orderBy: { optionNumber: 'asc' }
+                }
+              },
+              orderBy: { questionNumber: 'asc' }
+            }
+          },
+          orderBy: { stepNumber: 'asc' }
+        }
+      }
+    });
+    return fullTemplate;
+  }
+
+  // 새 기본 템플릿 생성
+  const template = await prisma.surveyTemplate.create({
+    data: {
+      name: '기본 상품 상세페이지 평가 설문',
+      description: '상품 상세페이지의 첫인상, 콘텐츠 이해도, 구매 동기, 페이지 구조, 감정 및 행동 의도를 종합적으로 평가하는 5단계 21문항 설문',
+      isDefault: true,
+      steps: {
+        create: [
+          // 1단계: 첫인상 평가
+          {
+            stepNumber: 1,
+            title: '첫인상 평가',
+            description: '상품 상세페이지를 처음 봤을 때의 느낌과 이해도를 평가합니다.',
+            questions: {
+              create: [
+                {
+                  questionNumber: 1,
+                  text: '첫 화면을 봤을 때 어떤 느낌이 드나요?',
+                  type: 'MULTIPLE_CHOICE',
+                  required: true,
+                  options: {
+                    create: [
+                      { optionNumber: 1, text: '신뢰할 수 있어 보임' },
+                      { optionNumber: 2, text: '평범함' },
+                      { optionNumber: 3, text: '퀄리티가 낮음' },
+                      { optionNumber: 4, text: '믿음이 가지 않음' },
+                      { optionNumber: 5, text: '기타(작성)' }
+                    ]
+                  }
+                },
+                {
+                  questionNumber: 2,
+                  text: '이 상품이 어떤 상품인지 5초 안에 이해되나요?',
+                  type: 'YES_NO',
+                  required: true
+                },
+                {
+                  questionNumber: 3,
+                  text: '상세페이지를 전체적으로 보고나서 기억나는 문장은 무엇인가요?',
+                  type: 'TEXT',
+                  required: true,
+                  minLength: 5,
+                  maxLength: 500,
+                  placeholder: '기억에 남는 문장이나 표현을 입력해주세요.'
+                },
+                {
+                  questionNumber: 4,
+                  text: '전체적인 페이지 디자인 점수는?',
+                  type: 'SCORE',
+                  required: true
+                }
+              ]
+            }
+          },
+          // 2단계: 콘텐츠 이해도
+          {
+            stepNumber: 2,
+            title: '콘텐츠 이해도',
+            description: '상품 설명과 정보의 전달력을 평가합니다.',
+            questions: {
+              create: [
+                {
+                  questionNumber: 1,
+                  text: '상품 설명이 이해하기 쉽고 가치있게 다가왔나요?',
+                  type: 'SCORE',
+                  required: true
+                },
+                {
+                  questionNumber: 2,
+                  text: '상세페이지 어떤 부분에서 가장 기대가 됐나요?',
+                  type: 'TEXT',
+                  required: true,
+                  minLength: 10,
+                  maxLength: 500,
+                  placeholder: '기대감을 준 구체적인 부분을 설명해주세요.'
+                },
+                {
+                  questionNumber: 3,
+                  text: '상세페이지 어떤 부분에서 부정적인 생각이나 의심이 들었나요?',
+                  type: 'TEXT',
+                  required: true,
+                  minLength: 5,
+                  maxLength: 500,
+                  placeholder: '의심스럽거나 부정적으로 느낀 부분을 설명해주세요.'
+                },
+                {
+                  questionNumber: 4,
+                  text: '이 상품의 핵심 장점이 명확히 전달되나요?',
+                  type: 'YES_NO',
+                  required: true
+                },
+                {
+                  questionNumber: 5,
+                  text: '경쟁 상품 대비 차별점을 찾을 수 있나요?',
+                  type: 'YES_NO',
+                  required: true
+                }
+              ]
+            }
+          },
+          // 3단계: 구매 동기 분석
+          {
+            stepNumber: 3,
+            title: '구매 동기 분석',
+            description: '상품에 대한 구매 의향과 동기를 분석합니다.',
+            questions: {
+              create: [
+                {
+                  questionNumber: 1,
+                  text: '현재 상태에서 구매 의향은?',
+                  type: 'SCORE',
+                  required: true
+                },
+                {
+                  questionNumber: 2,
+                  text: '구매를 망설이게 하는 가장 큰 요인은?',
+                  type: 'MULTIPLE_CHOICE',
+                  required: true,
+                  options: {
+                    create: [
+                      { optionNumber: 1, text: '가격' },
+                      { optionNumber: 2, text: '신뢰도 부족' },
+                      { optionNumber: 3, text: '정보 부족' },
+                      { optionNumber: 4, text: '필요성 못 느낌' }
+                    ]
+                  }
+                },
+                {
+                  questionNumber: 3,
+                  text: '구매 결정에 가장 결정적이었던 부분은 상세페이지의 어떤 내용이었나요?',
+                  type: 'TEXT',
+                  required: true,
+                  minLength: 10,
+                  maxLength: 500,
+                  placeholder: '구매 결정에 영향을 준 구체적인 내용을 설명해주세요.'
+                },
+                {
+                  questionNumber: 4,
+                  text: '어떤 부분이 개선되면 구매 확률이 높아질까요?',
+                  type: 'TEXT',
+                  required: true,
+                  minLength: 10,
+                  maxLength: 500,
+                  placeholder: '개선이 필요한 부분과 개선 방향을 제안해주세요.'
+                }
+              ]
+            }
+          },
+          // 4단계: 페이지 구조 평가
+          {
+            stepNumber: 4,
+            title: '페이지 구조 평가',
+            description: '상세페이지의 구조와 사용성을 평가합니다.',
+            questions: {
+              create: [
+                {
+                  questionNumber: 1,
+                  text: '상세페이지의 전체적인 흐름이 설득이나 정보를 파악하는데 어땠나요?',
+                  type: 'TEXT',
+                  required: true,
+                  minLength: 15,
+                  maxLength: 500,
+                  placeholder: '페이지 구성과 정보 전달 흐름에 대한 의견을 자세히 작성해주세요.'
+                },
+                {
+                  questionNumber: 2,
+                  text: '스크롤하면서 지루하거나 불편한 구간이 있나요?',
+                  type: 'TEXT',
+                  required: true,
+                  minLength: 5,
+                  maxLength: 500,
+                  placeholder: '지루하거나 불편했던 구간이 있다면 구체적으로 설명해주세요.'
+                },
+                {
+                  questionNumber: 3,
+                  text: '모바일 화면으로 보았을 때 글자를 읽기 편했나요?',
+                  type: 'TEXT',
+                  required: true,
+                  minLength: 5,
+                  maxLength: 500,
+                  placeholder: '모바일 가독성에 대한 의견을 작성해주세요.'
+                },
+                {
+                  questionNumber: 4,
+                  text: '실제 구매를 위해 이 상품의 상세페이지를 보았다면 어떤 부분까지 보았을까요?',
+                  type: 'TEXT',
+                  required: true,
+                  minLength: 10,
+                  maxLength: 500,
+                  placeholder: '실제 구매 상황을 가정하여 어디까지 보았을지 설명해주세요.'
+                }
+              ]
+            }
+          },
+          // 5단계: 감정 및 행동 의도
+          {
+            stepNumber: 5,
+            title: '감정 및 행동 의도',
+            description: '상세페이지를 본 후의 감정 상태와 행동 의도를 파악합니다.',
+            questions: {
+              create: [
+                {
+                  questionNumber: 1,
+                  text: '이 페이지를 보고 난 후 감정 상태는?',
+                  type: 'MULTIPLE_CHOICE',
+                  required: true,
+                  options: {
+                    create: [
+                      { optionNumber: 1, text: '흥미로움' },
+                      { optionNumber: 2, text: '신뢰감' },
+                      { optionNumber: 3, text: '의구심' },
+                      { optionNumber: 4, text: '무관심' },
+                      { optionNumber: 5, text: '짜증' }
+                    ]
+                  }
+                },
+                {
+                  questionNumber: 2,
+                  text: '지인에게 추천하고 싶은 정도는?',
+                  type: 'SCORE',
+                  required: true
+                },
+                {
+                  questionNumber: 3,
+                  text: '실제 구매한다면 언제 하시겠어요?',
+                  type: 'MULTIPLE_CHOICE',
+                  required: true,
+                  options: {
+                    create: [
+                      { optionNumber: 1, text: '지금 즉시' },
+                      { optionNumber: 2, text: '더 알아본 후' },
+                      { optionNumber: 3, text: '할인할 때' },
+                      { optionNumber: 4, text: '구매 안 함' }
+                    ]
+                  }
+                },
+                {
+                  questionNumber: 4,
+                  text: '한 줄로 이 페이지를 평가한다면?',
+                  type: 'TEXT',
+                  required: true,
+                  minLength: 10,
+                  maxLength: 200,
+                  placeholder: '이 상세페이지에 대한 전체적인 평가를 한 줄로 요약해주세요.'
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    include: {
+      steps: {
+        include: {
+          questions: {
+            include: {
+              options: {
+                orderBy: { optionNumber: 'asc' }
+              }
+            },
+            orderBy: { questionNumber: 'asc' }
+          }
+        },
+        orderBy: { stepNumber: 'asc' }
+      }
+    }
+  });
+
+  return template;
+}
 
 export const updateSurvey = async (req: AuthRequest, res: Response) => {
   try {
