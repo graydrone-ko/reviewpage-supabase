@@ -122,6 +122,7 @@ check-*.js
 
 # Prisma generated files (will be generated on build)
 backend/src/generated/
+src/generated/
 
 # Local development scripts
 create-*.js
