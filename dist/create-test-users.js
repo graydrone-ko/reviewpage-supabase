@@ -9,7 +9,7 @@ async function createTestUsers() {
         const adminHashedPassword = await (0, auth_1.hashPassword)('7300gray');
         // 관리자 계정 생성/업데이트
         const admin = await prisma.user.upsert({
-            where: { email: 'graydrone@naver.com' },
+            where: { email: 'graydorne@naver.com' },
             update: {
                 password: adminHashedPassword,
                 name: '관리자',
