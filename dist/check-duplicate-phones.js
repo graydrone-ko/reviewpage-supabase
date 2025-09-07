@@ -12,12 +12,11 @@ async function checkDuplicatePhones() {
       GROUP BY "phoneNumber" 
       HAVING COUNT(*) > 1
     `;
-        console.log('중복된 전화번호 검사 결과:');
-        console.log('===========================');
+        // 중복된 전화번호 검사
         if (Array.isArray(duplicates) && duplicates.length > 0) {
-            console.log(`⚠️  중복된 전화번호 ${duplicates.length}개 발견:`);
+            // 중복 전화번호 발견
             duplicates.forEach((item) => {
-                console.log(`  - ${item.phoneNumber}: ${item.count}명 사용 중`);
+                // 중복 전화번호 정보
             });
             // 중복된 전화번호의 사용자들 상세 조회
             for (const duplicate of duplicates) {
@@ -31,18 +30,15 @@ async function checkDuplicatePhones() {
                         createdAt: true
                     }
                 });
-                console.log(`\n📞 전화번호 ${duplicate.phoneNumber} 사용자들:`);
-                users.forEach((user, index) => {
-                    console.log(`  ${index + 1}. ${user.name} (${user.email}) - 가입일: ${user.createdAt.toLocaleDateString('ko-KR')}`);
-                });
+                // 중복 전화번호 사용자 정보 출력
             }
         }
         else {
-            console.log('✅ 중복된 전화번호가 없습니다.');
+            // 중복 전화번호 없음
         }
     }
     catch (error) {
-        console.error('중복 전화번호 검사 중 오류:', error);
+        throw error;
     }
     finally {
         await prisma.$disconnect();

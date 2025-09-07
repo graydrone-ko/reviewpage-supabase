@@ -12,19 +12,10 @@ const adminAuth = (req, res, next) => {
         if (decoded.role !== 'ADMIN') {
             return res.status(403).json({ error: 'Access denied. Admin privileges required.' });
         }
-        req.user = {
+        req.admin = {
             id: decoded.id,
             email: decoded.email,
-            role: decoded.role,
-            name: decoded.name,
-            createdAt: decoded.createdAt,
-            updatedAt: decoded.updatedAt,
-            age: decoded.age,
-            gender: decoded.gender,
-            phoneNumber: decoded.phoneNumber,
-            bankCode: decoded.bankCode,
-            accountNumber: decoded.accountNumber,
-            rewards: decoded.rewards
+            role: decoded.role
         };
         next();
     }

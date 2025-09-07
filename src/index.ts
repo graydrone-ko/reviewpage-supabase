@@ -3,12 +3,14 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
+import path from 'path';
 import authRoutes from './routes/auth';
 import surveyRoutes from './routes/surveys';
 import responseRoutes from './routes/responses';
 import rewardRoutes from './routes/rewards';
 import adminRoutes from './routes/admin';
 import seoRoutes from './routes/seo';
+import frontendRoutes from './routes/frontend';
 
 dotenv.config();
 
@@ -71,6 +73,12 @@ app.use('/api/admin', adminRoutes);
 // SEO 라우트 (API prefix 없이)
 app.use('/', seoRoutes);
 
+// 정적 파일 서빙 
+app.use(express.static(path.join(__dirname, '../public')));
+
+// 프론트엔드 페이지 라우트
+app.use('/', frontendRoutes);
+
 // Error handling middleware
 app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(error);
@@ -78,11 +86,6 @@ app.use((error: any, req: express.Request, res: express.Response, next: express.
     error: 'Internal server error',
     message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
   });
-});
-
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Route not found' });
 });
 
 app.listen(PORT, () => {

@@ -8,12 +8,14 @@ const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const path_1 = __importDefault(require("path"));
 const auth_1 = __importDefault(require("./routes/auth"));
 const surveys_1 = __importDefault(require("./routes/surveys"));
 const responses_1 = __importDefault(require("./routes/responses"));
 const rewards_1 = __importDefault(require("./routes/rewards"));
 const admin_1 = __importDefault(require("./routes/admin"));
 const seo_1 = __importDefault(require("./routes/seo"));
+const frontend_1 = __importDefault(require("./routes/frontend"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3001;
@@ -66,20 +68,10 @@ app.use('/api/rewards', rewards_1.default);
 app.use('/api/admin', admin_1.default);
 // SEO 라우트 (API prefix 없이)
 app.use('/', seo_1.default);
-// 프론트엔드 정적 파일 서빙 (프로덕션 환경에서만)
-if (process.env.NODE_ENV === 'production') {
-    const path = require('path');
-    // 정적 파일 서빙
-    app.use(express_1.default.static(path.join(__dirname, 'public')));
-    // SPA 라우팅을 위한 catch-all 라우트 (API 라우트 제외)
-    app.get('*', (req, res) => {
-        // API 라우트나 SEO 라우트가 아닌 경우에만 index.html 서빙
-        if (req.path.startsWith('/api/') || req.path === '/sitemap.xml' || req.path === '/robots.txt') {
-            return res.status(404).json({ error: 'API route not found' });
-        }
-        res.sendFile(path.join(__dirname, 'public', 'index.html'));
-    });
-}
+// 정적 파일 서빙 
+app.use(express_1.default.static(path_1.default.join(__dirname, '../public')));
+// 프론트엔드 페이지 라우트
+app.use('/', frontend_1.default);
 // Error handling middleware
 app.use((error, req, res, next) => {
     console.error(error);
@@ -88,31 +80,8 @@ app.use((error, req, res, next) => {
         message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
     });
 });
-// 404 handler (개발 환경에서만)
-if (process.env.NODE_ENV !== 'production') {
-    app.use('*', (req, res) => {
-        res.status(404).json({ error: 'Route not found' });
-    });
-}
-app.listen(PORT, async () => {
+app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📖 Environment: ${process.env.NODE_ENV || 'development'}`);
-    
-    // Railway 환경에서 계정 자동 생성
-    if (process.env.NODE_ENV === 'production') {
-        console.log('🔧 Production environment detected, creating test users...');
-        try {
-            const { exec } = require('child_process');
-            exec('node dist/create-test-users.js', (error, stdout, stderr) => {
-                if (error) {
-                    console.log('⚠️ Test users may already exist or script completed');
-                    return;
-                }
-                console.log('✅ Test users creation script executed:', stdout);
-            });
-        } catch (error) {
-            console.log('ℹ️ Test user creation skipped:', error.message);
-        }
-    }
 });
 //# sourceMappingURL=index.js.map

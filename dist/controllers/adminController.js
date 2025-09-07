@@ -641,13 +641,13 @@ const processCancellationRequest = async (req, res) => {
                     refundAmount,
                     status: 'APPROVED',
                     processedAt: new Date(),
-                    processedBy: req.user?.id
+                    processedBy: req.admin?.id
                 },
                 update: {
                     refundAmount,
                     status: 'APPROVED',
                     processedAt: new Date(),
-                    processedBy: req.user?.id
+                    processedBy: req.admin?.id
                 }
             });
             // 환불 트랜잭션 기록을 위한 리워드 생성 (음수 금액으로 환불 표시)
@@ -835,7 +835,7 @@ const processWithdrawalRequest = async (req, res) => {
             data: {
                 status: action === 'approve' ? 'APPROVED' : 'REJECTED',
                 processedAt: new Date(),
-                processedBy: req.user?.id,
+                processedBy: req.admin?.id,
                 note: note || null
             },
             include: {

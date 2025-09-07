@@ -1,6 +1,6 @@
 import { Response } from 'express';
-import { AuthRequest } from '../types/express';
-export declare const submitResponseValidation: any[];
-export declare const submitResponse: (req: AuthRequest, res: Response) => Promise<any>;
-export declare const getMyResponses: (req: AuthRequest, res: Response) => Promise<any>;
+import { AuthRequest } from '../middleware/auth';
+export declare const submitResponseValidation: import("express-validator").ValidationChain[];
+export declare const submitResponse: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const getMyResponses: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>>>;
 //# sourceMappingURL=responseController.d.ts.map
