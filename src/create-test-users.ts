@@ -89,13 +89,10 @@ async function createTestUsers() {
       }
     });
 
-    console.log('테스트 계정 생성/업데이트 완료:');
-    console.log('소비자:', consumer.email, '/ 비밀번호: testpass123');
-    console.log('판매자:', seller.email, '/ 비밀번호: testpass123');
-    console.log('관리자:', admin.email, '/ 비밀번호: 7300gray');
+    // 테스트 계정 생성 완료
 
   } catch (error) {
-    console.error('오류:', error);
+    throw error;
   } finally {
     await prisma.$disconnect();
   }

@@ -131,12 +131,15 @@ node_modules
 .DS_Store
 Thumbs.db
 
-# Prisma
-/src/generated/prisma
+# Prisma generated files (will be generated on build)
+/src/generated/
+src/generated/
 
 # Build output
 dist/
 build/
+*.js.map
+*.d.ts.map
 
 # Railway
 .railway/

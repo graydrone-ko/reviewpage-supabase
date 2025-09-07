@@ -216,7 +216,7 @@ const defaultSurveyTemplate = {
 
 async function createDefaultTemplate() {
   try {
-    console.log('기본 설문 템플릿 생성 시작...');
+    // 기본 설문 템플릿 생성
 
     const template = await prisma.surveyTemplate.create({
       data: {
@@ -226,7 +226,7 @@ async function createDefaultTemplate() {
       }
     });
 
-    console.log(`템플릿 생성 완료: ${template.id}`);
+    // 템플릿 생성 완료
 
     for (const stepData of defaultSurveyTemplate.steps) {
       const step = await prisma.surveyStep.create({
@@ -238,7 +238,7 @@ async function createDefaultTemplate() {
         }
       });
 
-      console.log(`단계 ${stepData.stepNumber} 생성 완료: ${step.id}`);
+      // 단계 생성 완료
 
       for (const questionData of stepData.questions) {
         const question = await prisma.surveyQuestion.create({
@@ -251,7 +251,7 @@ async function createDefaultTemplate() {
           }
         });
 
-        console.log(`질문 ${stepData.stepNumber}-${questionData.questionNumber} 생성 완료: ${question.id}`);
+        // 질문 생성 완료
 
         if (questionData.options && questionData.options.length > 0) {
           for (const optionData of questionData.options) {
@@ -263,16 +263,16 @@ async function createDefaultTemplate() {
               }
             });
 
-            console.log(`선택지 ${stepData.stepNumber}-${questionData.questionNumber}-${optionData.optionNumber} 생성 완료: ${option.id}`);
+            // 선택지 생성 완료
           }
         }
       }
     }
 
-    console.log('기본 설문 템플릿 생성 완료!');
+    // 기본 설문 템플릿 생성 완료
 
   } catch (error) {
-    console.error('오류:', error);
+    throw error;
   } finally {
     await prisma.$disconnect();
   }
