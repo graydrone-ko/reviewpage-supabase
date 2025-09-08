@@ -90,11 +90,11 @@ No test framework is currently configured. Tests would need to be set up.
 - SEO optimization applied to all major pages
 
 ## GitHub Repository
-Github 주소 : https://github.com/graydrone-ko/reviewpage
+GitHub 주소: https://github.com/graydrone-ko/reviewpage
 
 ## GitHub Push Configuration
 Personal Access Token은 보안상 별도 관리
 
 ## 원격 저장소에 푸시할 때 먼저 HTTP 버퍼 크기를 늘리고 조금 씩 나누어 푸시할 것. 에러 시 작은 변경사항만 포함하는 새커밋을 만들어 푸시할 것
 
-## .git 이 존재하지 않으면 Git 저장소 초기화 할 것 (git init) 파일 생성 또는 수정 시, 파일 생성 또는 수정한 후, git add와 commit 수행할 것 파일 삭제 시 git rm 및 commit 사용할 것
+## GitHub CLI 사용 가능 - gh 명령어로 GitHub 처리

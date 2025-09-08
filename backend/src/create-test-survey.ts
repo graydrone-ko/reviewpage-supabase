@@ -4,15 +4,13 @@ const prisma = new PrismaClient();
 
 async function createTestSurvey() {
   try {
-    console.log('테스트 설문 생성 시작...');
-
     // 기본 템플릿 찾기
     const defaultTemplate = await prisma.surveyTemplate.findFirst({
       where: { isDefault: true }
     });
 
     if (!defaultTemplate) {
-      console.error('기본 템플릿을 찾을 수 없습니다.');
+      throw new Error('기본 템플릿을 찾을 수 없습니다.');
       return;
     }
 
@@ -25,7 +23,7 @@ async function createTestSurvey() {
     });
 
     if (!seller) {
-      console.error('테스트 판매자를 찾을 수 없습니다.');
+      throw new Error('테스트 판매자를 찾을 수 없습니다.');
       return;
     }
 
@@ -70,23 +68,10 @@ async function createTestSurvey() {
       }
     });
 
-    console.log('테스트 설문 생성 완료!');
-    console.log(`설문 ID: ${survey.id}`);
-    console.log(`설문 제목: ${survey.title}`);
-    console.log(`상품 URL: ${survey.url}`);
-    console.log(`리워드: ${survey.reward}원`);
-    console.log(`템플릿: ${survey.template.name}`);
-    console.log(`단계 수: ${survey.template.steps.length}`);
-    
-    let totalQuestions = 0;
-    survey.template.steps.forEach(step => {
-      totalQuestions += step.questions.length;
-      console.log(`- ${step.title}: ${step.questions.length}개 질문`);
-    });
-    console.log(`총 질문 수: ${totalQuestions}개`);
+    // 테스트 설문 생성 완료
 
   } catch (error) {
-    console.error('오류:', error);
+    throw error;
   } finally {
     await prisma.$disconnect();
   }

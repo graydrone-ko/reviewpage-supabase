@@ -1,0 +1,14 @@
+# Railway Deployment Configuration
+# This project should deploy the EXPRESS BACKEND from the 'backend' directory
+# NOT the React frontend from the 'frontend' directory
+
+ROOT_DIR=backend
+BUILD_PATH=backend
+START_COMMAND="cd backend && npm start"
+HEALTH_CHECK="/health"
+
+# Expected deployment:
+# - Express server running on the configured port
+# - API endpoints at /api/* returning JSON
+# - Static file serving for integrated frontend
+# - Template auto-generation working

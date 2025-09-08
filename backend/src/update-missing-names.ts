@@ -11,7 +11,7 @@ async function updateMissingNames() {
       !user.name || user.name.trim() === ''
     );
 
-    console.log(`이름이 없는 사용자 ${usersWithoutNames.length}명 발견`);
+    // 이름이 없는 사용자 수만큼 반복
 
     // 각 사용자에게 기본 이름 설정
     for (const user of usersWithoutNames) {
@@ -37,13 +37,13 @@ async function updateMissingNames() {
         }
       });
 
-      console.log(`사용자 ${user.email}의 이름을 "${finalName}"으로 업데이트`);
+      // 사용자 이름 업데이트 완료
     }
 
-    console.log('모든 사용자 이름 업데이트 완료!');
+    // 모든 사용자 이름 업데이트 완료
     
   } catch (error) {
-    console.error('사용자 이름 업데이트 중 오류:', error);
+    throw error;
   } finally {
     await prisma.$disconnect();
   }
