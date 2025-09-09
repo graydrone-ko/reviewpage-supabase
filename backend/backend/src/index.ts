@@ -111,7 +111,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/', seoRoutes);
 
 // 정적 파일 서빙 (React 빌드 파일)
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(__dirname, '../../public')));
 
 // 프론트엔드 페이지 라우트 (개발용 폴백)
 app.use('/', frontendRoutes);
@@ -120,7 +120,7 @@ app.use('/', frontendRoutes);
 app.get('*', (req, res) => {
   // API 요청이 아닌 경우에만 React 앱 제공
   if (!req.path.startsWith('/api/') && !req.path.startsWith('/health')) {
-    const indexPath = path.join(__dirname, '../public', 'index.html');
+    const indexPath = path.join(__dirname, '../../public', 'index.html');
     res.sendFile(indexPath, (err) => {
       if (err) {
         console.log('React app index.html not found, using fallback');
