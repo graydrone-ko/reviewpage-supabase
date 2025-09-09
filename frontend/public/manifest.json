@@ -1,0 +1,44 @@
+{
+  "short_name": "ReviewPage",
+  "name": "ReviewPage - 상세페이지 설문조사 플랫폼",
+  "description": "설문조사로 돈벌기! 제품 피드백 설문으로 현금 리워드를 받으세요.",
+  "lang": "ko",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#3B82F6",
+  "background_color": "#ffffff",
+  "categories": ["productivity", "business", "finance"],
+  "screenshots": [
+    {
+      "src": "screenshot-wide.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "wide"
+    },
+    {
+      "src": "screenshot-narrow.jpg", 
+      "sizes": "750x1334",
+      "type": "image/jpeg",
+      "form_factor": "narrow"
+    }
+  ]
+}

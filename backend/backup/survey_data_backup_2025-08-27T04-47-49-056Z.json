@@ -1,0 +1,403 @@
+{
+  "metadata": {
+    "backupDate": "2025-08-27T04:47:49.056Z",
+    "version": "1.0.0",
+    "description": "설문 템플릿 개선 전 전체 데이터 백업",
+    "counts": {
+      "templates": 2,
+      "surveys": 0,
+      "responses": 0,
+      "rewards": 0
+    }
+  },
+  "templates": [
+    {
+      "id": "cmeth791800008zzh8dcz1yvu",
+      "name": "상품 상세페이지 기본 설문",
+      "description": "상품 상세페이지 평가를 위한 5단계 기본 설문 템플릿",
+      "isDefault": true,
+      "createdAt": "2025-08-27T04:29:33.693Z",
+      "updatedAt": "2025-08-27T04:29:33.693Z",
+      "steps": [
+        {
+          "id": "cmeth791900018zzh4ourrimb",
+          "templateId": "cmeth791800008zzh8dcz1yvu",
+          "stepNumber": 1,
+          "title": "상품 정보 평가",
+          "description": "상품 정보에 대한 기본적인 평가",
+          "createdAt": "2025-08-27T04:29:33.693Z",
+          "updatedAt": "2025-08-27T04:29:33.693Z",
+          "questions": [
+            {
+              "id": "cmeth791900028zzh1ysjxgj6",
+              "stepId": "cmeth791900018zzh4ourrimb",
+              "questionNumber": 1,
+              "text": "상품 정보의 명확성은 어떠셨나요?",
+              "type": "SCORE",
+              "required": true,
+              "createdAt": "2025-08-27T04:29:33.693Z",
+              "updatedAt": "2025-08-27T04:29:33.693Z",
+              "options": [
+                {
+                  "id": "cmeth791900038zzhtf5dr2cg",
+                  "questionId": "cmeth791900028zzh1ysjxgj6",
+                  "optionNumber": 1,
+                  "text": "1점 (매우 불만족)",
+                  "createdAt": "2025-08-27T04:29:33.693Z",
+                  "updatedAt": "2025-08-27T04:29:33.693Z"
+                },
+                {
+                  "id": "cmeth791900048zzh2vtz5ea3",
+                  "questionId": "cmeth791900028zzh1ysjxgj6",
+                  "optionNumber": 2,
+                  "text": "2점 (불만족)",
+                  "createdAt": "2025-08-27T04:29:33.693Z",
+                  "updatedAt": "2025-08-27T04:29:33.693Z"
+                },
+                {
+                  "id": "cmeth791900058zzhqplhx6xe",
+                  "questionId": "cmeth791900028zzh1ysjxgj6",
+                  "optionNumber": 3,
+                  "text": "3점 (보통)",
+                  "createdAt": "2025-08-27T04:29:33.693Z",
+                  "updatedAt": "2025-08-27T04:29:33.693Z"
+                },
+                {
+                  "id": "cmeth791900068zzhao8a7eb3",
+                  "questionId": "cmeth791900028zzh1ysjxgj6",
+                  "optionNumber": 4,
+                  "text": "4점 (만족)",
+                  "createdAt": "2025-08-27T04:29:33.693Z",
+                  "updatedAt": "2025-08-27T04:29:33.693Z"
+                },
+                {
+                  "id": "cmeth791900078zzhs6az6new",
+                  "questionId": "cmeth791900028zzh1ysjxgj6",
+                  "optionNumber": 5,
+                  "text": "5점 (매우 만족)",
+                  "createdAt": "2025-08-27T04:29:33.693Z",
+                  "updatedAt": "2025-08-27T04:29:33.693Z"
+                }
+              ]
+            },
+            {
+              "id": "cmeth791900088zzh68eo6pyf",
+              "stepId": "cmeth791900018zzh4ourrimb",
+              "questionNumber": 2,
+              "text": "상품 이미지의 품질은 어떠셨나요?",
+              "type": "SCORE",
+              "required": true,
+              "createdAt": "2025-08-27T04:29:33.693Z",
+              "updatedAt": "2025-08-27T04:29:33.693Z",
+              "options": [
+                {
+                  "id": "cmeth791900098zzht1mgv4fn",
+                  "questionId": "cmeth791900088zzh68eo6pyf",
+                  "optionNumber": 1,
+                  "text": "1점 (매우 불만족)",
+                  "createdAt": "2025-08-27T04:29:33.693Z",
+                  "updatedAt": "2025-08-27T04:29:33.693Z"
+                },
+                {
+                  "id": "cmeth7919000a8zzhrf9yjpwj",
+                  "questionId": "cmeth791900088zzh68eo6pyf",
+                  "optionNumber": 2,
+                  "text": "2점 (불만족)",
+                  "createdAt": "2025-08-27T04:29:33.693Z",
+                  "updatedAt": "2025-08-27T04:29:33.693Z"
+                },
+                {
+                  "id": "cmeth7919000b8zzha5tvv8tv",
+                  "questionId": "cmeth791900088zzh68eo6pyf",
+                  "optionNumber": 3,
+                  "text": "3점 (보통)",
+                  "createdAt": "2025-08-27T04:29:33.693Z",
+                  "updatedAt": "2025-08-27T04:29:33.693Z"
+                },
+                {
+                  "id": "cmeth7919000c8zzhuakyslca",
+                  "questionId": "cmeth791900088zzh68eo6pyf",
+                  "optionNumber": 4,
+                  "text": "4점 (만족)",
+                  "createdAt": "2025-08-27T04:29:33.693Z",
+                  "updatedAt": "2025-08-27T04:29:33.693Z"
+                },
+                {
+                  "id": "cmeth7919000d8zzhtn8u8nvu",
+                  "questionId": "cmeth791900088zzh68eo6pyf",
+                  "optionNumber": 5,
+                  "text": "5점 (매우 만족)",
+                  "createdAt": "2025-08-27T04:29:33.693Z",
+                  "updatedAt": "2025-08-27T04:29:33.693Z"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cmeth7919000e8zzhsvx5f7mw",
+          "templateId": "cmeth791800008zzh8dcz1yvu",
+          "stepNumber": 2,
+          "title": "구매 의사 결정",
+          "description": "구매 결정에 영향을 준 요소 분석",
+          "createdAt": "2025-08-27T04:29:33.693Z",
+          "updatedAt": "2025-08-27T04:29:33.693Z",
+          "questions": [
+            {
+              "id": "cmeth7919000f8zzh2o3ip9vk",
+              "stepId": "cmeth7919000e8zzhsvx5f7mw",
+              "questionNumber": 1,
+              "text": "구매 결정에 가장 도움이 된 요소는 무엇인가요?",
+              "type": "MULTIPLE_CHOICE",
+              "required": true,
+              "createdAt": "2025-08-27T04:29:33.693Z",
+              "updatedAt": "2025-08-27T04:29:33.693Z",
+              "options": [
+                {
+                  "id": "cmeth7919000g8zzh8gt2753d",
+                  "questionId": "cmeth7919000f8zzh2o3ip9vk",
+                  "optionNumber": 1,
+                  "text": "상품 설명",
+                  "createdAt": "2025-08-27T04:29:33.693Z",
+                  "updatedAt": "2025-08-27T04:29:33.693Z"
+                },
+                {
+                  "id": "cmeth7919000h8zzhujcsag43",
+                  "questionId": "cmeth7919000f8zzh2o3ip9vk",
+                  "optionNumber": 2,
+                  "text": "상품 이미지",
+                  "createdAt": "2025-08-27T04:29:33.693Z",
+                  "updatedAt": "2025-08-27T04:29:33.693Z"
+                },
+                {
+                  "id": "cmeth7919000i8zzh0elqsyl5",
+                  "questionId": "cmeth7919000f8zzh2o3ip9vk",
+                  "optionNumber": 3,
+                  "text": "가격 정보",
+                  "createdAt": "2025-08-27T04:29:33.693Z",
+                  "updatedAt": "2025-08-27T04:29:33.693Z"
+                },
+                {
+                  "id": "cmeth7919000j8zzhlvhmvrym",
+                  "questionId": "cmeth7919000f8zzh2o3ip9vk",
+                  "optionNumber": 4,
+                  "text": "고객 리뷰",
+                  "createdAt": "2025-08-27T04:29:33.693Z",
+                  "updatedAt": "2025-08-27T04:29:33.693Z"
+                },
+                {
+                  "id": "cmeth7919000k8zzhk24ts2x9",
+                  "questionId": "cmeth7919000f8zzh2o3ip9vk",
+                  "optionNumber": 5,
+                  "text": "기타",
+                  "createdAt": "2025-08-27T04:29:33.693Z",
+                  "updatedAt": "2025-08-27T04:29:33.693Z"
+                }
+              ]
+            },
+            {
+              "id": "cmeth7919000l8zzhw6a9pqvf",
+              "stepId": "cmeth7919000e8zzhsvx5f7mw",
+              "questionNumber": 2,
+              "text": "개선이 필요한 부분이 있다면 자유롭게 의견을 남겨주세요.",
+              "type": "TEXT",
+              "required": false,
+              "createdAt": "2025-08-27T04:29:33.693Z",
+              "updatedAt": "2025-08-27T04:29:33.693Z",
+              "options": []
+            }
+          ]
+        },
+        {
+          "id": "cmeth7919000m8zzhyywlkwuz",
+          "templateId": "cmeth791800008zzh8dcz1yvu",
+          "stepNumber": 3,
+          "title": "전반적인 만족도",
+          "description": "전체적인 상품 페이지에 대한 평가",
+          "createdAt": "2025-08-27T04:29:33.693Z",
+          "updatedAt": "2025-08-27T04:29:33.693Z",
+          "questions": [
+            {
+              "id": "cmeth7919000n8zzhax2el0va",
+              "stepId": "cmeth7919000m8zzhyywlkwuz",
+              "questionNumber": 1,
+              "text": "전반적인 상품 페이지 만족도는 어떠신가요?",
+              "type": "SCORE",
+              "required": true,
+              "createdAt": "2025-08-27T04:29:33.693Z",
+              "updatedAt": "2025-08-27T04:29:33.693Z",
+              "options": [
+                {
+                  "id": "cmeth7919000o8zzhwcqwusk5",
+                  "questionId": "cmeth7919000n8zzhax2el0va",
+                  "optionNumber": 1,
+                  "text": "1점 (매우 불만족)",
+                  "createdAt": "2025-08-27T04:29:33.693Z",
+                  "updatedAt": "2025-08-27T04:29:33.693Z"
+                },
+                {
+                  "id": "cmeth7919000p8zzh4lpo1smn",
+                  "questionId": "cmeth7919000n8zzhax2el0va",
+                  "optionNumber": 2,
+                  "text": "2점 (불만족)",
+                  "createdAt": "2025-08-27T04:29:33.693Z",
+                  "updatedAt": "2025-08-27T04:29:33.693Z"
+                },
+                {
+                  "id": "cmeth7919000q8zzh7ne7pe40",
+                  "questionId": "cmeth7919000n8zzhax2el0va",
+                  "optionNumber": 3,
+                  "text": "3점 (보통)",
+                  "createdAt": "2025-08-27T04:29:33.693Z",
+                  "updatedAt": "2025-08-27T04:29:33.693Z"
+                },
+                {
+                  "id": "cmeth7919000r8zzhino7mbu6",
+                  "questionId": "cmeth7919000n8zzhax2el0va",
+                  "optionNumber": 4,
+                  "text": "4점 (만족)",
+                  "createdAt": "2025-08-27T04:29:33.693Z",
+                  "updatedAt": "2025-08-27T04:29:33.693Z"
+                },
+                {
+                  "id": "cmeth7919000s8zzhfj62ginh",
+                  "questionId": "cmeth7919000n8zzhax2el0va",
+                  "optionNumber": 5,
+                  "text": "5점 (매우 만족)",
+                  "createdAt": "2025-08-27T04:29:33.693Z",
+                  "updatedAt": "2025-08-27T04:29:33.693Z"
+                }
+              ]
+            },
+            {
+              "id": "cmeth7919000t8zzhovgfoc7m",
+              "stepId": "cmeth7919000m8zzhyywlkwuz",
+              "questionNumber": 2,
+              "text": "이 상품을 다른 사람에게 추천하시겠습니까?",
+              "type": "YES_NO",
+              "required": true,
+              "createdAt": "2025-08-27T04:29:33.693Z",
+              "updatedAt": "2025-08-27T04:29:33.693Z",
+              "options": [
+                {
+                  "id": "cmeth7919000u8zzhabun28d4",
+                  "questionId": "cmeth7919000t8zzhovgfoc7m",
+                  "optionNumber": 1,
+                  "text": "예",
+                  "createdAt": "2025-08-27T04:29:33.693Z",
+                  "updatedAt": "2025-08-27T04:29:33.693Z"
+                },
+                {
+                  "id": "cmeth7919000v8zzh96ljhtr4",
+                  "questionId": "cmeth7919000t8zzhovgfoc7m",
+                  "optionNumber": 2,
+                  "text": "아니오",
+                  "createdAt": "2025-08-27T04:29:33.693Z",
+                  "updatedAt": "2025-08-27T04:29:33.693Z"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cmeth791t000w8zzhvjq4va8t",
+      "name": "빠른 상품 평가 설문",
+      "description": "2단계로 구성된 간단한 상품 평가 설문",
+      "isDefault": false,
+      "createdAt": "2025-08-27T04:29:33.713Z",
+      "updatedAt": "2025-08-27T04:29:33.713Z",
+      "steps": [
+        {
+          "id": "cmeth791t000x8zzh3fjt88vb",
+          "templateId": "cmeth791t000w8zzhvjq4va8t",
+          "stepNumber": 1,
+          "title": "기본 평가",
+          "description": "상품에 대한 기본적인 평가",
+          "createdAt": "2025-08-27T04:29:33.713Z",
+          "updatedAt": "2025-08-27T04:29:33.713Z",
+          "questions": [
+            {
+              "id": "cmeth791t000y8zzhuyqulhou",
+              "stepId": "cmeth791t000x8zzh3fjt88vb",
+              "questionNumber": 1,
+              "text": "이 상품에 대한 전반적인 만족도는?",
+              "type": "SCORE",
+              "required": true,
+              "createdAt": "2025-08-27T04:29:33.713Z",
+              "updatedAt": "2025-08-27T04:29:33.713Z",
+              "options": [
+                {
+                  "id": "cmeth791t000z8zzh3qc7h6bs",
+                  "questionId": "cmeth791t000y8zzhuyqulhou",
+                  "optionNumber": 1,
+                  "text": "1점",
+                  "createdAt": "2025-08-27T04:29:33.713Z",
+                  "updatedAt": "2025-08-27T04:29:33.713Z"
+                },
+                {
+                  "id": "cmeth791t00108zzh4ncgl2rk",
+                  "questionId": "cmeth791t000y8zzhuyqulhou",
+                  "optionNumber": 2,
+                  "text": "2점",
+                  "createdAt": "2025-08-27T04:29:33.713Z",
+                  "updatedAt": "2025-08-27T04:29:33.713Z"
+                },
+                {
+                  "id": "cmeth791t00118zzhfmszllx5",
+                  "questionId": "cmeth791t000y8zzhuyqulhou",
+                  "optionNumber": 3,
+                  "text": "3점",
+                  "createdAt": "2025-08-27T04:29:33.713Z",
+                  "updatedAt": "2025-08-27T04:29:33.713Z"
+                },
+                {
+                  "id": "cmeth791t00128zzh9zvr1sa0",
+                  "questionId": "cmeth791t000y8zzhuyqulhou",
+                  "optionNumber": 4,
+                  "text": "4점",
+                  "createdAt": "2025-08-27T04:29:33.713Z",
+                  "updatedAt": "2025-08-27T04:29:33.713Z"
+                },
+                {
+                  "id": "cmeth791t00138zzhyff7e7gb",
+                  "questionId": "cmeth791t000y8zzhuyqulhou",
+                  "optionNumber": 5,
+                  "text": "5점",
+                  "createdAt": "2025-08-27T04:29:33.713Z",
+                  "updatedAt": "2025-08-27T04:29:33.713Z"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cmeth791t00148zzh6435r6ax",
+          "templateId": "cmeth791t000w8zzhvjq4va8t",
+          "stepNumber": 2,
+          "title": "의견 수집",
+          "description": "추가 의견 및 개선사항",
+          "createdAt": "2025-08-27T04:29:33.713Z",
+          "updatedAt": "2025-08-27T04:29:33.713Z",
+          "questions": [
+            {
+              "id": "cmeth791t00158zzhp2d4ua9m",
+              "stepId": "cmeth791t00148zzh6435r6ax",
+              "questionNumber": 1,
+              "text": "추가 의견이나 개선사항이 있으시면 자유롭게 작성해 주세요.",
+              "type": "TEXT",
+              "required": false,
+              "createdAt": "2025-08-27T04:29:33.713Z",
+              "updatedAt": "2025-08-27T04:29:33.713Z",
+              "options": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "surveys": [],
+  "responses": [],
+  "rewards": []
+}
