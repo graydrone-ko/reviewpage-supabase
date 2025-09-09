@@ -64,11 +64,11 @@ model SurveyQuestion {
   text           String
   type           QuestionType
   required       Boolean          @default(true)
-  minLength      Int? // 주관식 질문 최소 글자 수
-  maxLength      Int? // 주관식 질문 최대 글자 수
-  placeholder    String? // 주관식 질문 placeholder
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
+  maxLength      Int?
+  minLength      Int?
+  placeholder    String?
   options        QuestionOption[]
   step           SurveyStep       @relation(fields: [stepId], references: [id], onDelete: Cascade)
 
@@ -92,7 +92,6 @@ model QuestionOption {
 model Survey {
   id                      String                     @id @default(cuid())
   title                   String
-  storeName               String                     @default("") // 판매자 스토어 이름
   description             String?
   url                     String
   sellerId                String
@@ -108,18 +107,19 @@ model Survey {
   createdAt               DateTime                   @default(now())
   updatedAt               DateTime                   @updatedAt
   endDate                 DateTime
-  approvedAt              DateTime? // 승인 시간
-  completedAt             DateTime? // 완료 시간
-  suspendedAt             DateTime? // 일시중단 시간
-  rejectionReason         String? // 거부 사유
-  extensionCount          Int                        @default(0) // 연장 횟수
-  extensionHistory        Json? // 연장 이력
-  cancellationStatus      CancellationStatus?
+  approvedAt              DateTime?
   cancellationRequestedAt DateTime?
+  cancellationStatus      CancellationStatus?
+  completedAt             DateTime?
+  extensionCount          Int                        @default(0)
+  extensionHistory        Json?
+  rejectionReason         String?
+  storeName               String                     @default("")
+  suspendedAt             DateTime?
+  cancellationRequest     SurveyCancellationRequest?
   responses               SurveyResponse[]
   seller                  User                       @relation(fields: [sellerId], references: [id])
   template                SurveyTemplate             @relation(fields: [templateId], references: [id])
-  cancellationRequest     SurveyCancellationRequest?
 
   @@map("surveys")
 }
@@ -130,11 +130,11 @@ model SurveyResponse {
   consumerId String
   responses  Json
   createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now()) @updatedAt // 수정 추적용
+  updatedAt  DateTime @default(now()) @updatedAt
   consumer   User     @relation(fields: [consumerId], references: [id])
   survey     Survey   @relation(fields: [surveyId], references: [id])
 
-  @@unique([surveyId, consumerId]) // 중복 참여 방지
+  @@unique([surveyId, consumerId])
   @@map("survey_responses")
 }
 
@@ -149,6 +149,34 @@ model Reward {
   user      User         @relation(fields: [userId], references: [id])
 
   @@map("rewards")
+}
+
+model SurveyCancellationRequest {
+  id           String             @id @default(cuid())
+  surveyId     String             @unique
+  reason       String
+  refundAmount Float
+  status       CancellationStatus @default(PENDING)
+  requestedAt  DateTime           @default(now())
+  processedAt  DateTime?
+  processedBy  String?
+  survey       Survey             @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+
+  @@map("survey_cancellation_requests")
+}
+
+model WithdrawalRequest {
+  id          String           @id @default(cuid())
+  userId      String
+  amount      Float
+  status      WithdrawalStatus @default(PENDING)
+  requestedAt DateTime         @default(now())
+  processedAt DateTime?
+  processedBy String?
+  note        String?
+  user        User             @relation(fields: [userId], references: [id])
+
+  @@map("withdrawal_requests")
 }
 
 enum Role {
@@ -172,9 +200,9 @@ enum SurveyStatus {
 }
 
 enum CancellationStatus {
-  PENDING // 요청됨
-  APPROVED // 승인됨 
-  REJECTED // 거절됨
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum RewardType {
@@ -193,34 +221,6 @@ enum QuestionType {
   TEXT
   SCORE
   YES_NO
-}
-
-model SurveyCancellationRequest {
-  id           String             @id @default(cuid())
-  surveyId     String             @unique
-  reason       String // 중단 사유
-  refundAmount Float // 환불 예정액
-  status       CancellationStatus @default(PENDING)
-  requestedAt  DateTime           @default(now())
-  processedAt  DateTime?
-  processedBy  String? // 관리자 ID
-  survey       Survey             @relation(fields: [surveyId], references: [id], onDelete: Cascade)
-
-  @@map("survey_cancellation_requests")
-}
-
-model WithdrawalRequest {
-  id          String           @id @default(cuid())
-  userId      String
-  amount      Float
-  status      WithdrawalStatus @default(PENDING)
-  requestedAt DateTime         @default(now())
-  processedAt DateTime?
-  processedBy String? // 관리자 ID
-  note        String? // 관리자 메모
-  user        User             @relation(fields: [userId], references: [id])
-
-  @@map("withdrawal_requests")
 }
 
 enum WithdrawalStatus {

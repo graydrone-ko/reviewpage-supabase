@@ -59,7 +59,12 @@ app.use(express_1.default.json({ limit: '10mb' }));
 app.use(express_1.default.urlencoded({ extended: true }));
 // Routes
 app.get('/health', (req, res) => {
-    res.json({ status: 'OK', message: 'ReviewPage API is running' });
+    res.json({
+        status: 'OK',
+        message: 'ReviewPage Express Backend API is running',
+        timestamp: new Date().toISOString(),
+        version: '2.0.0'
+    });
 });
 app.use('/api/auth', auth_1.default);
 app.use('/api/surveys', surveys_1.default);
@@ -68,10 +73,26 @@ app.use('/api/rewards', rewards_1.default);
 app.use('/api/admin', admin_1.default);
 // SEO 라우트 (API prefix 없이)
 app.use('/', seo_1.default);
-// 정적 파일 서빙 
+// 정적 파일 서빙 (React 빌드 파일)
 app.use(express_1.default.static(path_1.default.join(__dirname, '../public')));
-// 프론트엔드 페이지 라우트
+// 프론트엔드 페이지 라우트 (개발용 폴백)
 app.use('/', frontend_1.default);
+// React Router 지원 - 모든 비-API 요청을 index.html로 리다이렉트
+app.get('*', (req, res) => {
+    // API 요청이 아닌 경우에만 React 앱 제공
+    if (!req.path.startsWith('/api/') && !req.path.startsWith('/health')) {
+        const indexPath = path_1.default.join(__dirname, '../public', 'index.html');
+        res.sendFile(indexPath, (err) => {
+            if (err) {
+                console.log('React app index.html not found, using fallback');
+                res.status(404).json({ error: 'Page not found' });
+            }
+        });
+    }
+    else {
+        res.status(404).json({ error: 'API endpoint not found' });
+    }
+});
 // Error handling middleware
 app.use((error, req, res, next) => {
     console.error(error);

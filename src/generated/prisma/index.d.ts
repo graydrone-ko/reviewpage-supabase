@@ -450,8 +450,8 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 6.14.0
-   * Query Engine version: 717184b7b35ea05dfa71a3236b7af656013e1e49
+   * Prisma Client JS version: 6.15.0
+   * Query Engine version: 85179d7826409ee107a6ba334b5e305ae3fba9fb
    */
   export type PrismaVersion = {
     client: string
@@ -5494,14 +5494,14 @@ export namespace Prisma {
 
   export type SurveyQuestionAvgAggregateOutputType = {
     questionNumber: number | null
-    minLength: number | null
     maxLength: number | null
+    minLength: number | null
   }
 
   export type SurveyQuestionSumAggregateOutputType = {
     questionNumber: number | null
-    minLength: number | null
     maxLength: number | null
+    minLength: number | null
   }
 
   export type SurveyQuestionMinAggregateOutputType = {
@@ -5511,11 +5511,11 @@ export namespace Prisma {
     text: string | null
     type: $Enums.QuestionType | null
     required: boolean | null
-    minLength: number | null
-    maxLength: number | null
-    placeholder: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    maxLength: number | null
+    minLength: number | null
+    placeholder: string | null
   }
 
   export type SurveyQuestionMaxAggregateOutputType = {
@@ -5525,11 +5525,11 @@ export namespace Prisma {
     text: string | null
     type: $Enums.QuestionType | null
     required: boolean | null
-    minLength: number | null
-    maxLength: number | null
-    placeholder: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    maxLength: number | null
+    minLength: number | null
+    placeholder: string | null
   }
 
   export type SurveyQuestionCountAggregateOutputType = {
@@ -5539,25 +5539,25 @@ export namespace Prisma {
     text: number
     type: number
     required: number
-    minLength: number
-    maxLength: number
-    placeholder: number
     createdAt: number
     updatedAt: number
+    maxLength: number
+    minLength: number
+    placeholder: number
     _all: number
   }
 
 
   export type SurveyQuestionAvgAggregateInputType = {
     questionNumber?: true
-    minLength?: true
     maxLength?: true
+    minLength?: true
   }
 
   export type SurveyQuestionSumAggregateInputType = {
     questionNumber?: true
-    minLength?: true
     maxLength?: true
+    minLength?: true
   }
 
   export type SurveyQuestionMinAggregateInputType = {
@@ -5567,11 +5567,11 @@ export namespace Prisma {
     text?: true
     type?: true
     required?: true
-    minLength?: true
-    maxLength?: true
-    placeholder?: true
     createdAt?: true
     updatedAt?: true
+    maxLength?: true
+    minLength?: true
+    placeholder?: true
   }
 
   export type SurveyQuestionMaxAggregateInputType = {
@@ -5581,11 +5581,11 @@ export namespace Prisma {
     text?: true
     type?: true
     required?: true
-    minLength?: true
-    maxLength?: true
-    placeholder?: true
     createdAt?: true
     updatedAt?: true
+    maxLength?: true
+    minLength?: true
+    placeholder?: true
   }
 
   export type SurveyQuestionCountAggregateInputType = {
@@ -5595,11 +5595,11 @@ export namespace Prisma {
     text?: true
     type?: true
     required?: true
-    minLength?: true
-    maxLength?: true
-    placeholder?: true
     createdAt?: true
     updatedAt?: true
+    maxLength?: true
+    minLength?: true
+    placeholder?: true
     _all?: true
   }
 
@@ -5696,11 +5696,11 @@ export namespace Prisma {
     text: string
     type: $Enums.QuestionType
     required: boolean
-    minLength: number | null
-    maxLength: number | null
-    placeholder: string | null
     createdAt: Date
     updatedAt: Date
+    maxLength: number | null
+    minLength: number | null
+    placeholder: string | null
     _count: SurveyQuestionCountAggregateOutputType | null
     _avg: SurveyQuestionAvgAggregateOutputType | null
     _sum: SurveyQuestionSumAggregateOutputType | null
@@ -5729,11 +5729,11 @@ export namespace Prisma {
     text?: boolean
     type?: boolean
     required?: boolean
-    minLength?: boolean
-    maxLength?: boolean
-    placeholder?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    maxLength?: boolean
+    minLength?: boolean
+    placeholder?: boolean
     options?: boolean | SurveyQuestion$optionsArgs<ExtArgs>
     step?: boolean | SurveyStepDefaultArgs<ExtArgs>
     _count?: boolean | SurveyQuestionCountOutputTypeDefaultArgs<ExtArgs>
@@ -5746,11 +5746,11 @@ export namespace Prisma {
     text?: boolean
     type?: boolean
     required?: boolean
-    minLength?: boolean
-    maxLength?: boolean
-    placeholder?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    maxLength?: boolean
+    minLength?: boolean
+    placeholder?: boolean
     step?: boolean | SurveyStepDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["surveyQuestion"]>
 
@@ -5761,11 +5761,11 @@ export namespace Prisma {
     text?: boolean
     type?: boolean
     required?: boolean
-    minLength?: boolean
-    maxLength?: boolean
-    placeholder?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    maxLength?: boolean
+    minLength?: boolean
+    placeholder?: boolean
     step?: boolean | SurveyStepDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["surveyQuestion"]>
 
@@ -5776,14 +5776,14 @@ export namespace Prisma {
     text?: boolean
     type?: boolean
     required?: boolean
-    minLength?: boolean
-    maxLength?: boolean
-    placeholder?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    maxLength?: boolean
+    minLength?: boolean
+    placeholder?: boolean
   }
 
-  export type SurveyQuestionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "stepId" | "questionNumber" | "text" | "type" | "required" | "minLength" | "maxLength" | "placeholder" | "createdAt" | "updatedAt", ExtArgs["result"]["surveyQuestion"]>
+  export type SurveyQuestionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "stepId" | "questionNumber" | "text" | "type" | "required" | "createdAt" | "updatedAt" | "maxLength" | "minLength" | "placeholder", ExtArgs["result"]["surveyQuestion"]>
   export type SurveyQuestionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     options?: boolean | SurveyQuestion$optionsArgs<ExtArgs>
     step?: boolean | SurveyStepDefaultArgs<ExtArgs>
@@ -5809,11 +5809,11 @@ export namespace Prisma {
       text: string
       type: $Enums.QuestionType
       required: boolean
-      minLength: number | null
-      maxLength: number | null
-      placeholder: string | null
       createdAt: Date
       updatedAt: Date
+      maxLength: number | null
+      minLength: number | null
+      placeholder: string | null
     }, ExtArgs["result"]["surveyQuestion"]>
     composites: {}
   }
@@ -6245,11 +6245,11 @@ export namespace Prisma {
     readonly text: FieldRef<"SurveyQuestion", 'String'>
     readonly type: FieldRef<"SurveyQuestion", 'QuestionType'>
     readonly required: FieldRef<"SurveyQuestion", 'Boolean'>
-    readonly minLength: FieldRef<"SurveyQuestion", 'Int'>
-    readonly maxLength: FieldRef<"SurveyQuestion", 'Int'>
-    readonly placeholder: FieldRef<"SurveyQuestion", 'String'>
     readonly createdAt: FieldRef<"SurveyQuestion", 'DateTime'>
     readonly updatedAt: FieldRef<"SurveyQuestion", 'DateTime'>
+    readonly maxLength: FieldRef<"SurveyQuestion", 'Int'>
+    readonly minLength: FieldRef<"SurveyQuestion", 'Int'>
+    readonly placeholder: FieldRef<"SurveyQuestion", 'String'>
   }
     
 
@@ -7826,7 +7826,6 @@ export namespace Prisma {
   export type SurveyMinAggregateOutputType = {
     id: string | null
     title: string | null
-    storeName: string | null
     description: string | null
     url: string | null
     sellerId: string | null
@@ -7842,18 +7841,18 @@ export namespace Prisma {
     updatedAt: Date | null
     endDate: Date | null
     approvedAt: Date | null
-    completedAt: Date | null
-    suspendedAt: Date | null
-    rejectionReason: string | null
-    extensionCount: number | null
-    cancellationStatus: $Enums.CancellationStatus | null
     cancellationRequestedAt: Date | null
+    cancellationStatus: $Enums.CancellationStatus | null
+    completedAt: Date | null
+    extensionCount: number | null
+    rejectionReason: string | null
+    storeName: string | null
+    suspendedAt: Date | null
   }
 
   export type SurveyMaxAggregateOutputType = {
     id: string | null
     title: string | null
-    storeName: string | null
     description: string | null
     url: string | null
     sellerId: string | null
@@ -7869,18 +7868,18 @@ export namespace Prisma {
     updatedAt: Date | null
     endDate: Date | null
     approvedAt: Date | null
-    completedAt: Date | null
-    suspendedAt: Date | null
-    rejectionReason: string | null
-    extensionCount: number | null
-    cancellationStatus: $Enums.CancellationStatus | null
     cancellationRequestedAt: Date | null
+    cancellationStatus: $Enums.CancellationStatus | null
+    completedAt: Date | null
+    extensionCount: number | null
+    rejectionReason: string | null
+    storeName: string | null
+    suspendedAt: Date | null
   }
 
   export type SurveyCountAggregateOutputType = {
     id: number
     title: number
-    storeName: number
     description: number
     url: number
     sellerId: number
@@ -7897,13 +7896,14 @@ export namespace Prisma {
     updatedAt: number
     endDate: number
     approvedAt: number
+    cancellationRequestedAt: number
+    cancellationStatus: number
     completedAt: number
-    suspendedAt: number
-    rejectionReason: number
     extensionCount: number
     extensionHistory: number
-    cancellationStatus: number
-    cancellationRequestedAt: number
+    rejectionReason: number
+    storeName: number
+    suspendedAt: number
     _all: number
   }
 
@@ -7929,7 +7929,6 @@ export namespace Prisma {
   export type SurveyMinAggregateInputType = {
     id?: true
     title?: true
-    storeName?: true
     description?: true
     url?: true
     sellerId?: true
@@ -7945,18 +7944,18 @@ export namespace Prisma {
     updatedAt?: true
     endDate?: true
     approvedAt?: true
-    completedAt?: true
-    suspendedAt?: true
-    rejectionReason?: true
-    extensionCount?: true
-    cancellationStatus?: true
     cancellationRequestedAt?: true
+    cancellationStatus?: true
+    completedAt?: true
+    extensionCount?: true
+    rejectionReason?: true
+    storeName?: true
+    suspendedAt?: true
   }
 
   export type SurveyMaxAggregateInputType = {
     id?: true
     title?: true
-    storeName?: true
     description?: true
     url?: true
     sellerId?: true
@@ -7972,18 +7971,18 @@ export namespace Prisma {
     updatedAt?: true
     endDate?: true
     approvedAt?: true
-    completedAt?: true
-    suspendedAt?: true
-    rejectionReason?: true
-    extensionCount?: true
-    cancellationStatus?: true
     cancellationRequestedAt?: true
+    cancellationStatus?: true
+    completedAt?: true
+    extensionCount?: true
+    rejectionReason?: true
+    storeName?: true
+    suspendedAt?: true
   }
 
   export type SurveyCountAggregateInputType = {
     id?: true
     title?: true
-    storeName?: true
     description?: true
     url?: true
     sellerId?: true
@@ -8000,13 +7999,14 @@ export namespace Prisma {
     updatedAt?: true
     endDate?: true
     approvedAt?: true
+    cancellationRequestedAt?: true
+    cancellationStatus?: true
     completedAt?: true
-    suspendedAt?: true
-    rejectionReason?: true
     extensionCount?: true
     extensionHistory?: true
-    cancellationStatus?: true
-    cancellationRequestedAt?: true
+    rejectionReason?: true
+    storeName?: true
+    suspendedAt?: true
     _all?: true
   }
 
@@ -8099,7 +8099,6 @@ export namespace Prisma {
   export type SurveyGroupByOutputType = {
     id: string
     title: string
-    storeName: string
     description: string | null
     url: string
     sellerId: string
@@ -8116,13 +8115,14 @@ export namespace Prisma {
     updatedAt: Date
     endDate: Date
     approvedAt: Date | null
+    cancellationRequestedAt: Date | null
+    cancellationStatus: $Enums.CancellationStatus | null
     completedAt: Date | null
-    suspendedAt: Date | null
-    rejectionReason: string | null
     extensionCount: number
     extensionHistory: JsonValue | null
-    cancellationStatus: $Enums.CancellationStatus | null
-    cancellationRequestedAt: Date | null
+    rejectionReason: string | null
+    storeName: string
+    suspendedAt: Date | null
     _count: SurveyCountAggregateOutputType | null
     _avg: SurveyAvgAggregateOutputType | null
     _sum: SurveySumAggregateOutputType | null
@@ -8147,7 +8147,6 @@ export namespace Prisma {
   export type SurveySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     title?: boolean
-    storeName?: boolean
     description?: boolean
     url?: boolean
     sellerId?: boolean
@@ -8164,24 +8163,24 @@ export namespace Prisma {
     updatedAt?: boolean
     endDate?: boolean
     approvedAt?: boolean
+    cancellationRequestedAt?: boolean
+    cancellationStatus?: boolean
     completedAt?: boolean
-    suspendedAt?: boolean
-    rejectionReason?: boolean
     extensionCount?: boolean
     extensionHistory?: boolean
-    cancellationStatus?: boolean
-    cancellationRequestedAt?: boolean
+    rejectionReason?: boolean
+    storeName?: boolean
+    suspendedAt?: boolean
+    cancellationRequest?: boolean | Survey$cancellationRequestArgs<ExtArgs>
     responses?: boolean | Survey$responsesArgs<ExtArgs>
     seller?: boolean | UserDefaultArgs<ExtArgs>
     template?: boolean | SurveyTemplateDefaultArgs<ExtArgs>
-    cancellationRequest?: boolean | Survey$cancellationRequestArgs<ExtArgs>
     _count?: boolean | SurveyCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["survey"]>
 
   export type SurveySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     title?: boolean
-    storeName?: boolean
     description?: boolean
     url?: boolean
     sellerId?: boolean
@@ -8198,13 +8197,14 @@ export namespace Prisma {
     updatedAt?: boolean
     endDate?: boolean
     approvedAt?: boolean
+    cancellationRequestedAt?: boolean
+    cancellationStatus?: boolean
     completedAt?: boolean
-    suspendedAt?: boolean
-    rejectionReason?: boolean
     extensionCount?: boolean
     extensionHistory?: boolean
-    cancellationStatus?: boolean
-    cancellationRequestedAt?: boolean
+    rejectionReason?: boolean
+    storeName?: boolean
+    suspendedAt?: boolean
     seller?: boolean | UserDefaultArgs<ExtArgs>
     template?: boolean | SurveyTemplateDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["survey"]>
@@ -8212,7 +8212,6 @@ export namespace Prisma {
   export type SurveySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     title?: boolean
-    storeName?: boolean
     description?: boolean
     url?: boolean
     sellerId?: boolean
@@ -8229,13 +8228,14 @@ export namespace Prisma {
     updatedAt?: boolean
     endDate?: boolean
     approvedAt?: boolean
+    cancellationRequestedAt?: boolean
+    cancellationStatus?: boolean
     completedAt?: boolean
-    suspendedAt?: boolean
-    rejectionReason?: boolean
     extensionCount?: boolean
     extensionHistory?: boolean
-    cancellationStatus?: boolean
-    cancellationRequestedAt?: boolean
+    rejectionReason?: boolean
+    storeName?: boolean
+    suspendedAt?: boolean
     seller?: boolean | UserDefaultArgs<ExtArgs>
     template?: boolean | SurveyTemplateDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["survey"]>
@@ -8243,7 +8243,6 @@ export namespace Prisma {
   export type SurveySelectScalar = {
     id?: boolean
     title?: boolean
-    storeName?: boolean
     description?: boolean
     url?: boolean
     sellerId?: boolean
@@ -8260,21 +8259,22 @@ export namespace Prisma {
     updatedAt?: boolean
     endDate?: boolean
     approvedAt?: boolean
+    cancellationRequestedAt?: boolean
+    cancellationStatus?: boolean
     completedAt?: boolean
-    suspendedAt?: boolean
-    rejectionReason?: boolean
     extensionCount?: boolean
     extensionHistory?: boolean
-    cancellationStatus?: boolean
-    cancellationRequestedAt?: boolean
+    rejectionReason?: boolean
+    storeName?: boolean
+    suspendedAt?: boolean
   }
 
-  export type SurveyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "storeName" | "description" | "url" | "sellerId" | "templateId" | "targetAgeMin" | "targetAgeMax" | "targetGender" | "reward" | "maxParticipants" | "totalBudget" | "status" | "customSteps" | "createdAt" | "updatedAt" | "endDate" | "approvedAt" | "completedAt" | "suspendedAt" | "rejectionReason" | "extensionCount" | "extensionHistory" | "cancellationStatus" | "cancellationRequestedAt", ExtArgs["result"]["survey"]>
+  export type SurveyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "url" | "sellerId" | "templateId" | "targetAgeMin" | "targetAgeMax" | "targetGender" | "reward" | "maxParticipants" | "totalBudget" | "status" | "customSteps" | "createdAt" | "updatedAt" | "endDate" | "approvedAt" | "cancellationRequestedAt" | "cancellationStatus" | "completedAt" | "extensionCount" | "extensionHistory" | "rejectionReason" | "storeName" | "suspendedAt", ExtArgs["result"]["survey"]>
   export type SurveyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    cancellationRequest?: boolean | Survey$cancellationRequestArgs<ExtArgs>
     responses?: boolean | Survey$responsesArgs<ExtArgs>
     seller?: boolean | UserDefaultArgs<ExtArgs>
     template?: boolean | SurveyTemplateDefaultArgs<ExtArgs>
-    cancellationRequest?: boolean | Survey$cancellationRequestArgs<ExtArgs>
     _count?: boolean | SurveyCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type SurveyIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8289,15 +8289,14 @@ export namespace Prisma {
   export type $SurveyPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Survey"
     objects: {
+      cancellationRequest: Prisma.$SurveyCancellationRequestPayload<ExtArgs> | null
       responses: Prisma.$SurveyResponsePayload<ExtArgs>[]
       seller: Prisma.$UserPayload<ExtArgs>
       template: Prisma.$SurveyTemplatePayload<ExtArgs>
-      cancellationRequest: Prisma.$SurveyCancellationRequestPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       title: string
-      storeName: string
       description: string | null
       url: string
       sellerId: string
@@ -8314,13 +8313,14 @@ export namespace Prisma {
       updatedAt: Date
       endDate: Date
       approvedAt: Date | null
+      cancellationRequestedAt: Date | null
+      cancellationStatus: $Enums.CancellationStatus | null
       completedAt: Date | null
-      suspendedAt: Date | null
-      rejectionReason: string | null
       extensionCount: number
       extensionHistory: Prisma.JsonValue | null
-      cancellationStatus: $Enums.CancellationStatus | null
-      cancellationRequestedAt: Date | null
+      rejectionReason: string | null
+      storeName: string
+      suspendedAt: Date | null
     }, ExtArgs["result"]["survey"]>
     composites: {}
   }
@@ -8715,10 +8715,10 @@ export namespace Prisma {
    */
   export interface Prisma__SurveyClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    cancellationRequest<T extends Survey$cancellationRequestArgs<ExtArgs> = {}>(args?: Subset<T, Survey$cancellationRequestArgs<ExtArgs>>): Prisma__SurveyCancellationRequestClient<$Result.GetResult<Prisma.$SurveyCancellationRequestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     responses<T extends Survey$responsesArgs<ExtArgs> = {}>(args?: Subset<T, Survey$responsesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SurveyResponsePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     seller<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     template<T extends SurveyTemplateDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SurveyTemplateDefaultArgs<ExtArgs>>): Prisma__SurveyTemplateClient<$Result.GetResult<Prisma.$SurveyTemplatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    cancellationRequest<T extends Survey$cancellationRequestArgs<ExtArgs> = {}>(args?: Subset<T, Survey$cancellationRequestArgs<ExtArgs>>): Prisma__SurveyCancellationRequestClient<$Result.GetResult<Prisma.$SurveyCancellationRequestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -8750,7 +8750,6 @@ export namespace Prisma {
   interface SurveyFieldRefs {
     readonly id: FieldRef<"Survey", 'String'>
     readonly title: FieldRef<"Survey", 'String'>
-    readonly storeName: FieldRef<"Survey", 'String'>
     readonly description: FieldRef<"Survey", 'String'>
     readonly url: FieldRef<"Survey", 'String'>
     readonly sellerId: FieldRef<"Survey", 'String'>
@@ -8767,13 +8766,14 @@ export namespace Prisma {
     readonly updatedAt: FieldRef<"Survey", 'DateTime'>
     readonly endDate: FieldRef<"Survey", 'DateTime'>
     readonly approvedAt: FieldRef<"Survey", 'DateTime'>
+    readonly cancellationRequestedAt: FieldRef<"Survey", 'DateTime'>
+    readonly cancellationStatus: FieldRef<"Survey", 'CancellationStatus'>
     readonly completedAt: FieldRef<"Survey", 'DateTime'>
-    readonly suspendedAt: FieldRef<"Survey", 'DateTime'>
-    readonly rejectionReason: FieldRef<"Survey", 'String'>
     readonly extensionCount: FieldRef<"Survey", 'Int'>
     readonly extensionHistory: FieldRef<"Survey", 'Json'>
-    readonly cancellationStatus: FieldRef<"Survey", 'CancellationStatus'>
-    readonly cancellationRequestedAt: FieldRef<"Survey", 'DateTime'>
+    readonly rejectionReason: FieldRef<"Survey", 'String'>
+    readonly storeName: FieldRef<"Survey", 'String'>
+    readonly suspendedAt: FieldRef<"Survey", 'DateTime'>
   }
     
 
@@ -9170,6 +9170,25 @@ export namespace Prisma {
   }
 
   /**
+   * Survey.cancellationRequest
+   */
+  export type Survey$cancellationRequestArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SurveyCancellationRequest
+     */
+    select?: SurveyCancellationRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SurveyCancellationRequest
+     */
+    omit?: SurveyCancellationRequestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SurveyCancellationRequestInclude<ExtArgs> | null
+    where?: SurveyCancellationRequestWhereInput
+  }
+
+  /**
    * Survey.responses
    */
   export type Survey$responsesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9191,25 +9210,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: SurveyResponseScalarFieldEnum | SurveyResponseScalarFieldEnum[]
-  }
-
-  /**
-   * Survey.cancellationRequest
-   */
-  export type Survey$cancellationRequestArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SurveyCancellationRequest
-     */
-    select?: SurveyCancellationRequestSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SurveyCancellationRequest
-     */
-    omit?: SurveyCancellationRequestOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SurveyCancellationRequestInclude<ExtArgs> | null
-    where?: SurveyCancellationRequestWhereInput
   }
 
   /**
@@ -13750,11 +13750,11 @@ export namespace Prisma {
     text: 'text',
     type: 'type',
     required: 'required',
-    minLength: 'minLength',
-    maxLength: 'maxLength',
-    placeholder: 'placeholder',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    maxLength: 'maxLength',
+    minLength: 'minLength',
+    placeholder: 'placeholder'
   };
 
   export type SurveyQuestionScalarFieldEnum = (typeof SurveyQuestionScalarFieldEnum)[keyof typeof SurveyQuestionScalarFieldEnum]
@@ -13775,7 +13775,6 @@ export namespace Prisma {
   export const SurveyScalarFieldEnum: {
     id: 'id',
     title: 'title',
-    storeName: 'storeName',
     description: 'description',
     url: 'url',
     sellerId: 'sellerId',
@@ -13792,13 +13791,14 @@ export namespace Prisma {
     updatedAt: 'updatedAt',
     endDate: 'endDate',
     approvedAt: 'approvedAt',
+    cancellationRequestedAt: 'cancellationRequestedAt',
+    cancellationStatus: 'cancellationStatus',
     completedAt: 'completedAt',
-    suspendedAt: 'suspendedAt',
-    rejectionReason: 'rejectionReason',
     extensionCount: 'extensionCount',
     extensionHistory: 'extensionHistory',
-    cancellationStatus: 'cancellationStatus',
-    cancellationRequestedAt: 'cancellationRequestedAt'
+    rejectionReason: 'rejectionReason',
+    storeName: 'storeName',
+    suspendedAt: 'suspendedAt'
   };
 
   export type SurveyScalarFieldEnum = (typeof SurveyScalarFieldEnum)[keyof typeof SurveyScalarFieldEnum]
@@ -14345,11 +14345,11 @@ export namespace Prisma {
     text?: StringFilter<"SurveyQuestion"> | string
     type?: EnumQuestionTypeFilter<"SurveyQuestion"> | $Enums.QuestionType
     required?: BoolFilter<"SurveyQuestion"> | boolean
-    minLength?: IntNullableFilter<"SurveyQuestion"> | number | null
-    maxLength?: IntNullableFilter<"SurveyQuestion"> | number | null
-    placeholder?: StringNullableFilter<"SurveyQuestion"> | string | null
     createdAt?: DateTimeFilter<"SurveyQuestion"> | Date | string
     updatedAt?: DateTimeFilter<"SurveyQuestion"> | Date | string
+    maxLength?: IntNullableFilter<"SurveyQuestion"> | number | null
+    minLength?: IntNullableFilter<"SurveyQuestion"> | number | null
+    placeholder?: StringNullableFilter<"SurveyQuestion"> | string | null
     options?: QuestionOptionListRelationFilter
     step?: XOR<SurveyStepScalarRelationFilter, SurveyStepWhereInput>
   }
@@ -14361,11 +14361,11 @@ export namespace Prisma {
     text?: SortOrder
     type?: SortOrder
     required?: SortOrder
-    minLength?: SortOrderInput | SortOrder
-    maxLength?: SortOrderInput | SortOrder
-    placeholder?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    maxLength?: SortOrderInput | SortOrder
+    minLength?: SortOrderInput | SortOrder
+    placeholder?: SortOrderInput | SortOrder
     options?: QuestionOptionOrderByRelationAggregateInput
     step?: SurveyStepOrderByWithRelationInput
   }
@@ -14381,11 +14381,11 @@ export namespace Prisma {
     text?: StringFilter<"SurveyQuestion"> | string
     type?: EnumQuestionTypeFilter<"SurveyQuestion"> | $Enums.QuestionType
     required?: BoolFilter<"SurveyQuestion"> | boolean
-    minLength?: IntNullableFilter<"SurveyQuestion"> | number | null
-    maxLength?: IntNullableFilter<"SurveyQuestion"> | number | null
-    placeholder?: StringNullableFilter<"SurveyQuestion"> | string | null
     createdAt?: DateTimeFilter<"SurveyQuestion"> | Date | string
     updatedAt?: DateTimeFilter<"SurveyQuestion"> | Date | string
+    maxLength?: IntNullableFilter<"SurveyQuestion"> | number | null
+    minLength?: IntNullableFilter<"SurveyQuestion"> | number | null
+    placeholder?: StringNullableFilter<"SurveyQuestion"> | string | null
     options?: QuestionOptionListRelationFilter
     step?: XOR<SurveyStepScalarRelationFilter, SurveyStepWhereInput>
   }, "id" | "stepId_questionNumber">
@@ -14397,11 +14397,11 @@ export namespace Prisma {
     text?: SortOrder
     type?: SortOrder
     required?: SortOrder
-    minLength?: SortOrderInput | SortOrder
-    maxLength?: SortOrderInput | SortOrder
-    placeholder?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    maxLength?: SortOrderInput | SortOrder
+    minLength?: SortOrderInput | SortOrder
+    placeholder?: SortOrderInput | SortOrder
     _count?: SurveyQuestionCountOrderByAggregateInput
     _avg?: SurveyQuestionAvgOrderByAggregateInput
     _max?: SurveyQuestionMaxOrderByAggregateInput
@@ -14419,11 +14419,11 @@ export namespace Prisma {
     text?: StringWithAggregatesFilter<"SurveyQuestion"> | string
     type?: EnumQuestionTypeWithAggregatesFilter<"SurveyQuestion"> | $Enums.QuestionType
     required?: BoolWithAggregatesFilter<"SurveyQuestion"> | boolean
-    minLength?: IntNullableWithAggregatesFilter<"SurveyQuestion"> | number | null
-    maxLength?: IntNullableWithAggregatesFilter<"SurveyQuestion"> | number | null
-    placeholder?: StringNullableWithAggregatesFilter<"SurveyQuestion"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"SurveyQuestion"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"SurveyQuestion"> | Date | string
+    maxLength?: IntNullableWithAggregatesFilter<"SurveyQuestion"> | number | null
+    minLength?: IntNullableWithAggregatesFilter<"SurveyQuestion"> | number | null
+    placeholder?: StringNullableWithAggregatesFilter<"SurveyQuestion"> | string | null
   }
 
   export type QuestionOptionWhereInput = {
@@ -14495,7 +14495,6 @@ export namespace Prisma {
     NOT?: SurveyWhereInput | SurveyWhereInput[]
     id?: StringFilter<"Survey"> | string
     title?: StringFilter<"Survey"> | string
-    storeName?: StringFilter<"Survey"> | string
     description?: StringNullableFilter<"Survey"> | string | null
     url?: StringFilter<"Survey"> | string
     sellerId?: StringFilter<"Survey"> | string
@@ -14512,23 +14511,23 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Survey"> | Date | string
     endDate?: DateTimeFilter<"Survey"> | Date | string
     approvedAt?: DateTimeNullableFilter<"Survey"> | Date | string | null
+    cancellationRequestedAt?: DateTimeNullableFilter<"Survey"> | Date | string | null
+    cancellationStatus?: EnumCancellationStatusNullableFilter<"Survey"> | $Enums.CancellationStatus | null
     completedAt?: DateTimeNullableFilter<"Survey"> | Date | string | null
-    suspendedAt?: DateTimeNullableFilter<"Survey"> | Date | string | null
-    rejectionReason?: StringNullableFilter<"Survey"> | string | null
     extensionCount?: IntFilter<"Survey"> | number
     extensionHistory?: JsonNullableFilter<"Survey">
-    cancellationStatus?: EnumCancellationStatusNullableFilter<"Survey"> | $Enums.CancellationStatus | null
-    cancellationRequestedAt?: DateTimeNullableFilter<"Survey"> | Date | string | null
+    rejectionReason?: StringNullableFilter<"Survey"> | string | null
+    storeName?: StringFilter<"Survey"> | string
+    suspendedAt?: DateTimeNullableFilter<"Survey"> | Date | string | null
+    cancellationRequest?: XOR<SurveyCancellationRequestNullableScalarRelationFilter, SurveyCancellationRequestWhereInput> | null
     responses?: SurveyResponseListRelationFilter
     seller?: XOR<UserScalarRelationFilter, UserWhereInput>
     template?: XOR<SurveyTemplateScalarRelationFilter, SurveyTemplateWhereInput>
-    cancellationRequest?: XOR<SurveyCancellationRequestNullableScalarRelationFilter, SurveyCancellationRequestWhereInput> | null
   }
 
   export type SurveyOrderByWithRelationInput = {
     id?: SortOrder
     title?: SortOrder
-    storeName?: SortOrder
     description?: SortOrderInput | SortOrder
     url?: SortOrder
     sellerId?: SortOrder
@@ -14545,17 +14544,18 @@ export namespace Prisma {
     updatedAt?: SortOrder
     endDate?: SortOrder
     approvedAt?: SortOrderInput | SortOrder
+    cancellationRequestedAt?: SortOrderInput | SortOrder
+    cancellationStatus?: SortOrderInput | SortOrder
     completedAt?: SortOrderInput | SortOrder
-    suspendedAt?: SortOrderInput | SortOrder
-    rejectionReason?: SortOrderInput | SortOrder
     extensionCount?: SortOrder
     extensionHistory?: SortOrderInput | SortOrder
-    cancellationStatus?: SortOrderInput | SortOrder
-    cancellationRequestedAt?: SortOrderInput | SortOrder
+    rejectionReason?: SortOrderInput | SortOrder
+    storeName?: SortOrder
+    suspendedAt?: SortOrderInput | SortOrder
+    cancellationRequest?: SurveyCancellationRequestOrderByWithRelationInput
     responses?: SurveyResponseOrderByRelationAggregateInput
     seller?: UserOrderByWithRelationInput
     template?: SurveyTemplateOrderByWithRelationInput
-    cancellationRequest?: SurveyCancellationRequestOrderByWithRelationInput
   }
 
   export type SurveyWhereUniqueInput = Prisma.AtLeast<{
@@ -14564,7 +14564,6 @@ export namespace Prisma {
     OR?: SurveyWhereInput[]
     NOT?: SurveyWhereInput | SurveyWhereInput[]
     title?: StringFilter<"Survey"> | string
-    storeName?: StringFilter<"Survey"> | string
     description?: StringNullableFilter<"Survey"> | string | null
     url?: StringFilter<"Survey"> | string
     sellerId?: StringFilter<"Survey"> | string
@@ -14581,23 +14580,23 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Survey"> | Date | string
     endDate?: DateTimeFilter<"Survey"> | Date | string
     approvedAt?: DateTimeNullableFilter<"Survey"> | Date | string | null
+    cancellationRequestedAt?: DateTimeNullableFilter<"Survey"> | Date | string | null
+    cancellationStatus?: EnumCancellationStatusNullableFilter<"Survey"> | $Enums.CancellationStatus | null
     completedAt?: DateTimeNullableFilter<"Survey"> | Date | string | null
-    suspendedAt?: DateTimeNullableFilter<"Survey"> | Date | string | null
-    rejectionReason?: StringNullableFilter<"Survey"> | string | null
     extensionCount?: IntFilter<"Survey"> | number
     extensionHistory?: JsonNullableFilter<"Survey">
-    cancellationStatus?: EnumCancellationStatusNullableFilter<"Survey"> | $Enums.CancellationStatus | null
-    cancellationRequestedAt?: DateTimeNullableFilter<"Survey"> | Date | string | null
+    rejectionReason?: StringNullableFilter<"Survey"> | string | null
+    storeName?: StringFilter<"Survey"> | string
+    suspendedAt?: DateTimeNullableFilter<"Survey"> | Date | string | null
+    cancellationRequest?: XOR<SurveyCancellationRequestNullableScalarRelationFilter, SurveyCancellationRequestWhereInput> | null
     responses?: SurveyResponseListRelationFilter
     seller?: XOR<UserScalarRelationFilter, UserWhereInput>
     template?: XOR<SurveyTemplateScalarRelationFilter, SurveyTemplateWhereInput>
-    cancellationRequest?: XOR<SurveyCancellationRequestNullableScalarRelationFilter, SurveyCancellationRequestWhereInput> | null
   }, "id">
 
   export type SurveyOrderByWithAggregationInput = {
     id?: SortOrder
     title?: SortOrder
-    storeName?: SortOrder
     description?: SortOrderInput | SortOrder
     url?: SortOrder
     sellerId?: SortOrder
@@ -14614,13 +14613,14 @@ export namespace Prisma {
     updatedAt?: SortOrder
     endDate?: SortOrder
     approvedAt?: SortOrderInput | SortOrder
+    cancellationRequestedAt?: SortOrderInput | SortOrder
+    cancellationStatus?: SortOrderInput | SortOrder
     completedAt?: SortOrderInput | SortOrder
-    suspendedAt?: SortOrderInput | SortOrder
-    rejectionReason?: SortOrderInput | SortOrder
     extensionCount?: SortOrder
     extensionHistory?: SortOrderInput | SortOrder
-    cancellationStatus?: SortOrderInput | SortOrder
-    cancellationRequestedAt?: SortOrderInput | SortOrder
+    rejectionReason?: SortOrderInput | SortOrder
+    storeName?: SortOrder
+    suspendedAt?: SortOrderInput | SortOrder
     _count?: SurveyCountOrderByAggregateInput
     _avg?: SurveyAvgOrderByAggregateInput
     _max?: SurveyMaxOrderByAggregateInput
@@ -14634,7 +14634,6 @@ export namespace Prisma {
     NOT?: SurveyScalarWhereWithAggregatesInput | SurveyScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Survey"> | string
     title?: StringWithAggregatesFilter<"Survey"> | string
-    storeName?: StringWithAggregatesFilter<"Survey"> | string
     description?: StringNullableWithAggregatesFilter<"Survey"> | string | null
     url?: StringWithAggregatesFilter<"Survey"> | string
     sellerId?: StringWithAggregatesFilter<"Survey"> | string
@@ -14651,13 +14650,14 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"Survey"> | Date | string
     endDate?: DateTimeWithAggregatesFilter<"Survey"> | Date | string
     approvedAt?: DateTimeNullableWithAggregatesFilter<"Survey"> | Date | string | null
+    cancellationRequestedAt?: DateTimeNullableWithAggregatesFilter<"Survey"> | Date | string | null
+    cancellationStatus?: EnumCancellationStatusNullableWithAggregatesFilter<"Survey"> | $Enums.CancellationStatus | null
     completedAt?: DateTimeNullableWithAggregatesFilter<"Survey"> | Date | string | null
-    suspendedAt?: DateTimeNullableWithAggregatesFilter<"Survey"> | Date | string | null
-    rejectionReason?: StringNullableWithAggregatesFilter<"Survey"> | string | null
     extensionCount?: IntWithAggregatesFilter<"Survey"> | number
     extensionHistory?: JsonNullableWithAggregatesFilter<"Survey">
-    cancellationStatus?: EnumCancellationStatusNullableWithAggregatesFilter<"Survey"> | $Enums.CancellationStatus | null
-    cancellationRequestedAt?: DateTimeNullableWithAggregatesFilter<"Survey"> | Date | string | null
+    rejectionReason?: StringNullableWithAggregatesFilter<"Survey"> | string | null
+    storeName?: StringWithAggregatesFilter<"Survey"> | string
+    suspendedAt?: DateTimeNullableWithAggregatesFilter<"Survey"> | Date | string | null
   }
 
   export type SurveyResponseWhereInput = {
@@ -15206,11 +15206,11 @@ export namespace Prisma {
     text: string
     type: $Enums.QuestionType
     required?: boolean
-    minLength?: number | null
-    maxLength?: number | null
-    placeholder?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    maxLength?: number | null
+    minLength?: number | null
+    placeholder?: string | null
     options?: QuestionOptionCreateNestedManyWithoutQuestionInput
     step: SurveyStepCreateNestedOneWithoutQuestionsInput
   }
@@ -15222,11 +15222,11 @@ export namespace Prisma {
     text: string
     type: $Enums.QuestionType
     required?: boolean
-    minLength?: number | null
-    maxLength?: number | null
-    placeholder?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    maxLength?: number | null
+    minLength?: number | null
+    placeholder?: string | null
     options?: QuestionOptionUncheckedCreateNestedManyWithoutQuestionInput
   }
 
@@ -15236,11 +15236,11 @@ export namespace Prisma {
     text?: StringFieldUpdateOperationsInput | string
     type?: EnumQuestionTypeFieldUpdateOperationsInput | $Enums.QuestionType
     required?: BoolFieldUpdateOperationsInput | boolean
-    minLength?: NullableIntFieldUpdateOperationsInput | number | null
-    maxLength?: NullableIntFieldUpdateOperationsInput | number | null
-    placeholder?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    maxLength?: NullableIntFieldUpdateOperationsInput | number | null
+    minLength?: NullableIntFieldUpdateOperationsInput | number | null
+    placeholder?: NullableStringFieldUpdateOperationsInput | string | null
     options?: QuestionOptionUpdateManyWithoutQuestionNestedInput
     step?: SurveyStepUpdateOneRequiredWithoutQuestionsNestedInput
   }
@@ -15252,11 +15252,11 @@ export namespace Prisma {
     text?: StringFieldUpdateOperationsInput | string
     type?: EnumQuestionTypeFieldUpdateOperationsInput | $Enums.QuestionType
     required?: BoolFieldUpdateOperationsInput | boolean
-    minLength?: NullableIntFieldUpdateOperationsInput | number | null
-    maxLength?: NullableIntFieldUpdateOperationsInput | number | null
-    placeholder?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    maxLength?: NullableIntFieldUpdateOperationsInput | number | null
+    minLength?: NullableIntFieldUpdateOperationsInput | number | null
+    placeholder?: NullableStringFieldUpdateOperationsInput | string | null
     options?: QuestionOptionUncheckedUpdateManyWithoutQuestionNestedInput
   }
 
@@ -15267,11 +15267,11 @@ export namespace Prisma {
     text: string
     type: $Enums.QuestionType
     required?: boolean
-    minLength?: number | null
-    maxLength?: number | null
-    placeholder?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    maxLength?: number | null
+    minLength?: number | null
+    placeholder?: string | null
   }
 
   export type SurveyQuestionUpdateManyMutationInput = {
@@ -15280,11 +15280,11 @@ export namespace Prisma {
     text?: StringFieldUpdateOperationsInput | string
     type?: EnumQuestionTypeFieldUpdateOperationsInput | $Enums.QuestionType
     required?: BoolFieldUpdateOperationsInput | boolean
-    minLength?: NullableIntFieldUpdateOperationsInput | number | null
-    maxLength?: NullableIntFieldUpdateOperationsInput | number | null
-    placeholder?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    maxLength?: NullableIntFieldUpdateOperationsInput | number | null
+    minLength?: NullableIntFieldUpdateOperationsInput | number | null
+    placeholder?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type SurveyQuestionUncheckedUpdateManyInput = {
@@ -15294,11 +15294,11 @@ export namespace Prisma {
     text?: StringFieldUpdateOperationsInput | string
     type?: EnumQuestionTypeFieldUpdateOperationsInput | $Enums.QuestionType
     required?: BoolFieldUpdateOperationsInput | boolean
-    minLength?: NullableIntFieldUpdateOperationsInput | number | null
-    maxLength?: NullableIntFieldUpdateOperationsInput | number | null
-    placeholder?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    maxLength?: NullableIntFieldUpdateOperationsInput | number | null
+    minLength?: NullableIntFieldUpdateOperationsInput | number | null
+    placeholder?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type QuestionOptionCreateInput = {
@@ -15366,7 +15366,6 @@ export namespace Prisma {
   export type SurveyCreateInput = {
     id?: string
     title: string
-    storeName?: string
     description?: string | null
     url: string
     targetAgeMin: number
@@ -15381,23 +15380,23 @@ export namespace Prisma {
     updatedAt?: Date | string
     endDate: Date | string
     approvedAt?: Date | string | null
+    cancellationRequestedAt?: Date | string | null
+    cancellationStatus?: $Enums.CancellationStatus | null
     completedAt?: Date | string | null
-    suspendedAt?: Date | string | null
-    rejectionReason?: string | null
     extensionCount?: number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: $Enums.CancellationStatus | null
-    cancellationRequestedAt?: Date | string | null
+    rejectionReason?: string | null
+    storeName?: string
+    suspendedAt?: Date | string | null
+    cancellationRequest?: SurveyCancellationRequestCreateNestedOneWithoutSurveyInput
     responses?: SurveyResponseCreateNestedManyWithoutSurveyInput
     seller: UserCreateNestedOneWithoutSurveysInput
     template: SurveyTemplateCreateNestedOneWithoutSurveysInput
-    cancellationRequest?: SurveyCancellationRequestCreateNestedOneWithoutSurveyInput
   }
 
   export type SurveyUncheckedCreateInput = {
     id?: string
     title: string
-    storeName?: string
     description?: string | null
     url: string
     sellerId: string
@@ -15414,21 +15413,21 @@ export namespace Prisma {
     updatedAt?: Date | string
     endDate: Date | string
     approvedAt?: Date | string | null
+    cancellationRequestedAt?: Date | string | null
+    cancellationStatus?: $Enums.CancellationStatus | null
     completedAt?: Date | string | null
-    suspendedAt?: Date | string | null
-    rejectionReason?: string | null
     extensionCount?: number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: $Enums.CancellationStatus | null
-    cancellationRequestedAt?: Date | string | null
-    responses?: SurveyResponseUncheckedCreateNestedManyWithoutSurveyInput
+    rejectionReason?: string | null
+    storeName?: string
+    suspendedAt?: Date | string | null
     cancellationRequest?: SurveyCancellationRequestUncheckedCreateNestedOneWithoutSurveyInput
+    responses?: SurveyResponseUncheckedCreateNestedManyWithoutSurveyInput
   }
 
   export type SurveyUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
-    storeName?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     url?: StringFieldUpdateOperationsInput | string
     targetAgeMin?: IntFieldUpdateOperationsInput | number
@@ -15443,23 +15442,23 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     extensionCount?: IntFieldUpdateOperationsInput | number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
-    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    storeName?: StringFieldUpdateOperationsInput | string
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationRequest?: SurveyCancellationRequestUpdateOneWithoutSurveyNestedInput
     responses?: SurveyResponseUpdateManyWithoutSurveyNestedInput
     seller?: UserUpdateOneRequiredWithoutSurveysNestedInput
     template?: SurveyTemplateUpdateOneRequiredWithoutSurveysNestedInput
-    cancellationRequest?: SurveyCancellationRequestUpdateOneWithoutSurveyNestedInput
   }
 
   export type SurveyUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
-    storeName?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     url?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
@@ -15476,21 +15475,21 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     extensionCount?: IntFieldUpdateOperationsInput | number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
-    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    responses?: SurveyResponseUncheckedUpdateManyWithoutSurveyNestedInput
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    storeName?: StringFieldUpdateOperationsInput | string
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancellationRequest?: SurveyCancellationRequestUncheckedUpdateOneWithoutSurveyNestedInput
+    responses?: SurveyResponseUncheckedUpdateManyWithoutSurveyNestedInput
   }
 
   export type SurveyCreateManyInput = {
     id?: string
     title: string
-    storeName?: string
     description?: string | null
     url: string
     sellerId: string
@@ -15507,19 +15506,19 @@ export namespace Prisma {
     updatedAt?: Date | string
     endDate: Date | string
     approvedAt?: Date | string | null
+    cancellationRequestedAt?: Date | string | null
+    cancellationStatus?: $Enums.CancellationStatus | null
     completedAt?: Date | string | null
-    suspendedAt?: Date | string | null
-    rejectionReason?: string | null
     extensionCount?: number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: $Enums.CancellationStatus | null
-    cancellationRequestedAt?: Date | string | null
+    rejectionReason?: string | null
+    storeName?: string
+    suspendedAt?: Date | string | null
   }
 
   export type SurveyUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
-    storeName?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     url?: StringFieldUpdateOperationsInput | string
     targetAgeMin?: IntFieldUpdateOperationsInput | number
@@ -15534,19 +15533,19 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     extensionCount?: IntFieldUpdateOperationsInput | number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
-    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    storeName?: StringFieldUpdateOperationsInput | string
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type SurveyUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
-    storeName?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     url?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
@@ -15563,13 +15562,14 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     extensionCount?: IntFieldUpdateOperationsInput | number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
-    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    storeName?: StringFieldUpdateOperationsInput | string
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type SurveyResponseCreateInput = {
@@ -16249,17 +16249,17 @@ export namespace Prisma {
     text?: SortOrder
     type?: SortOrder
     required?: SortOrder
-    minLength?: SortOrder
-    maxLength?: SortOrder
-    placeholder?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    maxLength?: SortOrder
+    minLength?: SortOrder
+    placeholder?: SortOrder
   }
 
   export type SurveyQuestionAvgOrderByAggregateInput = {
     questionNumber?: SortOrder
-    minLength?: SortOrder
     maxLength?: SortOrder
+    minLength?: SortOrder
   }
 
   export type SurveyQuestionMaxOrderByAggregateInput = {
@@ -16269,11 +16269,11 @@ export namespace Prisma {
     text?: SortOrder
     type?: SortOrder
     required?: SortOrder
-    minLength?: SortOrder
-    maxLength?: SortOrder
-    placeholder?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    maxLength?: SortOrder
+    minLength?: SortOrder
+    placeholder?: SortOrder
   }
 
   export type SurveyQuestionMinOrderByAggregateInput = {
@@ -16283,17 +16283,17 @@ export namespace Prisma {
     text?: SortOrder
     type?: SortOrder
     required?: SortOrder
-    minLength?: SortOrder
-    maxLength?: SortOrder
-    placeholder?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    maxLength?: SortOrder
+    minLength?: SortOrder
+    placeholder?: SortOrder
   }
 
   export type SurveyQuestionSumOrderByAggregateInput = {
     questionNumber?: SortOrder
-    minLength?: SortOrder
     maxLength?: SortOrder
+    minLength?: SortOrder
   }
 
   export type EnumQuestionTypeWithAggregatesFilter<$PrismaModel = never> = {
@@ -16437,20 +16437,19 @@ export namespace Prisma {
     not?: NestedEnumCancellationStatusNullableFilter<$PrismaModel> | $Enums.CancellationStatus | null
   }
 
-  export type UserScalarRelationFilter = {
-    is?: UserWhereInput
-    isNot?: UserWhereInput
-  }
-
   export type SurveyCancellationRequestNullableScalarRelationFilter = {
     is?: SurveyCancellationRequestWhereInput | null
     isNot?: SurveyCancellationRequestWhereInput | null
   }
 
+  export type UserScalarRelationFilter = {
+    is?: UserWhereInput
+    isNot?: UserWhereInput
+  }
+
   export type SurveyCountOrderByAggregateInput = {
     id?: SortOrder
     title?: SortOrder
-    storeName?: SortOrder
     description?: SortOrder
     url?: SortOrder
     sellerId?: SortOrder
@@ -16467,13 +16466,14 @@ export namespace Prisma {
     updatedAt?: SortOrder
     endDate?: SortOrder
     approvedAt?: SortOrder
+    cancellationRequestedAt?: SortOrder
+    cancellationStatus?: SortOrder
     completedAt?: SortOrder
-    suspendedAt?: SortOrder
-    rejectionReason?: SortOrder
     extensionCount?: SortOrder
     extensionHistory?: SortOrder
-    cancellationStatus?: SortOrder
-    cancellationRequestedAt?: SortOrder
+    rejectionReason?: SortOrder
+    storeName?: SortOrder
+    suspendedAt?: SortOrder
   }
 
   export type SurveyAvgOrderByAggregateInput = {
@@ -16488,7 +16488,6 @@ export namespace Prisma {
   export type SurveyMaxOrderByAggregateInput = {
     id?: SortOrder
     title?: SortOrder
-    storeName?: SortOrder
     description?: SortOrder
     url?: SortOrder
     sellerId?: SortOrder
@@ -16504,18 +16503,18 @@ export namespace Prisma {
     updatedAt?: SortOrder
     endDate?: SortOrder
     approvedAt?: SortOrder
-    completedAt?: SortOrder
-    suspendedAt?: SortOrder
-    rejectionReason?: SortOrder
-    extensionCount?: SortOrder
-    cancellationStatus?: SortOrder
     cancellationRequestedAt?: SortOrder
+    cancellationStatus?: SortOrder
+    completedAt?: SortOrder
+    extensionCount?: SortOrder
+    rejectionReason?: SortOrder
+    storeName?: SortOrder
+    suspendedAt?: SortOrder
   }
 
   export type SurveyMinOrderByAggregateInput = {
     id?: SortOrder
     title?: SortOrder
-    storeName?: SortOrder
     description?: SortOrder
     url?: SortOrder
     sellerId?: SortOrder
@@ -16531,12 +16530,13 @@ export namespace Prisma {
     updatedAt?: SortOrder
     endDate?: SortOrder
     approvedAt?: SortOrder
-    completedAt?: SortOrder
-    suspendedAt?: SortOrder
-    rejectionReason?: SortOrder
-    extensionCount?: SortOrder
-    cancellationStatus?: SortOrder
     cancellationRequestedAt?: SortOrder
+    cancellationStatus?: SortOrder
+    completedAt?: SortOrder
+    extensionCount?: SortOrder
+    rejectionReason?: SortOrder
+    storeName?: SortOrder
+    suspendedAt?: SortOrder
   }
 
   export type SurveySumOrderByAggregateInput = {
@@ -17334,6 +17334,12 @@ export namespace Prisma {
     update?: XOR<XOR<SurveyQuestionUpdateToOneWithWhereWithoutOptionsInput, SurveyQuestionUpdateWithoutOptionsInput>, SurveyQuestionUncheckedUpdateWithoutOptionsInput>
   }
 
+  export type SurveyCancellationRequestCreateNestedOneWithoutSurveyInput = {
+    create?: XOR<SurveyCancellationRequestCreateWithoutSurveyInput, SurveyCancellationRequestUncheckedCreateWithoutSurveyInput>
+    connectOrCreate?: SurveyCancellationRequestCreateOrConnectWithoutSurveyInput
+    connect?: SurveyCancellationRequestWhereUniqueInput
+  }
+
   export type SurveyResponseCreateNestedManyWithoutSurveyInput = {
     create?: XOR<SurveyResponseCreateWithoutSurveyInput, SurveyResponseUncheckedCreateWithoutSurveyInput> | SurveyResponseCreateWithoutSurveyInput[] | SurveyResponseUncheckedCreateWithoutSurveyInput[]
     connectOrCreate?: SurveyResponseCreateOrConnectWithoutSurveyInput | SurveyResponseCreateOrConnectWithoutSurveyInput[]
@@ -17353,7 +17359,7 @@ export namespace Prisma {
     connect?: SurveyTemplateWhereUniqueInput
   }
 
-  export type SurveyCancellationRequestCreateNestedOneWithoutSurveyInput = {
+  export type SurveyCancellationRequestUncheckedCreateNestedOneWithoutSurveyInput = {
     create?: XOR<SurveyCancellationRequestCreateWithoutSurveyInput, SurveyCancellationRequestUncheckedCreateWithoutSurveyInput>
     connectOrCreate?: SurveyCancellationRequestCreateOrConnectWithoutSurveyInput
     connect?: SurveyCancellationRequestWhereUniqueInput
@@ -17364,12 +17370,6 @@ export namespace Prisma {
     connectOrCreate?: SurveyResponseCreateOrConnectWithoutSurveyInput | SurveyResponseCreateOrConnectWithoutSurveyInput[]
     createMany?: SurveyResponseCreateManySurveyInputEnvelope
     connect?: SurveyResponseWhereUniqueInput | SurveyResponseWhereUniqueInput[]
-  }
-
-  export type SurveyCancellationRequestUncheckedCreateNestedOneWithoutSurveyInput = {
-    create?: XOR<SurveyCancellationRequestCreateWithoutSurveyInput, SurveyCancellationRequestUncheckedCreateWithoutSurveyInput>
-    connectOrCreate?: SurveyCancellationRequestCreateOrConnectWithoutSurveyInput
-    connect?: SurveyCancellationRequestWhereUniqueInput
   }
 
   export type FloatFieldUpdateOperationsInput = {
@@ -17398,6 +17398,16 @@ export namespace Prisma {
 
   export type NullableEnumCancellationStatusFieldUpdateOperationsInput = {
     set?: $Enums.CancellationStatus | null
+  }
+
+  export type SurveyCancellationRequestUpdateOneWithoutSurveyNestedInput = {
+    create?: XOR<SurveyCancellationRequestCreateWithoutSurveyInput, SurveyCancellationRequestUncheckedCreateWithoutSurveyInput>
+    connectOrCreate?: SurveyCancellationRequestCreateOrConnectWithoutSurveyInput
+    upsert?: SurveyCancellationRequestUpsertWithoutSurveyInput
+    disconnect?: SurveyCancellationRequestWhereInput | boolean
+    delete?: SurveyCancellationRequestWhereInput | boolean
+    connect?: SurveyCancellationRequestWhereUniqueInput
+    update?: XOR<XOR<SurveyCancellationRequestUpdateToOneWithWhereWithoutSurveyInput, SurveyCancellationRequestUpdateWithoutSurveyInput>, SurveyCancellationRequestUncheckedUpdateWithoutSurveyInput>
   }
 
   export type SurveyResponseUpdateManyWithoutSurveyNestedInput = {
@@ -17430,7 +17440,7 @@ export namespace Prisma {
     update?: XOR<XOR<SurveyTemplateUpdateToOneWithWhereWithoutSurveysInput, SurveyTemplateUpdateWithoutSurveysInput>, SurveyTemplateUncheckedUpdateWithoutSurveysInput>
   }
 
-  export type SurveyCancellationRequestUpdateOneWithoutSurveyNestedInput = {
+  export type SurveyCancellationRequestUncheckedUpdateOneWithoutSurveyNestedInput = {
     create?: XOR<SurveyCancellationRequestCreateWithoutSurveyInput, SurveyCancellationRequestUncheckedCreateWithoutSurveyInput>
     connectOrCreate?: SurveyCancellationRequestCreateOrConnectWithoutSurveyInput
     upsert?: SurveyCancellationRequestUpsertWithoutSurveyInput
@@ -17452,16 +17462,6 @@ export namespace Prisma {
     update?: SurveyResponseUpdateWithWhereUniqueWithoutSurveyInput | SurveyResponseUpdateWithWhereUniqueWithoutSurveyInput[]
     updateMany?: SurveyResponseUpdateManyWithWhereWithoutSurveyInput | SurveyResponseUpdateManyWithWhereWithoutSurveyInput[]
     deleteMany?: SurveyResponseScalarWhereInput | SurveyResponseScalarWhereInput[]
-  }
-
-  export type SurveyCancellationRequestUncheckedUpdateOneWithoutSurveyNestedInput = {
-    create?: XOR<SurveyCancellationRequestCreateWithoutSurveyInput, SurveyCancellationRequestUncheckedCreateWithoutSurveyInput>
-    connectOrCreate?: SurveyCancellationRequestCreateOrConnectWithoutSurveyInput
-    upsert?: SurveyCancellationRequestUpsertWithoutSurveyInput
-    disconnect?: SurveyCancellationRequestWhereInput | boolean
-    delete?: SurveyCancellationRequestWhereInput | boolean
-    connect?: SurveyCancellationRequestWhereUniqueInput
-    update?: XOR<XOR<SurveyCancellationRequestUpdateToOneWithWhereWithoutSurveyInput, SurveyCancellationRequestUpdateWithoutSurveyInput>, SurveyCancellationRequestUncheckedUpdateWithoutSurveyInput>
   }
 
   export type UserCreateNestedOneWithoutResponsesInput = {
@@ -18039,7 +18039,6 @@ export namespace Prisma {
   export type SurveyCreateWithoutSellerInput = {
     id?: string
     title: string
-    storeName?: string
     description?: string | null
     url: string
     targetAgeMin: number
@@ -18054,22 +18053,22 @@ export namespace Prisma {
     updatedAt?: Date | string
     endDate: Date | string
     approvedAt?: Date | string | null
+    cancellationRequestedAt?: Date | string | null
+    cancellationStatus?: $Enums.CancellationStatus | null
     completedAt?: Date | string | null
-    suspendedAt?: Date | string | null
-    rejectionReason?: string | null
     extensionCount?: number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: $Enums.CancellationStatus | null
-    cancellationRequestedAt?: Date | string | null
+    rejectionReason?: string | null
+    storeName?: string
+    suspendedAt?: Date | string | null
+    cancellationRequest?: SurveyCancellationRequestCreateNestedOneWithoutSurveyInput
     responses?: SurveyResponseCreateNestedManyWithoutSurveyInput
     template: SurveyTemplateCreateNestedOneWithoutSurveysInput
-    cancellationRequest?: SurveyCancellationRequestCreateNestedOneWithoutSurveyInput
   }
 
   export type SurveyUncheckedCreateWithoutSellerInput = {
     id?: string
     title: string
-    storeName?: string
     description?: string | null
     url: string
     templateId: string
@@ -18085,15 +18084,16 @@ export namespace Prisma {
     updatedAt?: Date | string
     endDate: Date | string
     approvedAt?: Date | string | null
+    cancellationRequestedAt?: Date | string | null
+    cancellationStatus?: $Enums.CancellationStatus | null
     completedAt?: Date | string | null
-    suspendedAt?: Date | string | null
-    rejectionReason?: string | null
     extensionCount?: number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: $Enums.CancellationStatus | null
-    cancellationRequestedAt?: Date | string | null
-    responses?: SurveyResponseUncheckedCreateNestedManyWithoutSurveyInput
+    rejectionReason?: string | null
+    storeName?: string
+    suspendedAt?: Date | string | null
     cancellationRequest?: SurveyCancellationRequestUncheckedCreateNestedOneWithoutSurveyInput
+    responses?: SurveyResponseUncheckedCreateNestedManyWithoutSurveyInput
   }
 
   export type SurveyCreateOrConnectWithoutSellerInput = {
@@ -18215,7 +18215,6 @@ export namespace Prisma {
     NOT?: SurveyScalarWhereInput | SurveyScalarWhereInput[]
     id?: StringFilter<"Survey"> | string
     title?: StringFilter<"Survey"> | string
-    storeName?: StringFilter<"Survey"> | string
     description?: StringNullableFilter<"Survey"> | string | null
     url?: StringFilter<"Survey"> | string
     sellerId?: StringFilter<"Survey"> | string
@@ -18232,13 +18231,14 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Survey"> | Date | string
     endDate?: DateTimeFilter<"Survey"> | Date | string
     approvedAt?: DateTimeNullableFilter<"Survey"> | Date | string | null
+    cancellationRequestedAt?: DateTimeNullableFilter<"Survey"> | Date | string | null
+    cancellationStatus?: EnumCancellationStatusNullableFilter<"Survey"> | $Enums.CancellationStatus | null
     completedAt?: DateTimeNullableFilter<"Survey"> | Date | string | null
-    suspendedAt?: DateTimeNullableFilter<"Survey"> | Date | string | null
-    rejectionReason?: StringNullableFilter<"Survey"> | string | null
     extensionCount?: IntFilter<"Survey"> | number
     extensionHistory?: JsonNullableFilter<"Survey">
-    cancellationStatus?: EnumCancellationStatusNullableFilter<"Survey"> | $Enums.CancellationStatus | null
-    cancellationRequestedAt?: DateTimeNullableFilter<"Survey"> | Date | string | null
+    rejectionReason?: StringNullableFilter<"Survey"> | string | null
+    storeName?: StringFilter<"Survey"> | string
+    suspendedAt?: DateTimeNullableFilter<"Survey"> | Date | string | null
   }
 
   export type WithdrawalRequestUpsertWithWhereUniqueWithoutUserInput = {
@@ -18304,7 +18304,6 @@ export namespace Prisma {
   export type SurveyCreateWithoutTemplateInput = {
     id?: string
     title: string
-    storeName?: string
     description?: string | null
     url: string
     targetAgeMin: number
@@ -18319,22 +18318,22 @@ export namespace Prisma {
     updatedAt?: Date | string
     endDate: Date | string
     approvedAt?: Date | string | null
+    cancellationRequestedAt?: Date | string | null
+    cancellationStatus?: $Enums.CancellationStatus | null
     completedAt?: Date | string | null
-    suspendedAt?: Date | string | null
-    rejectionReason?: string | null
     extensionCount?: number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: $Enums.CancellationStatus | null
-    cancellationRequestedAt?: Date | string | null
+    rejectionReason?: string | null
+    storeName?: string
+    suspendedAt?: Date | string | null
+    cancellationRequest?: SurveyCancellationRequestCreateNestedOneWithoutSurveyInput
     responses?: SurveyResponseCreateNestedManyWithoutSurveyInput
     seller: UserCreateNestedOneWithoutSurveysInput
-    cancellationRequest?: SurveyCancellationRequestCreateNestedOneWithoutSurveyInput
   }
 
   export type SurveyUncheckedCreateWithoutTemplateInput = {
     id?: string
     title: string
-    storeName?: string
     description?: string | null
     url: string
     sellerId: string
@@ -18350,15 +18349,16 @@ export namespace Prisma {
     updatedAt?: Date | string
     endDate: Date | string
     approvedAt?: Date | string | null
+    cancellationRequestedAt?: Date | string | null
+    cancellationStatus?: $Enums.CancellationStatus | null
     completedAt?: Date | string | null
-    suspendedAt?: Date | string | null
-    rejectionReason?: string | null
     extensionCount?: number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: $Enums.CancellationStatus | null
-    cancellationRequestedAt?: Date | string | null
-    responses?: SurveyResponseUncheckedCreateNestedManyWithoutSurveyInput
+    rejectionReason?: string | null
+    storeName?: string
+    suspendedAt?: Date | string | null
     cancellationRequest?: SurveyCancellationRequestUncheckedCreateNestedOneWithoutSurveyInput
+    responses?: SurveyResponseUncheckedCreateNestedManyWithoutSurveyInput
   }
 
   export type SurveyCreateOrConnectWithoutTemplateInput = {
@@ -18422,11 +18422,11 @@ export namespace Prisma {
     text: string
     type: $Enums.QuestionType
     required?: boolean
-    minLength?: number | null
-    maxLength?: number | null
-    placeholder?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    maxLength?: number | null
+    minLength?: number | null
+    placeholder?: string | null
     options?: QuestionOptionCreateNestedManyWithoutQuestionInput
   }
 
@@ -18436,11 +18436,11 @@ export namespace Prisma {
     text: string
     type: $Enums.QuestionType
     required?: boolean
-    minLength?: number | null
-    maxLength?: number | null
-    placeholder?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    maxLength?: number | null
+    minLength?: number | null
+    placeholder?: string | null
     options?: QuestionOptionUncheckedCreateNestedManyWithoutQuestionInput
   }
 
@@ -18505,11 +18505,11 @@ export namespace Prisma {
     text?: StringFilter<"SurveyQuestion"> | string
     type?: EnumQuestionTypeFilter<"SurveyQuestion"> | $Enums.QuestionType
     required?: BoolFilter<"SurveyQuestion"> | boolean
-    minLength?: IntNullableFilter<"SurveyQuestion"> | number | null
-    maxLength?: IntNullableFilter<"SurveyQuestion"> | number | null
-    placeholder?: StringNullableFilter<"SurveyQuestion"> | string | null
     createdAt?: DateTimeFilter<"SurveyQuestion"> | Date | string
     updatedAt?: DateTimeFilter<"SurveyQuestion"> | Date | string
+    maxLength?: IntNullableFilter<"SurveyQuestion"> | number | null
+    minLength?: IntNullableFilter<"SurveyQuestion"> | number | null
+    placeholder?: StringNullableFilter<"SurveyQuestion"> | string | null
   }
 
   export type SurveyTemplateUpsertWithoutStepsInput = {
@@ -18659,11 +18659,11 @@ export namespace Prisma {
     text: string
     type: $Enums.QuestionType
     required?: boolean
-    minLength?: number | null
-    maxLength?: number | null
-    placeholder?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    maxLength?: number | null
+    minLength?: number | null
+    placeholder?: string | null
     step: SurveyStepCreateNestedOneWithoutQuestionsInput
   }
 
@@ -18674,11 +18674,11 @@ export namespace Prisma {
     text: string
     type: $Enums.QuestionType
     required?: boolean
-    minLength?: number | null
-    maxLength?: number | null
-    placeholder?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    maxLength?: number | null
+    minLength?: number | null
+    placeholder?: string | null
   }
 
   export type SurveyQuestionCreateOrConnectWithoutOptionsInput = {
@@ -18703,11 +18703,11 @@ export namespace Prisma {
     text?: StringFieldUpdateOperationsInput | string
     type?: EnumQuestionTypeFieldUpdateOperationsInput | $Enums.QuestionType
     required?: BoolFieldUpdateOperationsInput | boolean
-    minLength?: NullableIntFieldUpdateOperationsInput | number | null
-    maxLength?: NullableIntFieldUpdateOperationsInput | number | null
-    placeholder?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    maxLength?: NullableIntFieldUpdateOperationsInput | number | null
+    minLength?: NullableIntFieldUpdateOperationsInput | number | null
+    placeholder?: NullableStringFieldUpdateOperationsInput | string | null
     step?: SurveyStepUpdateOneRequiredWithoutQuestionsNestedInput
   }
 
@@ -18718,11 +18718,36 @@ export namespace Prisma {
     text?: StringFieldUpdateOperationsInput | string
     type?: EnumQuestionTypeFieldUpdateOperationsInput | $Enums.QuestionType
     required?: BoolFieldUpdateOperationsInput | boolean
-    minLength?: NullableIntFieldUpdateOperationsInput | number | null
-    maxLength?: NullableIntFieldUpdateOperationsInput | number | null
-    placeholder?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    maxLength?: NullableIntFieldUpdateOperationsInput | number | null
+    minLength?: NullableIntFieldUpdateOperationsInput | number | null
+    placeholder?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type SurveyCancellationRequestCreateWithoutSurveyInput = {
+    id?: string
+    reason: string
+    refundAmount: number
+    status?: $Enums.CancellationStatus
+    requestedAt?: Date | string
+    processedAt?: Date | string | null
+    processedBy?: string | null
+  }
+
+  export type SurveyCancellationRequestUncheckedCreateWithoutSurveyInput = {
+    id?: string
+    reason: string
+    refundAmount: number
+    status?: $Enums.CancellationStatus
+    requestedAt?: Date | string
+    processedAt?: Date | string | null
+    processedBy?: string | null
+  }
+
+  export type SurveyCancellationRequestCreateOrConnectWithoutSurveyInput = {
+    where: SurveyCancellationRequestWhereUniqueInput
+    create: XOR<SurveyCancellationRequestCreateWithoutSurveyInput, SurveyCancellationRequestUncheckedCreateWithoutSurveyInput>
   }
 
   export type SurveyResponseCreateWithoutSurveyInput = {
@@ -18817,29 +18842,35 @@ export namespace Prisma {
     create: XOR<SurveyTemplateCreateWithoutSurveysInput, SurveyTemplateUncheckedCreateWithoutSurveysInput>
   }
 
-  export type SurveyCancellationRequestCreateWithoutSurveyInput = {
-    id?: string
-    reason: string
-    refundAmount: number
-    status?: $Enums.CancellationStatus
-    requestedAt?: Date | string
-    processedAt?: Date | string | null
-    processedBy?: string | null
-  }
-
-  export type SurveyCancellationRequestUncheckedCreateWithoutSurveyInput = {
-    id?: string
-    reason: string
-    refundAmount: number
-    status?: $Enums.CancellationStatus
-    requestedAt?: Date | string
-    processedAt?: Date | string | null
-    processedBy?: string | null
-  }
-
-  export type SurveyCancellationRequestCreateOrConnectWithoutSurveyInput = {
-    where: SurveyCancellationRequestWhereUniqueInput
+  export type SurveyCancellationRequestUpsertWithoutSurveyInput = {
+    update: XOR<SurveyCancellationRequestUpdateWithoutSurveyInput, SurveyCancellationRequestUncheckedUpdateWithoutSurveyInput>
     create: XOR<SurveyCancellationRequestCreateWithoutSurveyInput, SurveyCancellationRequestUncheckedCreateWithoutSurveyInput>
+    where?: SurveyCancellationRequestWhereInput
+  }
+
+  export type SurveyCancellationRequestUpdateToOneWithWhereWithoutSurveyInput = {
+    where?: SurveyCancellationRequestWhereInput
+    data: XOR<SurveyCancellationRequestUpdateWithoutSurveyInput, SurveyCancellationRequestUncheckedUpdateWithoutSurveyInput>
+  }
+
+  export type SurveyCancellationRequestUpdateWithoutSurveyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
+    refundAmount?: FloatFieldUpdateOperationsInput | number
+    status?: EnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    processedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type SurveyCancellationRequestUncheckedUpdateWithoutSurveyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
+    refundAmount?: FloatFieldUpdateOperationsInput | number
+    status?: EnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    processedBy?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type SurveyResponseUpsertWithWhereUniqueWithoutSurveyInput = {
@@ -18936,37 +18967,6 @@ export namespace Prisma {
     steps?: SurveyStepUncheckedUpdateManyWithoutTemplateNestedInput
   }
 
-  export type SurveyCancellationRequestUpsertWithoutSurveyInput = {
-    update: XOR<SurveyCancellationRequestUpdateWithoutSurveyInput, SurveyCancellationRequestUncheckedUpdateWithoutSurveyInput>
-    create: XOR<SurveyCancellationRequestCreateWithoutSurveyInput, SurveyCancellationRequestUncheckedCreateWithoutSurveyInput>
-    where?: SurveyCancellationRequestWhereInput
-  }
-
-  export type SurveyCancellationRequestUpdateToOneWithWhereWithoutSurveyInput = {
-    where?: SurveyCancellationRequestWhereInput
-    data: XOR<SurveyCancellationRequestUpdateWithoutSurveyInput, SurveyCancellationRequestUncheckedUpdateWithoutSurveyInput>
-  }
-
-  export type SurveyCancellationRequestUpdateWithoutSurveyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    reason?: StringFieldUpdateOperationsInput | string
-    refundAmount?: FloatFieldUpdateOperationsInput | number
-    status?: EnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus
-    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    processedBy?: NullableStringFieldUpdateOperationsInput | string | null
-  }
-
-  export type SurveyCancellationRequestUncheckedUpdateWithoutSurveyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    reason?: StringFieldUpdateOperationsInput | string
-    refundAmount?: FloatFieldUpdateOperationsInput | number
-    status?: EnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus
-    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    processedBy?: NullableStringFieldUpdateOperationsInput | string | null
-  }
-
   export type UserCreateWithoutResponsesInput = {
     id?: string
     email: string
@@ -19011,7 +19011,6 @@ export namespace Prisma {
   export type SurveyCreateWithoutResponsesInput = {
     id?: string
     title: string
-    storeName?: string
     description?: string | null
     url: string
     targetAgeMin: number
@@ -19026,22 +19025,22 @@ export namespace Prisma {
     updatedAt?: Date | string
     endDate: Date | string
     approvedAt?: Date | string | null
+    cancellationRequestedAt?: Date | string | null
+    cancellationStatus?: $Enums.CancellationStatus | null
     completedAt?: Date | string | null
-    suspendedAt?: Date | string | null
-    rejectionReason?: string | null
     extensionCount?: number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: $Enums.CancellationStatus | null
-    cancellationRequestedAt?: Date | string | null
+    rejectionReason?: string | null
+    storeName?: string
+    suspendedAt?: Date | string | null
+    cancellationRequest?: SurveyCancellationRequestCreateNestedOneWithoutSurveyInput
     seller: UserCreateNestedOneWithoutSurveysInput
     template: SurveyTemplateCreateNestedOneWithoutSurveysInput
-    cancellationRequest?: SurveyCancellationRequestCreateNestedOneWithoutSurveyInput
   }
 
   export type SurveyUncheckedCreateWithoutResponsesInput = {
     id?: string
     title: string
-    storeName?: string
     description?: string | null
     url: string
     sellerId: string
@@ -19058,13 +19057,14 @@ export namespace Prisma {
     updatedAt?: Date | string
     endDate: Date | string
     approvedAt?: Date | string | null
+    cancellationRequestedAt?: Date | string | null
+    cancellationStatus?: $Enums.CancellationStatus | null
     completedAt?: Date | string | null
-    suspendedAt?: Date | string | null
-    rejectionReason?: string | null
     extensionCount?: number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: $Enums.CancellationStatus | null
-    cancellationRequestedAt?: Date | string | null
+    rejectionReason?: string | null
+    storeName?: string
+    suspendedAt?: Date | string | null
     cancellationRequest?: SurveyCancellationRequestUncheckedCreateNestedOneWithoutSurveyInput
   }
 
@@ -19134,7 +19134,6 @@ export namespace Prisma {
   export type SurveyUpdateWithoutResponsesInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
-    storeName?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     url?: StringFieldUpdateOperationsInput | string
     targetAgeMin?: IntFieldUpdateOperationsInput | number
@@ -19149,22 +19148,22 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     extensionCount?: IntFieldUpdateOperationsInput | number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
-    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    storeName?: StringFieldUpdateOperationsInput | string
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationRequest?: SurveyCancellationRequestUpdateOneWithoutSurveyNestedInput
     seller?: UserUpdateOneRequiredWithoutSurveysNestedInput
     template?: SurveyTemplateUpdateOneRequiredWithoutSurveysNestedInput
-    cancellationRequest?: SurveyCancellationRequestUpdateOneWithoutSurveyNestedInput
   }
 
   export type SurveyUncheckedUpdateWithoutResponsesInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
-    storeName?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     url?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
@@ -19181,13 +19180,14 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     extensionCount?: IntFieldUpdateOperationsInput | number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
-    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    storeName?: StringFieldUpdateOperationsInput | string
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancellationRequest?: SurveyCancellationRequestUncheckedUpdateOneWithoutSurveyNestedInput
   }
 
@@ -19282,7 +19282,6 @@ export namespace Prisma {
   export type SurveyCreateWithoutCancellationRequestInput = {
     id?: string
     title: string
-    storeName?: string
     description?: string | null
     url: string
     targetAgeMin: number
@@ -19297,13 +19296,14 @@ export namespace Prisma {
     updatedAt?: Date | string
     endDate: Date | string
     approvedAt?: Date | string | null
+    cancellationRequestedAt?: Date | string | null
+    cancellationStatus?: $Enums.CancellationStatus | null
     completedAt?: Date | string | null
-    suspendedAt?: Date | string | null
-    rejectionReason?: string | null
     extensionCount?: number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: $Enums.CancellationStatus | null
-    cancellationRequestedAt?: Date | string | null
+    rejectionReason?: string | null
+    storeName?: string
+    suspendedAt?: Date | string | null
     responses?: SurveyResponseCreateNestedManyWithoutSurveyInput
     seller: UserCreateNestedOneWithoutSurveysInput
     template: SurveyTemplateCreateNestedOneWithoutSurveysInput
@@ -19312,7 +19312,6 @@ export namespace Prisma {
   export type SurveyUncheckedCreateWithoutCancellationRequestInput = {
     id?: string
     title: string
-    storeName?: string
     description?: string | null
     url: string
     sellerId: string
@@ -19329,13 +19328,14 @@ export namespace Prisma {
     updatedAt?: Date | string
     endDate: Date | string
     approvedAt?: Date | string | null
+    cancellationRequestedAt?: Date | string | null
+    cancellationStatus?: $Enums.CancellationStatus | null
     completedAt?: Date | string | null
-    suspendedAt?: Date | string | null
-    rejectionReason?: string | null
     extensionCount?: number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: $Enums.CancellationStatus | null
-    cancellationRequestedAt?: Date | string | null
+    rejectionReason?: string | null
+    storeName?: string
+    suspendedAt?: Date | string | null
     responses?: SurveyResponseUncheckedCreateNestedManyWithoutSurveyInput
   }
 
@@ -19358,7 +19358,6 @@ export namespace Prisma {
   export type SurveyUpdateWithoutCancellationRequestInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
-    storeName?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     url?: StringFieldUpdateOperationsInput | string
     targetAgeMin?: IntFieldUpdateOperationsInput | number
@@ -19373,13 +19372,14 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     extensionCount?: IntFieldUpdateOperationsInput | number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
-    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    storeName?: StringFieldUpdateOperationsInput | string
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     responses?: SurveyResponseUpdateManyWithoutSurveyNestedInput
     seller?: UserUpdateOneRequiredWithoutSurveysNestedInput
     template?: SurveyTemplateUpdateOneRequiredWithoutSurveysNestedInput
@@ -19388,7 +19388,6 @@ export namespace Prisma {
   export type SurveyUncheckedUpdateWithoutCancellationRequestInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
-    storeName?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     url?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
@@ -19405,13 +19404,14 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     extensionCount?: IntFieldUpdateOperationsInput | number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
-    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    storeName?: StringFieldUpdateOperationsInput | string
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     responses?: SurveyResponseUncheckedUpdateManyWithoutSurveyNestedInput
   }
 
@@ -19523,7 +19523,6 @@ export namespace Prisma {
   export type SurveyCreateManySellerInput = {
     id?: string
     title: string
-    storeName?: string
     description?: string | null
     url: string
     templateId: string
@@ -19539,13 +19538,14 @@ export namespace Prisma {
     updatedAt?: Date | string
     endDate: Date | string
     approvedAt?: Date | string | null
+    cancellationRequestedAt?: Date | string | null
+    cancellationStatus?: $Enums.CancellationStatus | null
     completedAt?: Date | string | null
-    suspendedAt?: Date | string | null
-    rejectionReason?: string | null
     extensionCount?: number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: $Enums.CancellationStatus | null
-    cancellationRequestedAt?: Date | string | null
+    rejectionReason?: string | null
+    storeName?: string
+    suspendedAt?: Date | string | null
   }
 
   export type WithdrawalRequestCreateManyUserInput = {
@@ -19612,7 +19612,6 @@ export namespace Prisma {
   export type SurveyUpdateWithoutSellerInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
-    storeName?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     url?: StringFieldUpdateOperationsInput | string
     targetAgeMin?: IntFieldUpdateOperationsInput | number
@@ -19627,22 +19626,22 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     extensionCount?: IntFieldUpdateOperationsInput | number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
-    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    storeName?: StringFieldUpdateOperationsInput | string
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationRequest?: SurveyCancellationRequestUpdateOneWithoutSurveyNestedInput
     responses?: SurveyResponseUpdateManyWithoutSurveyNestedInput
     template?: SurveyTemplateUpdateOneRequiredWithoutSurveysNestedInput
-    cancellationRequest?: SurveyCancellationRequestUpdateOneWithoutSurveyNestedInput
   }
 
   export type SurveyUncheckedUpdateWithoutSellerInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
-    storeName?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     url?: StringFieldUpdateOperationsInput | string
     templateId?: StringFieldUpdateOperationsInput | string
@@ -19658,21 +19657,21 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     extensionCount?: IntFieldUpdateOperationsInput | number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
-    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    responses?: SurveyResponseUncheckedUpdateManyWithoutSurveyNestedInput
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    storeName?: StringFieldUpdateOperationsInput | string
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancellationRequest?: SurveyCancellationRequestUncheckedUpdateOneWithoutSurveyNestedInput
+    responses?: SurveyResponseUncheckedUpdateManyWithoutSurveyNestedInput
   }
 
   export type SurveyUncheckedUpdateManyWithoutSellerInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
-    storeName?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     url?: StringFieldUpdateOperationsInput | string
     templateId?: StringFieldUpdateOperationsInput | string
@@ -19688,13 +19687,14 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     extensionCount?: IntFieldUpdateOperationsInput | number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
-    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    storeName?: StringFieldUpdateOperationsInput | string
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type WithdrawalRequestUpdateWithoutUserInput = {
@@ -19739,7 +19739,6 @@ export namespace Prisma {
   export type SurveyCreateManyTemplateInput = {
     id?: string
     title: string
-    storeName?: string
     description?: string | null
     url: string
     sellerId: string
@@ -19755,13 +19754,14 @@ export namespace Prisma {
     updatedAt?: Date | string
     endDate: Date | string
     approvedAt?: Date | string | null
+    cancellationRequestedAt?: Date | string | null
+    cancellationStatus?: $Enums.CancellationStatus | null
     completedAt?: Date | string | null
-    suspendedAt?: Date | string | null
-    rejectionReason?: string | null
     extensionCount?: number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: $Enums.CancellationStatus | null
-    cancellationRequestedAt?: Date | string | null
+    rejectionReason?: string | null
+    storeName?: string
+    suspendedAt?: Date | string | null
   }
 
   export type SurveyStepUpdateWithoutTemplateInput = {
@@ -19796,7 +19796,6 @@ export namespace Prisma {
   export type SurveyUpdateWithoutTemplateInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
-    storeName?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     url?: StringFieldUpdateOperationsInput | string
     targetAgeMin?: IntFieldUpdateOperationsInput | number
@@ -19811,22 +19810,22 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     extensionCount?: IntFieldUpdateOperationsInput | number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
-    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    storeName?: StringFieldUpdateOperationsInput | string
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationRequest?: SurveyCancellationRequestUpdateOneWithoutSurveyNestedInput
     responses?: SurveyResponseUpdateManyWithoutSurveyNestedInput
     seller?: UserUpdateOneRequiredWithoutSurveysNestedInput
-    cancellationRequest?: SurveyCancellationRequestUpdateOneWithoutSurveyNestedInput
   }
 
   export type SurveyUncheckedUpdateWithoutTemplateInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
-    storeName?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     url?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
@@ -19842,21 +19841,21 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     extensionCount?: IntFieldUpdateOperationsInput | number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
-    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    responses?: SurveyResponseUncheckedUpdateManyWithoutSurveyNestedInput
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    storeName?: StringFieldUpdateOperationsInput | string
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancellationRequest?: SurveyCancellationRequestUncheckedUpdateOneWithoutSurveyNestedInput
+    responses?: SurveyResponseUncheckedUpdateManyWithoutSurveyNestedInput
   }
 
   export type SurveyUncheckedUpdateManyWithoutTemplateInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
-    storeName?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     url?: StringFieldUpdateOperationsInput | string
     sellerId?: StringFieldUpdateOperationsInput | string
@@ -19872,13 +19871,14 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     approvedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     extensionCount?: IntFieldUpdateOperationsInput | number
     extensionHistory?: NullableJsonNullValueInput | InputJsonValue
-    cancellationStatus?: NullableEnumCancellationStatusFieldUpdateOperationsInput | $Enums.CancellationStatus | null
-    cancellationRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    storeName?: StringFieldUpdateOperationsInput | string
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type SurveyQuestionCreateManyStepInput = {
@@ -19887,11 +19887,11 @@ export namespace Prisma {
     text: string
     type: $Enums.QuestionType
     required?: boolean
-    minLength?: number | null
-    maxLength?: number | null
-    placeholder?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    maxLength?: number | null
+    minLength?: number | null
+    placeholder?: string | null
   }
 
   export type SurveyQuestionUpdateWithoutStepInput = {
@@ -19900,11 +19900,11 @@ export namespace Prisma {
     text?: StringFieldUpdateOperationsInput | string
     type?: EnumQuestionTypeFieldUpdateOperationsInput | $Enums.QuestionType
     required?: BoolFieldUpdateOperationsInput | boolean
-    minLength?: NullableIntFieldUpdateOperationsInput | number | null
-    maxLength?: NullableIntFieldUpdateOperationsInput | number | null
-    placeholder?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    maxLength?: NullableIntFieldUpdateOperationsInput | number | null
+    minLength?: NullableIntFieldUpdateOperationsInput | number | null
+    placeholder?: NullableStringFieldUpdateOperationsInput | string | null
     options?: QuestionOptionUpdateManyWithoutQuestionNestedInput
   }
 
@@ -19914,11 +19914,11 @@ export namespace Prisma {
     text?: StringFieldUpdateOperationsInput | string
     type?: EnumQuestionTypeFieldUpdateOperationsInput | $Enums.QuestionType
     required?: BoolFieldUpdateOperationsInput | boolean
-    minLength?: NullableIntFieldUpdateOperationsInput | number | null
-    maxLength?: NullableIntFieldUpdateOperationsInput | number | null
-    placeholder?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    maxLength?: NullableIntFieldUpdateOperationsInput | number | null
+    minLength?: NullableIntFieldUpdateOperationsInput | number | null
+    placeholder?: NullableStringFieldUpdateOperationsInput | string | null
     options?: QuestionOptionUncheckedUpdateManyWithoutQuestionNestedInput
   }
 
@@ -19928,11 +19928,11 @@ export namespace Prisma {
     text?: StringFieldUpdateOperationsInput | string
     type?: EnumQuestionTypeFieldUpdateOperationsInput | $Enums.QuestionType
     required?: BoolFieldUpdateOperationsInput | boolean
-    minLength?: NullableIntFieldUpdateOperationsInput | number | null
-    maxLength?: NullableIntFieldUpdateOperationsInput | number | null
-    placeholder?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    maxLength?: NullableIntFieldUpdateOperationsInput | number | null
+    minLength?: NullableIntFieldUpdateOperationsInput | number | null
+    placeholder?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type QuestionOptionCreateManyQuestionInput = {

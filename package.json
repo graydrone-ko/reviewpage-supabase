@@ -4,7 +4,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/index.ts",
-    "build": "prisma generate && tsc",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "cd ../frontend && npm ci && npm run build && cp -r build/* ../backend/public/",
+    "build:backend": "prisma generate && tsc",
     "start": "prisma migrate deploy && node dist/index.js",
     "postbuild": "prisma generate",
     "db:generate": "prisma generate",
@@ -13,6 +15,9 @@
     "db:studio": "prisma studio",
     "db:seed": "ts-node src/create-test-users.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "keywords": [],
   "author": "",
