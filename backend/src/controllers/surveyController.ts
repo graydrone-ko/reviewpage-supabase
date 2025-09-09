@@ -647,6 +647,73 @@ async function createDefaultTemplateHelper() {
   return template;
 }
 
+// 디버깅용 - 인증 없이 템플릿 상태 확인
+export const debugTemplates = async (req: Request, res: Response) => {
+  try {
+    console.log('🔍 디버깅: 템플릿 상태 확인 시작...');
+    
+    // 데이터베이스 연결 상태 확인
+    try {
+      const connectionTest = await prisma.$queryRaw`SELECT 1 as test`;
+      console.log('✅ 데이터베이스 연결 성공:', connectionTest);
+    } catch (dbError) {
+      console.error('❌ 데이터베이스 연결 실패:', dbError);
+      return res.status(500).json({ 
+        error: 'Database connection failed',
+        details: dbError instanceof Error ? dbError.message : String(dbError)
+      });
+    }
+
+    // 템플릿 테이블 존재 확인 및 조회
+    let templates;
+    try {
+      templates = await prisma.surveyTemplate.findMany({
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          isDefault: true,
+          createdAt: true
+        }
+      });
+      console.log(`📊 발견된 템플릿 수: ${templates.length}`);
+    } catch (templateError) {
+      console.error('❌ 템플릿 조회 실패:', templateError);
+      return res.status(500).json({ 
+        error: 'Template query failed',
+        details: templateError instanceof Error ? templateError.message : String(templateError)
+      });
+    }
+
+    // 환경 변수 확인 (민감 정보 제외)
+    const envCheck = {
+      NODE_ENV: process.env.NODE_ENV,
+      PORT: process.env.PORT,
+      DATABASE_URL: process.env.DATABASE_URL ? '✅ 설정됨' : '❌ 없음',
+      JWT_SECRET: process.env.JWT_SECRET ? '✅ 설정됨' : '❌ 없음',
+    };
+
+    res.json({
+      success: true,
+      database: '✅ 연결됨',
+      templates: {
+        count: templates.length,
+        list: templates
+      },
+      environment: envCheck,
+      timestamp: new Date().toISOString(),
+      message: '디버깅 정보 조회 완료'
+    });
+
+  } catch (error) {
+    console.error('💥 디버깅 중 전체 오류:', error);
+    res.status(500).json({ 
+      error: 'Debug check failed',
+      details: error instanceof Error ? error.message : String(error)
+    });
+  }
+};
+
 export const updateSurvey = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;

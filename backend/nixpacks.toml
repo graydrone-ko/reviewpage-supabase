@@ -4,11 +4,6 @@ nixPkgs = ['nodejs-18_x', 'npm-9_x']
 [phases.install]
 cmds = [
     'npm ci',
-    'npx prisma generate'
-]
-
-[phases.build]
-cmds = [
     'npm run build'
 ]
 
@@ -17,4 +12,4 @@ cmd = 'npm start'
 
 [variables]
 NODE_ENV = 'production'
-NPM_CONFIG_PRODUCTION = 'true'
+NPM_CONFIG_PRODUCTION = 'false'

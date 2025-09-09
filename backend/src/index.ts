@@ -60,13 +60,45 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    message: 'ReviewPage Express Backend API is running',
-    timestamp: new Date().toISOString(),
-    version: '2.0.0'
-  });
+app.get('/health', async (req, res) => {
+  try {
+    // 기본 헬스 체크
+    const healthInfo: any = {
+      status: 'OK', 
+      message: 'ReviewPage Express Backend API is running',
+      timestamp: new Date().toISOString(),
+      version: '2.0.0',
+      environment: {
+        NODE_ENV: process.env.NODE_ENV,
+        PORT: process.env.PORT,
+        DATABASE_URL: process.env.DATABASE_URL ? '✅ 설정됨' : '❌ 없음',
+        JWT_SECRET: process.env.JWT_SECRET ? '✅ 설정됨' : '❌ 없음'
+      }
+    };
+
+    // DB 연결 및 템플릿 개수 확인 (선택적)
+    try {
+      const { prisma } = await import('./utils/database');
+      const templateCount = await prisma.surveyTemplate.count();
+      healthInfo.database = {
+        status: '✅ 연결됨',
+        templateCount: templateCount
+      };
+    } catch (dbError) {
+      healthInfo.database = {
+        status: '❌ 연결 실패',
+        error: dbError instanceof Error ? dbError.message : String(dbError)
+      };
+    }
+
+    res.json(healthInfo);
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'ERROR', 
+      message: 'Health check failed',
+      error: error instanceof Error ? error.message : String(error)
+    });
+  }
 });
 
 app.use('/api/auth', authRoutes);

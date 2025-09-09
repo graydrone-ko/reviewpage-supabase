@@ -9,7 +9,8 @@ import {
   getTemplates,
   getTemplate,
   extendSurvey,
-  requestSurveyCancellation
+  requestSurveyCancellation,
+  debugTemplates
 } from '../controllers/surveyController';
 import {
   getSurveyParticipationStatus,
@@ -21,7 +22,10 @@ import { authenticateToken, requireRole } from '../middleware/auth';
 
 const router = Router();
 
-// All routes require authentication
+// 디버깅 라우트 (인증 불필요)
+router.get('/debug/templates', debugTemplates);
+
+// All other routes require authentication
 router.use(authenticateToken);
 
 // Create survey (sellers only)
