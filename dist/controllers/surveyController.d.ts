@@ -5,6 +5,7 @@ export declare const createSurvey: (req: AuthRequest, res: Response) => Promise<
 export declare const getSurveys: (req: AuthRequest, res: Response) => Promise<void>;
 export declare const getSurvey: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>>>;
 export declare const getTemplates: (req: AuthRequest, res: Response) => Promise<void>;
+export declare const debugTemplates: (req: Request, res: Response) => Promise<Response<any, Record<string, any>>>;
 export declare const updateSurvey: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>>>;
 export declare const getSurveyResponses: (req: AuthRequest, res: Response) => Promise<Response<any, Record<string, any>>>;
 export declare const getTemplate: (req: Request, res: Response) => Promise<Response<any, Record<string, any>>>;

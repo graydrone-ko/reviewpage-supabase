@@ -5,7 +5,9 @@ const surveyController_1 = require("../controllers/surveyController");
 const surveyParticipationController_1 = require("../controllers/surveyParticipationController");
 const auth_1 = require("../middleware/auth");
 const router = (0, express_1.Router)();
-// All routes require authentication
+// 디버깅 라우트 (인증 불필요)
+router.get('/debug/templates', surveyController_1.debugTemplates);
+// All other routes require authentication
 router.use(auth_1.authenticateToken);
 // Create survey (sellers only)
 router.post('/', (0, auth_1.requireRole)(['SELLER']), surveyController_1.createSurveyValidation, surveyController_1.createSurvey);
