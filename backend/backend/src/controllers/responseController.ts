@@ -155,9 +155,7 @@ export const getMyResponses = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    // Note: This would need a new dbUtils function to get responses with survey details
-    // For now, simplified implementation
-    const responses = await dbUtils.findResponsesByUserId?.(req.user.id) || [];
+    const responses = await dbUtils.findResponsesByUserId(req.user.id);
 
     res.json({ responses });
 

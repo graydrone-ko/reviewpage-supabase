@@ -127,6 +127,25 @@ export const dbUtils = {
     return data;
   },
 
+  async findResponsesByUserId(userId: string) {
+    const { data, error } = await db
+      .from('survey_responses')
+      .select(`
+        *,
+        surveys!survey_responses_survey_id_fkey (
+          id,
+          title,
+          reward,
+          created_at
+        )
+      `)
+      .eq('consumer_id', userId)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
   // 리워드 관련
   async createReward(rewardData: any) {
     const { data, error } = await db
