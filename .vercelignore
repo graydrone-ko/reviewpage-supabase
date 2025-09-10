@@ -1,0 +1,59 @@
+# Build artifacts that can cause shell issues
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Runtime data that might have shell commands
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Temporary files that might contain shell redirections
+tmp/
+temp/
+.tmp/
+
+# IDE files that might have shell configurations
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files with potential shell issues
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Node.js
+node_modules/
+.npm
+.node_repl_history
+
+# Environment files (may contain shell commands)
+.env*
+
+# Build outputs that might have shell redirections
+dist/
+build/
+coverage/
+
+# Database files
+*.db
+*.sqlite
+
+# Files known to cause shell redirection issues
+backend/backend/BROWSER_*.js
+backend/backend/COMPLETE_SOLUTION.js
+backend/backend/IMMEDIATE_FIX.js
+backend/backend/TEMPLATE_FIX.js
+*.deployment.js
+test-*.js
+debug-*.js
+fix-*.js

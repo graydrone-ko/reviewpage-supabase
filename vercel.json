@@ -1,0 +1,48 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build",
+        "buildCommand": "CI='' npm run build"
+      }
+    },
+    {
+      "src": "backend/backend/api/**/*.ts",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["backend/backend/src/**"]
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/backend/backend/api/index"
+    },
+    {
+      "src": "/static/(.*)",
+      "dest": "/frontend/static/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/index.html"
+    }
+  ],
+  "env": {
+    "CI": "",
+    "NODE_ENV": "production",
+    "SKIP_PREFLIGHT_CHECK": "true"
+  },
+  "functions": {
+    "backend/backend/api/**/*.ts": {
+      "runtime": "nodejs20.x",
+      "maxDuration": 30,
+      "memory": 1024
+    }
+  },
+  "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "npm run build"
+}

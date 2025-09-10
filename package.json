@@ -3,9 +3,12 @@
   "version": "1.0.0",
   "description": "ReviewPage survey platform with unified Express + React deployment",
   "scripts": {
-    "build": "cd backend/backend && npm ci && npm run build",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "cd frontend && npm ci --legacy-peer-deps && CI='' npm run build",
+    "build:backend": "cd backend/backend && npm ci --production=false && npm run build:real",
     "start": "cd backend/backend && npm start",
-    "dev": "cd backend/backend && npm run dev"
+    "dev": "cd backend/backend && npm run dev",
+    "postinstall": "echo 'Monorepo setup complete'"
   },
   "engines": {
     "node": ">=18.0.0"
