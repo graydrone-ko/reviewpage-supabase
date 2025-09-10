@@ -15,13 +15,13 @@ export const getMyRewards = async (req: AuthRequest, res: Response) => {
     const surveyResponses = await dbUtils.findResponsesByUserId(req.user.id);
 
     // 리워드와 설문 응답을 시간 기준으로 매칭
-    const enrichedRewards = rewards.map(reward => {
-      let matchedSurveyResponse = null;
+    const enrichedRewards = rewards.map((reward: any) => {
+      let matchedSurveyResponse: any = null;
       
       if (reward.type === 'SURVEY_COMPLETION') {
         // 리워드 생성 시간과 가장 가까운 설문 응답을 찾음 (±5분 이내)
         const rewardTime = new Date(reward.created_at).getTime();
-        matchedSurveyResponse = surveyResponses.find(response => {
+        matchedSurveyResponse = surveyResponses.find((response: any) => {
           const responseTime = new Date(response.created_at).getTime();
           const timeDiff = Math.abs(rewardTime - responseTime);
           return timeDiff <= 5 * 60 * 1000; // 5분 이내
@@ -35,10 +35,10 @@ export const getMyRewards = async (req: AuthRequest, res: Response) => {
       };
     });
 
-    const totalEarned = rewards.reduce((sum, reward) => sum + reward.amount, 0);
+    const totalEarned = rewards.reduce((sum: number, reward: any) => sum + reward.amount, 0);
     const totalPaid = rewards
-      .filter(reward => reward.status === 'PAID')
-      .reduce((sum, reward) => sum + reward.amount, 0);
+      .filter((reward: any) => reward.status === 'PAID')
+      .reduce((sum: number, reward: any) => sum + reward.amount, 0);
     const totalPending = totalEarned - totalPaid;
 
     res.json({
@@ -77,7 +77,7 @@ export const requestWithdrawal = async (req: AuthRequest, res: Response) => {
     
     if (rewardsError) throw rewardsError;
 
-    const availableBalance = (rewards || []).reduce((sum, reward) => sum + reward.amount, 0);
+    const availableBalance = (rewards || []).reduce((sum: number, reward: any) => sum + reward.amount, 0);
 
     // Check if available balance is less than minimum withdrawal amount
     if (availableBalance < 10000) {
@@ -161,9 +161,9 @@ export const getRewardStats = async (req: AuthRequest, res: Response) => {
     
     if (responseCountError) throw responseCountError;
 
-    const totalRewardsAmount = (allRewards || []).reduce((sum, reward) => sum + reward.amount, 0);
-    const paidRewardsAmount = (paidRewardsData || []).reduce((sum, reward) => sum + reward.amount, 0);
-    const pendingRewardsAmount = (pendingRewardsData || []).reduce((sum, reward) => sum + reward.amount, 0);
+    const totalRewardsAmount = (allRewards || []).reduce((sum: number, reward: any) => sum + reward.amount, 0);
+    const paidRewardsAmount = (paidRewardsData || []).reduce((sum: number, reward: any) => sum + reward.amount, 0);
+    const pendingRewardsAmount = (pendingRewardsData || []).reduce((sum: number, reward: any) => sum + reward.amount, 0);
 
     res.json({
       totalRewards: totalRewardsAmount,
