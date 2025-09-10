@@ -3,11 +3,24 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-const supabaseUrl = process.env.SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY
+
+console.log('Environment check:', {
+  hasUrl: !!supabaseUrl,
+  hasServiceKey: !!supabaseServiceKey,
+  hasAnonKey: !!supabaseAnonKey,
+  nodeEnv: process.env.NODE_ENV
+})
 
 if (!supabaseUrl || !supabaseServiceKey) {
-  throw new Error('Missing Supabase environment variables')
+  console.error('Missing Supabase environment variables:', {
+    SUPABASE_URL: supabaseUrl ? 'SET' : 'MISSING',
+    SUPABASE_SERVICE_ROLE_KEY: supabaseServiceKey ? 'SET' : 'MISSING',
+    SUPABASE_ANON_KEY: supabaseAnonKey ? 'SET' : 'MISSING'
+  })
+  throw new Error('Missing Supabase environment variables. Please check Vercel dashboard environment variables.')
 }
 
 // Service role client for server-side operations (bypasses RLS)
@@ -19,7 +32,7 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
 })
 
 // Regular client for user-based operations (respects RLS)
-export const supabase = createClient(supabaseUrl, process.env.SUPABASE_ANON_KEY!, {
+export const supabase = createClient(supabaseUrl, supabaseAnonKey!, {
   auth: {
     autoRefreshToken: false,
     persistSession: false
