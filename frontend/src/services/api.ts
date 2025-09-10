@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://reviewpage-production.up.railway.app/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || (
+  process.env.NODE_ENV === 'development' 
+    ? 'http://localhost:3001/api' 
+    : '/api'
+);
 
 // Export for use in components that use fetch directly
 export const API_URL = API_BASE_URL;

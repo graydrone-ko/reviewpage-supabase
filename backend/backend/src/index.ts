@@ -3,14 +3,12 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
-import path from 'path';
 import authRoutes from './routes/auth';
 import surveyRoutes from './routes/surveys';
 import responseRoutes from './routes/responses';
 import rewardRoutes from './routes/rewards';
 import adminRoutes from './routes/admin';
 import seoRoutes from './routes/seo';
-import frontendRoutes from './routes/frontend';
 
 dotenv.config();
 
@@ -20,29 +18,17 @@ const PORT = process.env.PORT || 3001;
 // Security middleware
 app.use(helmet());
 
-// CORS configuration for development and production
+// CORS configuration for Vercel deployment
 const allowedOrigins = [
   'http://localhost:3000', // Local development
   'http://localhost:3001', // Local development backend
-  process.env.FRONTEND_URL, // Production frontend URL
+  process.env.FRONTEND_URL || 'https://reviewpage-frontend.vercel.app', // Vercel frontend URL
   'https://reviewpage.co.kr', // Production domain
   'https://www.reviewpage.co.kr', // Production domain with www
 ].filter(Boolean);
 
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? (origin, callback) => {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin) return callback(null, true);
-        
-        // Check if the origin is allowed
-        if (allowedOrigins.includes(origin)) {
-          return callback(null, true);
-        } else {
-          return callback(new Error('Not allowed by CORS'));
-        }
-      }
-    : allowedOrigins,
+  origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -62,31 +48,30 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.get('/health', async (req, res) => {
   try {
-    // 기본 헬스 체크
     const healthInfo: any = {
       status: 'OK', 
-      message: 'ReviewPage Express Backend API is running',
+      message: 'ReviewPage Supabase Backend API is running',
       timestamp: new Date().toISOString(),
-      version: '2.0.0',
+      version: '3.0.0',
+      deployment: 'Vercel + Supabase',
       environment: {
         NODE_ENV: process.env.NODE_ENV,
-        PORT: process.env.PORT,
-        DATABASE_URL: process.env.DATABASE_URL ? '✅ 설정됨' : '❌ 없음',
+        SUPABASE_URL: process.env.SUPABASE_URL ? '✅ 설정됨' : '❌ 없음',
         JWT_SECRET: process.env.JWT_SECRET ? '✅ 설정됨' : '❌ 없음'
       }
     };
 
-    // DB 연결 및 템플릿 개수 확인 (선택적)
+    // Supabase 연결 확인
     try {
-      const { prisma } = await import('./utils/database');
-      const templateCount = await prisma.surveyTemplate.count();
+      const { dbUtils } = await import('./utils/database');
+      const stats = await dbUtils.getStats();
       healthInfo.database = {
-        status: '✅ 연결됨',
-        templateCount: templateCount
+        status: '✅ Supabase 연결됨',
+        stats: stats
       };
     } catch (dbError) {
       healthInfo.database = {
-        status: '❌ 연결 실패',
+        status: '❌ Supabase 연결 실패',
         error: dbError instanceof Error ? dbError.message : String(dbError)
       };
     }
@@ -101,35 +86,19 @@ app.get('/health', async (req, res) => {
   }
 });
 
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/surveys', surveyRoutes);
 app.use('/api/responses', responseRoutes);
 app.use('/api/rewards', rewardRoutes);
 app.use('/api/admin', adminRoutes);
 
-// SEO 라우트 (API prefix 없이)
+// SEO Routes (for sitemap, robots.txt)
 app.use('/', seoRoutes);
 
-// 정적 파일 서빙 (React 빌드 파일)
-app.use(express.static(path.join(__dirname, '../../public')));
-
-// 프론트엔드 페이지 라우트 (개발용 폴백)
-app.use('/', frontendRoutes);
-
-// React Router 지원 - 모든 비-API 요청을 index.html로 리다이렉트
-app.get('*', (req, res) => {
-  // API 요청이 아닌 경우에만 React 앱 제공
-  if (!req.path.startsWith('/api/') && !req.path.startsWith('/health')) {
-    const indexPath = path.join(__dirname, '../../public', 'index.html');
-    res.sendFile(indexPath, (err) => {
-      if (err) {
-        console.log('React app index.html not found, using fallback');
-        res.status(404).json({ error: 'Page not found' });
-      }
-    });
-  } else {
-    res.status(404).json({ error: 'API endpoint not found' });
-  }
+// 404 handler for unknown API routes
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ error: 'API endpoint not found' });
 });
 
 // Error handling middleware
@@ -141,7 +110,15 @@ app.use((error: any, req: express.Request, res: express.Response, next: express.
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📖 Environment: ${process.env.NODE_ENV || 'development'}`);
-});
+// For Vercel deployment, export the app
+export default app;
+
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📖 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🔗 Backend: http://localhost:${PORT}`);
+    console.log(`🎯 Health Check: http://localhost:${PORT}/health`);
+  });
+}

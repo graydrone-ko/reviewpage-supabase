@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
-import { prisma } from '../utils/database';
+import { dbUtils } from '../utils/database';
 import { hashPassword, comparePassword, generateToken } from '../utils/auth';
 
 export const registerValidation = [
@@ -33,18 +33,18 @@ export const register = async (req: Request, res: Response) => {
     const normalizedPhoneNumber = phoneNumber.replace(/\D/g, '');
 
     // 이메일 중복 검사
-    const existingUserByEmail = await prisma.user.findUnique({
-      where: { email }
-    });
+    const existingUserByEmail = await dbUtils.findUserByEmail(email);
 
     if (existingUserByEmail) {
       return res.status(400).json({ error: '이미 사용 중인 이메일입니다.' });
     }
 
-    // 전화번호 중복 검사
-    const existingUserByPhone = await prisma.user.findUnique({
-      where: { phoneNumber: normalizedPhoneNumber }
-    });
+    // 전화번호 중복 검사 (Supabase에서 직접 조회)
+    const { data: existingUserByPhone } = await dbUtils.db
+      .from('users')
+      .select('id')
+      .eq('phone_number', normalizedPhoneNumber)
+      .single();
 
     if (existingUserByPhone) {
       return res.status(400).json({ error: '이미 사용 중인 전화번호입니다.' });
@@ -54,30 +54,16 @@ export const register = async (req: Request, res: Response) => {
     const hashedPassword = await hashPassword(password);
 
     // Create user
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name,
-        role,
-        birthDate,
-        gender,
-        phoneNumber: normalizedPhoneNumber,
-        bankCode,
-        accountNumber
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        birthDate: true,
-        gender: true,
-        phoneNumber: true,
-        bankCode: true,
-        accountNumber: true,
-        createdAt: true
-      }
+    const user = await dbUtils.createUser({
+      email,
+      password: hashedPassword,
+      name,
+      role,
+      birth_date: birthDate,
+      gender,
+      phone_number: normalizedPhoneNumber,
+      bank_code: bankCode,
+      account_number: accountNumber
     });
 
     // Generate token
@@ -85,25 +71,35 @@ export const register = async (req: Request, res: Response) => {
       id: user.id,
       email: user.email,
       role: user.role,
-      birthDate: user.birthDate,
+      birthDate: user.birth_date,
       gender: user.gender
     });
 
     res.status(201).json({
       message: 'User registered successfully',
-      user,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        birthDate: user.birth_date,
+        gender: user.gender,
+        phoneNumber: user.phone_number,
+        bankCode: user.bank_code,
+        accountNumber: user.account_number,
+        createdAt: user.created_at
+      },
       token
     });
 
   } catch (error: any) {
     console.error('Registration error:', error);
     
-    // Prisma unique constraint 오류 처리
-    if (error.code === 'P2002') {
-      const field = error.meta?.target?.[0];
-      if (field === 'email') {
+    // Supabase unique constraint 오류 처리
+    if (error.code === '23505') {
+      if (error.message.includes('users_email_key')) {
         return res.status(400).json({ error: '이미 사용 중인 이메일입니다.' });
-      } else if (field === 'phoneNumber') {
+      } else if (error.message.includes('users_phone_number_key')) {
         return res.status(400).json({ error: '이미 사용 중인 전화번호입니다.' });
       }
     }
@@ -122,9 +118,7 @@ export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     // Find user
-    const user = await prisma.user.findUnique({
-      where: { email }
-    });
+    const user = await dbUtils.findUserByEmail(email);
 
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -141,7 +135,7 @@ export const login = async (req: Request, res: Response) => {
       id: user.id,
       email: user.email,
       role: user.role,
-      birthDate: user.birthDate,
+      birthDate: user.birth_date,
       gender: user.gender
     });
 
@@ -152,11 +146,11 @@ export const login = async (req: Request, res: Response) => {
         email: user.email,
         name: user.name,
         role: user.role,
-        birthDate: user.birthDate,
+        birthDate: user.birth_date,
         gender: user.gender,
-        phoneNumber: user.phoneNumber,
-        bankCode: user.bankCode,
-        accountNumber: user.accountNumber
+        phoneNumber: user.phone_number,
+        bankCode: user.bank_code,
+        accountNumber: user.account_number
       },
       token
     });

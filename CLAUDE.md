@@ -6,38 +6,49 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ReviewPage is a two-way platform connecting sellers and consumers for product detail page surveys. Sellers can create surveys for their product pages, and consumers participate to earn rewards while providing feedback.
 
-## Development Commands
+## Development Commands (Updated - Supabase + Vercel)
 
-### Backend (Node.js + Express + Prisma)
+### Project Structure
+- `backend/backend/` - Express API server (Vercel Serverless Functions)
+- `frontend/` - React application (Vercel Static Site)
+- `supabase/` - Database schema and migrations
+
+### Backend (Node.js + Express + Supabase)
 ```bash
-cd backend
+cd backend/backend          # Navigate to backend directory
+npm install                # Install dependencies (includes @supabase/supabase-js)
 npm run dev                 # Start development server with nodemon
-npm run build              # Build TypeScript and generate Prisma client
+npm run build              # Build TypeScript for production
 npm start                  # Start production server
-npm run db:generate        # Generate Prisma client
-npm run db:push           # Push schema changes to database
-npm run db:migrate        # Deploy migrations (production)
-npm run db:studio         # Open Prisma Studio
-npm run db:seed           # Create test users
+npm run db:seed            # Create test users in Supabase
 ```
 
 ### Frontend (React + TypeScript)
 ```bash
 cd frontend
-npm start                  # Start development server (port 3000)
-npm run build             # Build for production
-npm test                  # Run tests
+npm install                # Install dependencies
+npm start                  # Start development server (port 3000, proxies to :3001)
+npm run build             # Build for production (Vercel deployment)
+npm test                  # Run tests with Jest
 ```
+
+### Database Setup (Supabase)
+1. Create new Supabase project
+2. Run SQL schema from `supabase/schema.sql`
+3. Set environment variables in both projects
+4. Enable Row Level Security policies
 
 ## Architecture
 
 ### Backend Structure
-- **Entry point**: `backend/src/index.ts` - Express server with security middleware
-- **Routes**: Role-based routing (`/api/auth`, `/api/surveys`, `/api/admin`)
-- **Controllers**: Business logic in `src/controllers/`
-- **Middleware**: Authentication and admin auth in `src/middleware/`
+- **Entry point**: `backend/backend/src/index.ts` - Express server with security middleware and static file serving
+- **Routes**: Role-based routing (`/api/auth`, `/api/surveys`, `/api/admin`, `/api/frontend`)
+- **Controllers**: Business logic in `src/controllers/` (auth, survey, admin, SEO, finance, rewards)
+- **Middleware**: Authentication (`auth.ts`) and admin auth (`adminAuth.ts`) in `src/middleware/`
 - **Database**: Prisma ORM with PostgreSQL, schema in `prisma/schema.prisma`
-- **Scripts**: Utility scripts in `scripts/` for data management
+- **Generated Client**: Custom Prisma output location in `src/generated/prisma/`
+- **Scripts**: Extensive utility scripts in `scripts/` for data management, testing, and admin tasks
+- **Static Serving**: Built frontend served from `public/` directory
 
 ### Frontend Structure
 - **Entry point**: `frontend/src/App.tsx` - Router with role-based routes
@@ -59,10 +70,14 @@ npm test                  # Run tests
 - Admin authentication middleware for admin routes
 - Password hashing with bcryptjs
 
-## Database Operations
-- Use Prisma Client from `backend/src/generated/prisma`
-- Custom Prisma output location configured in schema
-- Database URL and JWT secrets required in `.env`
+## Database Operations (Updated - Supabase)
+- Use Supabase client from `backend/backend/src/lib/supabase.ts`
+- Database utility functions in `backend/backend/src/utils/database.ts`
+- Supabase connection parameters required in `.env`
+- Database schema: `supabase/schema.sql`
+- Row Level Security (RLS) policies configured
+- Development: Local Supabase or cloud instance
+- Production: Supabase cloud PostgreSQL
 
 ## SEO Optimization (Added)
 - **Meta Tags**: Comprehensive meta tags in `public/index.html` with Korean keywords
@@ -75,11 +90,13 @@ npm test                  # Run tests
 
 ### SEO Files
 - `frontend/src/hooks/useSEO.ts` - Dynamic SEO hook
-- `backend/src/controllers/seoController.ts` - SEO API endpoints
+- `backend/backend/src/controllers/seoController.ts` - SEO API endpoints
 - `frontend/public/manifest.json` - PWA manifest with Korean content
 
 ## Testing
-No test framework is currently configured. Tests would need to be set up.
+- Frontend: Jest and React Testing Library configured (via react-scripts)
+- Backend: No test framework currently configured
+- Run frontend tests: `cd frontend && npm test`
 
 ## Key Patterns
 - Controllers use middleware for authentication
@@ -88,6 +105,45 @@ No test framework is currently configured. Tests would need to be set up.
 - API responses follow consistent JSON structure
 - Role-based component rendering in frontend
 - SEO optimization applied to all major pages
+
+## Deployment Architecture (Updated - Supabase + Vercel)
+- **Database**: Supabase PostgreSQL with Row Level Security (RLS)
+- **Backend**: Vercel Serverless Functions (Node.js + Express)
+- **Frontend**: Vercel Static Site Generation (React)
+- **API Routes**: All API endpoints prefixed with `/api/`
+- **Health Check**: `/health` endpoint for deployment monitoring
+- **Authentication**: JWT tokens (server-side) + Supabase RLS policies
+
+## Important File Locations (Updated)
+- **Backend Entry**: `backend/backend/src/index.ts` (Express app)
+- **Backend API**: `backend/backend/api/index.ts` (Vercel Functions entry)
+- **Frontend Entry**: `frontend/src/App.tsx`
+- **Database Schema**: `supabase/schema.sql`
+- **Supabase Client**: `backend/backend/src/lib/supabase.ts`
+- **DB Utils**: `backend/backend/src/utils/database.ts`
+- **Environment**: `backend/backend/.env`
+- **Deployment Config**: `vercel.json` (both frontend and backend)
+- **Scripts**: `backend/backend/scripts/` (extensive collection for admin tasks)
+
+## Scripts Usage
+Common utility scripts in `backend/backend/scripts/`:
+```bash
+cd backend/backend
+node scripts/createTestUsers.js           # Create test accounts
+node scripts/backup-and-clean-data.js     # Backup and clean database
+node scripts/get-user-details.js          # Get user information
+node scripts/testSurveySystem.js          # Test survey workflow
+```
+
+## Development Workflow (Updated)
+1. **Database Setup**: Create Supabase project, run schema, configure RLS
+2. **Backend Development**: `cd backend/backend && npm run dev`
+3. **Frontend Development**: `cd frontend && npm start` (proxies to backend)
+4. **Database Changes**: Update `supabase/schema.sql`, apply via Supabase dashboard
+5. **Production Deployment**: 
+   - Backend: Deploy to Vercel (auto from git)
+   - Frontend: Deploy to Vercel (auto from git)
+   - Environment variables set in Vercel dashboard
 
 ## GitHub Repository
 GitHub 주소: https://github.com/graydrone-ko/reviewpage
@@ -98,3 +154,5 @@ Personal Access Token은 보안상 별도 관리
 ## 원격 저장소에 푸시할 때 먼저 HTTP 버퍼 크기를 늘리고 조금 씩 나누어 푸시할 것. 에러 시 작은 변경사항만 포함하는 새커밋을 만들어 푸시할 것
 
 ## GitHub CLI 사용 가능 - gh 명령어로 GitHub 처리
+
+## 모든 커뮤니케이션은 특정 명사를 제외하고 한글로 해
