@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { prisma } from '../utils/database';
+import { dbUtils, db } from '../utils/database';
 import { AuthRequest } from '../middleware/auth';
 
 export const getMyRewards = async (req: AuthRequest, res: Response) => {
@@ -9,32 +9,10 @@ export const getMyRewards = async (req: AuthRequest, res: Response) => {
     }
 
     // 리워드와 해당 시점의 설문 응답 정보를 함께 조회
-    const rewards = await prisma.reward.findMany({
-      where: {
-        userId: req.user.id
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    });
+    const rewards = await dbUtils.findRewardsByUserId(req.user.id);
 
     // 사용자의 모든 설문 응답을 가져와서 시간대별로 매칭
-    const surveyResponses = await prisma.surveyResponse.findMany({
-      where: {
-        consumerId: req.user.id
-      },
-      include: {
-        survey: {
-          select: {
-            title: true,
-            storeName: true
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    });
+    const surveyResponses = await dbUtils.findResponsesByUserId(req.user.id);
 
     // 리워드와 설문 응답을 시간 기준으로 매칭
     const enrichedRewards = rewards.map(reward => {
@@ -42,9 +20,9 @@ export const getMyRewards = async (req: AuthRequest, res: Response) => {
       
       if (reward.type === 'SURVEY_COMPLETION') {
         // 리워드 생성 시간과 가장 가까운 설문 응답을 찾음 (±5분 이내)
-        const rewardTime = reward.createdAt.getTime();
+        const rewardTime = new Date(reward.created_at).getTime();
         matchedSurveyResponse = surveyResponses.find(response => {
-          const responseTime = response.createdAt.getTime();
+          const responseTime = new Date(response.created_at).getTime();
           const timeDiff = Math.abs(rewardTime - responseTime);
           return timeDiff <= 5 * 60 * 1000; // 5분 이내
         });
@@ -52,8 +30,8 @@ export const getMyRewards = async (req: AuthRequest, res: Response) => {
 
       return {
         ...reward,
-        surveyTitle: matchedSurveyResponse?.survey?.title || '설문 정보 없음',
-        storeName: matchedSurveyResponse?.survey?.storeName || '-'
+        surveyTitle: matchedSurveyResponse?.surveys?.title || '설문 정보 없음',
+        storeName: matchedSurveyResponse?.surveys?.store_name || '-'
       };
     });
 
@@ -91,14 +69,15 @@ export const requestWithdrawal = async (req: AuthRequest, res: Response) => {
     }
 
     // Calculate available balance
-    const rewards = await prisma.reward.findMany({
-      where: {
-        userId: req.user.id,
-        status: 'PENDING'
-      }
-    });
+    const { data: rewards, error: rewardsError } = await db
+      .from('rewards')
+      .select('*')
+      .eq('user_id', req.user.id)
+      .eq('status', 'PENDING');
+    
+    if (rewardsError) throw rewardsError;
 
-    const availableBalance = rewards.reduce((sum, reward) => sum + reward.amount, 0);
+    const availableBalance = (rewards || []).reduce((sum, reward) => sum + reward.amount, 0);
 
     // Check if available balance is less than minimum withdrawal amount
     if (availableBalance < 10000) {
@@ -115,13 +94,17 @@ export const requestWithdrawal = async (req: AuthRequest, res: Response) => {
     }
 
     // 출금 요청을 데이터베이스에 저장
-    const withdrawalRequest = await prisma.withdrawalRequest.create({
-      data: {
-        userId: req.user.id,
+    const { data: withdrawalRequest, error: withdrawalError } = await db
+      .from('withdrawal_requests')
+      .insert({
+        user_id: req.user.id,
         amount: amount,
         status: 'PENDING'
-      }
-    });
+      })
+      .select()
+      .single();
+    
+    if (withdrawalError) throw withdrawalError;
 
     console.log(`💰 출금 요청 생성됨: ${req.user.name || 'Unknown'} (${req.user.email}) - ₩${amount.toLocaleString()}`);
     
@@ -144,44 +127,50 @@ export const getRewardStats = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'Admin access required' });
     }
 
-    const totalRewards = await prisma.reward.aggregate({
-      _sum: {
-        amount: true
-      }
-    });
+    // 리워드 통계 조회
+    const { data: allRewards, error: allRewardsError } = await db
+      .from('rewards')
+      .select('amount');
+    
+    if (allRewardsError) throw allRewardsError;
 
-    const paidRewards = await prisma.reward.aggregate({
-      where: {
-        status: 'PAID'
-      },
-      _sum: {
-        amount: true
-      }
-    });
+    const { data: paidRewardsData, error: paidRewardsError } = await db
+      .from('rewards')
+      .select('amount')
+      .eq('status', 'PAID');
+    
+    if (paidRewardsError) throw paidRewardsError;
 
-    const pendingRewards = await prisma.reward.aggregate({
-      where: {
-        status: 'PENDING'
-      },
-      _sum: {
-        amount: true
-      }
-    });
+    const { data: pendingRewardsData, error: pendingRewardsError } = await db
+      .from('rewards')
+      .select('amount')
+      .eq('status', 'PENDING');
+    
+    if (pendingRewardsError) throw pendingRewardsError;
 
-    const userCount = await prisma.user.count({
-      where: {
-        role: 'CONSUMER'
-      }
-    });
+    const { count: userCount, error: userCountError } = await db
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'CONSUMER');
+    
+    if (userCountError) throw userCountError;
 
-    const responseCount = await prisma.surveyResponse.count();
+    const { count: responseCount, error: responseCountError } = await db
+      .from('survey_responses')
+      .select('*', { count: 'exact', head: true });
+    
+    if (responseCountError) throw responseCountError;
+
+    const totalRewardsAmount = (allRewards || []).reduce((sum, reward) => sum + reward.amount, 0);
+    const paidRewardsAmount = (paidRewardsData || []).reduce((sum, reward) => sum + reward.amount, 0);
+    const pendingRewardsAmount = (pendingRewardsData || []).reduce((sum, reward) => sum + reward.amount, 0);
 
     res.json({
-      totalRewards: totalRewards._sum.amount || 0,
-      paidRewards: paidRewards._sum.amount || 0,
-      pendingRewards: pendingRewards._sum.amount || 0,
-      userCount,
-      responseCount
+      totalRewards: totalRewardsAmount,
+      paidRewards: paidRewardsAmount,
+      pendingRewards: pendingRewardsAmount,
+      userCount: userCount || 0,
+      responseCount: responseCount || 0
     });
 
   } catch (error) {
