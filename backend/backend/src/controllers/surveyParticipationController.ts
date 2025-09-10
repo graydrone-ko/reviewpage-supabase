@@ -105,3 +105,87 @@ export const getSurveyParticipationStatus = async (req: AuthRequest, res: Respon
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+// 누락된 함수들 추가
+export const getBulkParticipationStatus = async (req: AuthRequest, res: Response) => {
+  try {
+    const { surveyIds } = req.body;
+    
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    if (!Array.isArray(surveyIds)) {
+      return res.status(400).json({ error: 'surveyIds must be an array' });
+    }
+
+    const participationStatuses: any = {};
+
+    for (const surveyId of surveyIds) {
+      const existingResponse = await dbUtils.findResponseByUserAndSurvey(req.user.id, surveyId);
+      participationStatuses[surveyId] = {
+        hasParticipated: !!existingResponse,
+        participation: existingResponse
+      };
+    }
+
+    res.json({ participations: participationStatuses });
+
+  } catch (error) {
+    console.error('Get bulk participation status error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getUserSurveyResponse = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params; // survey ID
+    
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const response = await dbUtils.findResponseByUserAndSurvey(req.user.id, id);
+
+    if (!response) {
+      return res.status(404).json({ error: 'No response found for this survey' });
+    }
+
+    res.json({ response });
+
+  } catch (error) {
+    console.error('Get user survey response error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const updateSurveyResponse = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params; // survey ID
+    const { responses } = req.body;
+    
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const existingResponse = await dbUtils.findResponseByUserAndSurvey(req.user.id, id);
+
+    if (!existingResponse) {
+      return res.status(404).json({ error: 'No existing response found to update' });
+    }
+
+    const updatedResponse = await dbUtils.updateSurveyResponse(existingResponse.id, {
+      responses: responses,
+      updated_at: new Date().toISOString()
+    });
+
+    res.json({
+      message: 'Survey response updated successfully',
+      response: updatedResponse
+    });
+
+  } catch (error) {
+    console.error('Update survey response error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};

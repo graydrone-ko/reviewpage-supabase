@@ -145,6 +145,18 @@ export const dbUtils = {
     return data;
   },
 
+  async updateSurveyResponse(id: string, updateData: any) {
+    const { data, error } = await db
+      .from('survey_responses')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
   async findResponseByUserAndSurvey(consumerId: string, surveyId: string) {
     const { data, error } = await db
       .from('survey_responses')
@@ -317,6 +329,23 @@ export const dbUtils = {
     if (conditions.createdBy) query = query.eq('created_by', conditions.createdBy);
 
     const { data, error } = await query;
+    if (error) throw error;
+    return data || [];
+  },
+
+  async findStepsByTemplateId(templateId: string) {
+    const { data, error } = await db
+      .from('survey_steps')
+      .select(`
+        *,
+        questions:survey_questions(
+          *,
+          options:question_options(*)
+        )
+      `)
+      .eq('template_id', templateId)
+      .order('step_order', { ascending: true });
+    
     if (error) throw error;
     return data || [];
   },

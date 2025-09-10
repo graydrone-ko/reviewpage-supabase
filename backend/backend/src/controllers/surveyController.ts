@@ -230,3 +230,95 @@ export const requestCancellation = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+// 누락된 함수들 추가
+export const updateSurvey = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+    
+    if (!req.user || req.user.role !== 'SELLER') {
+      return res.status(403).json({ error: 'Only sellers can update surveys' });
+    }
+
+    const updatedSurvey = await dbUtils.updateSurvey(id, updateData);
+    res.json({ survey: updatedSurvey });
+  } catch (error) {
+    console.error('Update survey error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const extendSurvey = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { endDate } = req.body;
+    
+    if (!req.user || req.user.role !== 'SELLER') {
+      return res.status(403).json({ error: 'Only sellers can extend surveys' });
+    }
+
+    const updatedSurvey = await dbUtils.updateSurvey(id, { 
+      endDate: new Date(endDate) 
+    });
+    
+    res.json({ 
+      message: 'Survey extended successfully',
+      survey: updatedSurvey 
+    });
+  } catch (error) {
+    console.error('Extend survey error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const requestSurveyCancellation = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+    
+    if (!req.user || req.user.role !== 'SELLER') {
+      return res.status(403).json({ error: 'Only sellers can request survey cancellation' });
+    }
+
+    const cancellationRequest = await dbUtils.createCancellationRequest({
+      survey_id: id,
+      reason,
+      status: 'PENDING'
+    });
+    
+    await dbUtils.updateSurvey(id, { status: 'CANCELLED' });
+    
+    res.json({ 
+      message: 'Survey cancellation requested successfully',
+      request: cancellationRequest
+    });
+  } catch (error) {
+    console.error('Request survey cancellation error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const debugTemplates = async (req: Request, res: Response) => {
+  try {
+    const templates = await dbUtils.findTemplatesByConditions({});
+    const templateDetails = [];
+
+    for (const template of templates) {
+      const steps = await dbUtils.findStepsByTemplateId(template.id);
+      templateDetails.push({
+        ...template,
+        steps: steps || []
+      });
+    }
+
+    res.json({ 
+      message: 'Debug templates data',
+      templates: templateDetails,
+      count: templateDetails.length
+    });
+  } catch (error) {
+    console.error('Debug templates error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};

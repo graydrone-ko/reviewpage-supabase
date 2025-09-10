@@ -3,19 +3,15 @@ import { adminAuth } from '../middleware/adminAuth';
 import { 
   getDashboardStats, 
   getUsers, 
-  updateSurveyStatus, 
-  getAllSurveys,
-  getPendingSurveys,
+  getSurveys,
+  approveSurvey,
+  rejectSurvey,
   getRewards,
-  updateRewardStatus,
-  getSurveyResponses,
-  getCancellationRequests,
-  getCancellationRequestStats,
-  processCancellationRequest,
-  getRecentCancellationRequests,
+  approveReward,
+  getResponses,
   getWithdrawalRequests,
-  processWithdrawalRequest,
-  getRecentWithdrawalRequests
+  approveWithdrawal,
+  rejectWithdrawal
 } from '../controllers/adminController';
 import financeRoutes from './finance';
 
@@ -31,25 +27,19 @@ router.get('/dashboard/stats', getDashboardStats);
 router.get('/users', getUsers);
 
 // 설문 관리
-router.get('/surveys', getAllSurveys); // 향상된 기능: 모든 설문 조회
-router.get('/surveys/pending', getPendingSurveys); // 기존 기능 유지
-router.patch('/surveys/:surveyId/status', updateSurveyStatus);
-router.get('/surveys/:surveyId/responses', getSurveyResponses);
+router.get('/surveys', getSurveys);
+router.patch('/surveys/:surveyId/approve', approveSurvey);
+router.patch('/surveys/:surveyId/reject', rejectSurvey);
+router.get('/surveys/:surveyId/responses', getResponses);
 
 // 리워드 관리
 router.get('/rewards', getRewards);
-router.patch('/rewards/:rewardId/status', updateRewardStatus);
-
-// 중단요청 관리
-router.get('/cancellation-requests', getCancellationRequests);
-router.get('/cancellation-requests/stats', getCancellationRequestStats);
-router.get('/cancellation-requests/recent', getRecentCancellationRequests);
-router.patch('/cancellation-requests/:surveyId/process', processCancellationRequest);
+router.patch('/rewards/:rewardId/approve', approveReward);
 
 // 출금요청 관리
 router.get('/withdrawal-requests', getWithdrawalRequests);
-router.get('/withdrawal-requests/recent', getRecentWithdrawalRequests);
-router.patch('/withdrawal-requests/:id/process', processWithdrawalRequest);
+router.patch('/withdrawal-requests/:id/approve', approveWithdrawal);
+router.patch('/withdrawal-requests/:id/reject', rejectWithdrawal);
 
 // 재무 관리
 router.use('/finance', financeRoutes);
