@@ -1,0 +1,74 @@
+# Development and debug files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Temporary directories
+tmp/
+temp/
+
+# IDE directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Test files and scripts
+test-*.js
+*-test.js
+check-*.js
+create-*.js
+debug-*.js
+fix-*.js
+reset-*.js
+verify-*.js
+update-*.js
+force_*.js
+IMMEDIATE_FIX.js
+BROWSER_FIX.js
+TEMPLATE_FIX.js
+COMPLETE_SOLUTION.js
+create_template_direct.js
+
+# Node.js
+node_modules/
+.npm
+.node_repl_history
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build outputs (except what Vercel needs)
+dist/
+build/
+
+# Database files
+*.db
+*.sqlite
+prisma/dev.db
+
+# Coverage and test reports
+coverage/
+*.lcov
+.nyc_output
