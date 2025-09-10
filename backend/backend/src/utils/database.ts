@@ -28,6 +28,17 @@ export const dbUtils = {
     return data;
   },
 
+  async findUserByPhoneNumber(phoneNumber: string) {
+    const { data, error } = await db
+      .from('users')
+      .select('id')
+      .eq('phone_number', phoneNumber)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
+  },
+
   async createUser(userData: any) {
     const { data, error } = await db
       .from('users')

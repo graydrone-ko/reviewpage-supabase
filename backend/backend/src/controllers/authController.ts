@@ -39,12 +39,8 @@ export const register = async (req: Request, res: Response) => {
       return res.status(400).json({ error: '이미 사용 중인 이메일입니다.' });
     }
 
-    // 전화번호 중복 검사 (Supabase에서 직접 조회)
-    const { data: existingUserByPhone } = await dbUtils.db
-      .from('users')
-      .select('id')
-      .eq('phone_number', normalizedPhoneNumber)
-      .single();
+    // 전화번호 중복 검사
+    const existingUserByPhone = await dbUtils.findUserByPhoneNumber(normalizedPhoneNumber);
 
     if (existingUserByPhone) {
       return res.status(400).json({ error: '이미 사용 중인 전화번호입니다.' });
