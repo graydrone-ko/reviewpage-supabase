@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
-import { prisma } from '../utils/database';
+import { dbUtils, db } from '../utils/database';
 import { AuthRequest } from '../middleware/auth';
 
 export const createSurveyValidation = [

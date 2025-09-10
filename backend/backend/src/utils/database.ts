@@ -210,6 +210,98 @@ export const dbUtils = {
     return data;
   },
 
+  // 설문 관련 추가 함수들
+  async findSurveysByConditions(conditions: any) {
+    let query = db.from('surveys').select(`
+      *,
+      seller:users!surveys_seller_id_fkey(*),
+      template:survey_templates!surveys_template_id_fkey(*)
+    `);
+    
+    // 조건 적용
+    if (conditions.seller_id) query = query.eq('seller_id', conditions.seller_id);
+    if (conditions.status) query = query.eq('status', conditions.status);
+    if (conditions.endDate) query = query.gte('end_date', conditions.endDate);
+    if (conditions.targetAgeMin) query = query.lte('target_age_min', conditions.targetAgeMin);
+    if (conditions.targetAgeMax) query = query.gte('target_age_max', conditions.targetAgeMax);
+    if (conditions.targetGender) {
+      query = query.or(`target_gender.eq.${conditions.targetGender},target_gender.eq.ALL`);
+    }
+
+    query = query.order('created_at', { ascending: false });
+    
+    const { data, error } = await query;
+    if (error) throw error;
+    return data || [];
+  },
+
+  async findSurveyWithTemplate(id: string) {
+    const { data, error } = await db
+      .from('surveys')
+      .select(`
+        *,
+        seller:users!surveys_seller_id_fkey(id, name, email),
+        template:survey_templates!surveys_template_id_fkey(
+          *,
+          steps:survey_steps(
+            *,
+            questions:survey_questions(
+              *,
+              options:question_options(*)
+            )
+          )
+        )
+      `)
+      .eq('id', id)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
+  },
+
+  async createSurveyTemplate(templateData: any) {
+    const { data, error } = await db
+      .from('survey_templates')
+      .insert(templateData)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async findTemplatesByConditions(conditions: any) {
+    let query = db.from('survey_templates').select(`
+      *,
+      steps:survey_steps(
+        *,
+        questions:survey_questions(
+          *,
+          options:question_options(*)
+        )
+      )
+    `);
+    
+    if (conditions.isDefault) query = query.eq('is_default', conditions.isDefault);
+    if (conditions.isPublic) query = query.eq('is_public', conditions.isPublic);
+    if (conditions.createdBy) query = query.eq('created_by', conditions.createdBy);
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data || [];
+  },
+
+  async createCancellationRequest(requestData: any) {
+    const { data, error } = await db
+      .from('survey_cancellation_requests')
+      .insert(requestData)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
   // 통계 관련
   async getStats() {
     const [usersResult, surveysResult, responsesResult, rewardsResult] = await Promise.all([
