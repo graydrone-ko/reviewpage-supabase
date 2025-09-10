@@ -148,11 +148,9 @@ node scripts/testSurveySystem.js          # Test survey workflow
 ## GitHub Repository
 GitHub 주소: https://github.com/graydrone-ko/reviewpage
 
-## GitHub Push Configuration
-Personal Access Token은 보안상 별도 관리
-
-## 원격 저장소에 푸시할 때 먼저 HTTP 버퍼 크기를 늘리고 조금 씩 나누어 푸시할 것. 에러 시 작은 변경사항만 포함하는 새커밋을 만들어 푸시할 것
-
-## GitHub CLI 사용 가능 - gh 명령어로 GitHub 처리
+## GitHub Configuration
+- GitHub CLI 사용 가능 - gh 명령어로 GitHub 처리
+- 푸시 시 작은 단위로 나누어 진행 권장
+- 환경 변수나 민감한 정보는 .gitignore에 추가
 
 ## 모든 커뮤니케이션은 특정 명사를 제외하고 한글로 해
