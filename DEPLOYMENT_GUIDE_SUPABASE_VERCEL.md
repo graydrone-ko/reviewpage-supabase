@@ -1,6 +1,14 @@
-# Supabase + Vercel 배포 가이드
+# Supabase + Vercel 배포 가이드 (최종 업데이트)
 
-ReviewPage 플랫폼을 Supabase (데이터베이스) + Vercel (프론트엔드/백엔드) 환경으로 배포하는 가이드입니다.
+ReviewPage 플랫폼을 새로운 `reviewpage-supabase` 저장소에서 Supabase + Vercel로 배포하는 완전한 가이드입니다.
+
+## ✅ 저장소 준비 완료
+
+**새로운 저장소**: https://github.com/graydrone-ko/reviewpage-supabase
+- 완전한 백엔드 코드 (Supabase 클라이언트)
+- 완전한 프론트엔드 코드
+- Vercel 배포 설정 파일
+- Supabase 데이터베이스 스키마
 
 ## 1. 사전 준비
 
@@ -32,17 +40,19 @@ Settings → API에서 다음 값들을 복사:
 - `anon public` key
 - `service_role` key (secret)
 
-## 3. 백엔드 배포 (Vercel)
+## 3. 백엔드 배포 (Vercel Serverless Functions)
 
-### 3.1 Vercel에 프로젝트 연결
-1. [Vercel Dashboard](https://vercel.com/dashboard)에 로그인
+### 3.1 Vercel 백엔드 프로젝트 생성
+1. [Vercel Dashboard](https://vercel.com/dashboard) 로그인
 2. "New Project" 클릭
-3. GitHub 저장소 선택
-4. Root Directory: `backend/backend`로 설정
-5. Framework Preset: "Other" 선택
+3. Repository: `graydrone-ko/reviewpage-supabase` 선택
+4. **⚠️ 중요**: **Root Directory**: `backend/backend` 설정
+5. Framework Preset: "Other"
+6. Build Command: `npm run build`
+7. Output Directory: `dist`
 
 ### 3.2 환경 변수 설정
-Vercel Project Settings → Environment Variables에서 추가:
+Vercel Project → Settings → Environment Variables:
 
 ```
 SUPABASE_URL=https://your-project-ref.supabase.co
@@ -52,9 +62,9 @@ JWT_SECRET=your-strong-jwt-secret-key
 NODE_ENV=production
 ```
 
-### 3.3 배포 실행
-1. "Deploy" 버튼 클릭
-2. 배포 완료 후 URL 확인 (예: `https://reviewpage-backend.vercel.app`)
+### 3.3 배포 확인
+- 배포 URL 예시: `https://reviewpage-backend.vercel.app`
+- Health Check: `https://reviewpage-backend.vercel.app/health`
 
 ## 4. 프론트엔드 배포 (Vercel)
 

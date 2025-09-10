@@ -3,10 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/index.ts",
-    "build": "rimraf dist && tsc",
+    "dev": "cross-env NODE_ENV=development ts-node src/index.ts",
     "start": "node dist/index.js",
-    "vercel-build": "npm run build",
     "db:seed": "ts-node src/create-test-users.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -35,7 +33,9 @@
     "jsonwebtoken": "^9.0.2",
     "tailwindcss": "^4.1.12",
     "typescript": "^5.9.2",
-    "rimraf": "^5.0.0"
+    "rimraf": "^5.0.0",
+    "cross-env": "^7.0.3",
+    "@vercel/node": "^3.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10",
