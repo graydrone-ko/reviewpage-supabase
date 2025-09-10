@@ -4,6 +4,14 @@ import { checkDuplicate, checkDuplicateValidation } from '../controllers/duplica
 
 const router = Router();
 
+// Test endpoint for auth routes
+router.get('/test', (req, res) => {
+  res.status(200).json({ 
+    message: 'Auth routes working',
+    timestamp: new Date().toISOString()
+  });
+});
+
 router.post('/register', registerValidation, register);
 router.post('/login', loginValidation, login);
 router.post('/check-duplicate', checkDuplicateValidation, checkDuplicate);
