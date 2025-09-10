@@ -207,7 +207,7 @@ node scripts/cleanupOldTemplates.js      # Clean unused templates
 ## Development Workflow  
 
 ### Initial Setup
-1. **Clone Repository**: `git clone https://github.com/graydrone-ko/reviewpage`
+1. **Clone Repository**: `git clone https://github.com/graydrone-ko/reviewpage-supabase`
 2. **Install Dependencies**: `npm install` (monorepo setup)
 3. **Database Setup**: Create Supabase project, copy schema from `supabase/schema.sql`
 4. **Environment Variables**: Set up `.env` files (see Environment Variables section)
@@ -244,7 +244,7 @@ node scripts/cleanupOldTemplates.js      # Clean unused templates
 - **API**: RESTful endpoints with role-based access control
 
 ## GitHub Repository
-- **URL**: https://github.com/graydrone-ko/reviewpage
+- **URL**: https://github.com/graydrone-ko/reviewpage-supabase
 - **CLI Access**: `gh` commands available for GitHub operations
 - **Deployment**: Auto-deploy from git pushes to main branch
 - **Security**: Environment variables managed via Vercel dashboard (never committed)
