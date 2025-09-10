@@ -57,6 +57,28 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Supabase connection test endpoint
+app.get('/test-db', async (req, res) => {
+  try {
+    const { dbUtils } = require('../src/utils/database');
+    
+    // Simple database connection test
+    const testResult = await dbUtils.getStats();
+    res.status(200).json({ 
+      status: 'Database connection OK', 
+      stats: testResult,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error: any) {
+    console.error('Database connection error:', error);
+    res.status(500).json({ 
+      status: 'Database connection failed',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/surveys', surveyRoutes);
