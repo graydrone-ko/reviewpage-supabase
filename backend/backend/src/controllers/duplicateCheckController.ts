@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
-import { prisma } from '../utils/database';
+import { dbUtils } from '../utils/database';
 
 export const checkDuplicateValidation = [
   body('type').isIn(['email', 'phone']).withMessage('검사 타입은 email 또는 phone이어야 합니다'),
@@ -21,9 +21,7 @@ export const checkDuplicate = async (req: Request, res: Response) => {
     
     switch (type) {
       case 'email':
-        existingUser = await prisma.user.findUnique({
-          where: { email: value }
-        });
+        existingUser = await dbUtils.findUserByEmail(value);
         break;
         
       case 'phone':
@@ -37,9 +35,7 @@ export const checkDuplicate = async (req: Request, res: Response) => {
           });
         }
         
-        existingUser = await prisma.user.findUnique({
-          where: { phoneNumber: normalizedValue }
-        });
+        existingUser = await dbUtils.findUserByPhoneNumber(normalizedValue);
         break;
         
       default:
