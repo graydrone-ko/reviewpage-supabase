@@ -91,6 +91,36 @@ export const dbUtils = {
     return data;
   },
 
+  async createSurveyWithDetails(surveyData: any) {
+    // Supabase에서는 nested insert가 복잡하므로 단순하게 survey만 생성
+    const { data, error } = await db
+      .from('surveys')
+      .insert({
+        title: surveyData.title,
+        store_name: surveyData.storeName,
+        description: surveyData.description,
+        url: surveyData.url,
+        seller_id: surveyData.sellerId,
+        template_id: surveyData.templateId,
+        target_age_min: surveyData.targetAgeMin,
+        target_age_max: surveyData.targetAgeMax,
+        target_gender: surveyData.targetGender,
+        reward: surveyData.reward,
+        max_participants: surveyData.maxParticipants,
+        total_budget: surveyData.totalBudget,
+        custom_steps: surveyData.customSteps,
+        status: surveyData.status,
+        end_date: surveyData.endDate
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    // 생성된 survey의 상세 정보 조회
+    return await this.findSurveyWithTemplate(data.id);
+  },
+
   async updateSurvey(id: string, updateData: any) {
     const { data, error } = await db
       .from('surveys')
