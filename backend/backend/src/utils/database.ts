@@ -378,6 +378,51 @@ export const dbUtils = {
       totalResponses: responsesResult.count || 0,
       totalRewards
     };
+  },
+
+  // 템플릿 생성 관련 함수들
+  async createTemplate(templateData: any) {
+    const { data, error } = await db
+      .from('survey_templates')
+      .insert(templateData)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async createStep(stepData: any) {
+    const { data, error } = await db
+      .from('survey_steps')
+      .insert(stepData)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async createQuestion(questionData: any) {
+    const { data, error } = await db
+      .from('survey_questions')
+      .insert(questionData)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async createOption(optionData: any) {
+    const { data, error } = await db
+      .from('question_options')
+      .insert(optionData)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
   }
 };
 
