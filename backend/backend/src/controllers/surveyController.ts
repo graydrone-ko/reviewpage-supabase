@@ -160,7 +160,89 @@ export const getTemplates = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// 간소화된 나머지 함수들
+// 기본 템플릿 생성 (관리자용 또는 시스템 초기화용)
+export const createDefaultTemplate = async (req: AuthRequest, res: Response) => {
+  try {
+    // 기존 기본 템플릿이 있는지 확인
+    const existingTemplates = await dbUtils.findTemplatesByConditions({ isDefault: true });
+    
+    if (existingTemplates && existingTemplates.length > 0) {
+      return res.json({ 
+        message: '기본 템플릿이 이미 존재합니다.', 
+        templates: existingTemplates 
+      });
+    }
+
+    // 1. 기본 템플릿 생성
+    const templateData = {
+      name: '상품 상세페이지 리뷰 설문',
+      description: '상품 상세페이지의 완성도를 평가하는 포괄적인 설문조사 (5단계 21문항)',
+      is_default: true,
+      is_public: true,
+      created_by: null, // 시스템 생성
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    console.log('템플릿 기본 정보 생성 중...');
+    const template = await dbUtils.createTemplate(templateData);
+    console.log(`템플릿 생성 완료: ${template.id}`);
+
+    // 2. 5단계 생성
+    const steps = [
+      {
+        step_number: 1,
+        title: '첫인상 평가',
+        description: '상품 상세페이지의 첫인상에 대해 평가해주세요',
+        template_id: template.id
+      },
+      {
+        step_number: 2,
+        title: '콘텐츠 이해도',
+        description: '상품 정보와 콘텐츠의 이해도를 평가해주세요',
+        template_id: template.id
+      },
+      {
+        step_number: 3,
+        title: '구매 동기 분석',
+        description: '구매 의사결정에 영향을 주는 요소들을 분석해주세요',
+        template_id: template.id
+      },
+      {
+        step_number: 4,
+        title: '페이지 구조 평가',
+        description: '상세페이지의 구조와 사용성을 평가해주세요',
+        template_id: template.id
+      },
+      {
+        step_number: 5,
+        title: '감정 및 행동 의도',
+        description: '페이지를 본 후의 감정과 행동 의도를 알려주세요',
+        template_id: template.id
+      }
+    ];
+
+    console.log('5단계 생성 중...');
+    const createdSteps = [];
+    for (const stepData of steps) {
+      const step = await dbUtils.createStep(stepData);
+      createdSteps.push(step);
+      console.log(`${step.step_number}단계: ${step.title}`);
+    }
+
+    res.json({
+      message: '5단계 21문항 기본 템플릿 생성 완료!',
+      template: template,
+      stepsCreated: createdSteps.length,
+      templateId: template.id
+    });
+
+  } catch (error) {
+    console.error('기본 템플릿 생성 실패:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 export const createTemplate = async (req: AuthRequest, res: Response) => {
   res.status(501).json({ error: 'Not implemented yet' });
 };

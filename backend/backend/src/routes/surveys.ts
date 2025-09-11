@@ -8,6 +8,7 @@ import {
   createSurveyValidation,
   getTemplates,
   getTemplate,
+  createDefaultTemplate,
   extendSurvey,
   requestSurveyCancellation,
   debugTemplates
@@ -52,6 +53,7 @@ router.patch('/:id/response', updateSurveyResponse);
 // Template routes
 router.get('/templates/list', getTemplates);
 router.get('/templates/:id', getTemplate);
+router.post('/templates/create-default', createDefaultTemplate);
 
 // Survey extension and cancellation (sellers only)
 router.patch('/:id/extend', requireRole(['SELLER']), extendSurvey);
