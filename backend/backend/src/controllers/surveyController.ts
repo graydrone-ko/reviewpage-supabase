@@ -160,8 +160,8 @@ export const getTemplates = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// 기본 템플릿 생성 (관리자용 또는 시스템 초기화용)
-export const createDefaultTemplate = async (req: AuthRequest, res: Response) => {
+// 기본 템플릿 생성 (시스템 초기화용 - 인증 불필요)
+export const createDefaultTemplate = async (req: Request, res: Response) => {
   try {
     // 기존 기본 템플릿이 있는지 확인
     const existingTemplates = await dbUtils.findTemplatesByConditions({ isDefault: true });
