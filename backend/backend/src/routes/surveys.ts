@@ -25,6 +25,7 @@ const router = Router();
 
 // 디버깅 라우트 (인증 불필요)
 router.get('/debug/templates', debugTemplates);
+router.post('/debug/create-template', createDefaultTemplate);
 
 // All other routes require authentication
 router.use(authenticateToken);
