@@ -47,10 +47,21 @@ export const createSurvey = async (req: AuthRequest, res: Response) => {
     // 템플릿 ID가 제공되지 않으면 기본 템플릿 사용
     let finalTemplateId = templateId;
     if (!finalTemplateId) {
-      const defaultTemplate = await dbUtils.findDefaultTemplate();
+      let defaultTemplate = await dbUtils.findDefaultTemplate();
       
+      // 기본 템플릿이 없으면 자동으로 생성
       if (!defaultTemplate) {
-        return res.status(400).json({ error: 'No default template found' });
+        console.log('No default template found, initializing...');
+        try {
+          defaultTemplate = await dbUtils.initializeDefaultTemplate();
+          console.log('Default template initialized successfully');
+        } catch (initError) {
+          console.error('Failed to initialize default template:', initError);
+          return res.status(500).json({ 
+            error: 'No default template found and failed to initialize one',
+            details: initError instanceof Error ? initError.message : 'Unknown error'
+          });
+        }
       }
       
       finalTemplateId = defaultTemplate.id;
@@ -151,7 +162,65 @@ export const getSurvey = async (req: AuthRequest, res: Response) => {
 
 export const getTemplates = async (req: AuthRequest, res: Response) => {
   try {
-    const templates = await dbUtils.findTemplatesByConditions({ isPublic: true });
+    // 공개 템플릿 조회
+    let templates = await dbUtils.findTemplatesByConditions({ isPublic: true });
+    
+    // 템플릿이 없으면 자동으로 기본 템플릿 생성 (자동 복구)
+    if (!templates || templates.length === 0) {
+      console.log('⚠️ 템플릿이 없어서 기본 템플릿을 자동 생성합니다...');
+      
+      try {
+        // 기본 템플릿 생성
+        const templateData = {
+          name: '상품 상세페이지 리뷰 설문',
+          description: '상품 상세페이지의 완성도를 평가하는 포괄적인 설문조사 (5단계 21문항)',
+          is_default: true,
+          is_public: true,
+          created_by: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        const template = await dbUtils.createTemplate(templateData);
+        console.log('✅ 자동 기본 템플릿 생성 완료:', template.id);
+        
+        // 기본 단계들 생성 (간단한 구조로)
+        const steps = [
+          {
+            step_number: 1,
+            title: '첫인상 평가',
+            description: '상품 상세페이지의 첫인상에 대해 평가해주세요',
+            template_id: template.id
+          },
+          {
+            step_number: 2,
+            title: '콘텐츠 이해도',
+            description: '상품 정보와 콘텐츠의 이해도를 평가해주세요',
+            template_id: template.id
+          },
+          {
+            step_number: 3,
+            title: '구매 의도',
+            description: '구매 의사결정에 대한 의견을 알려주세요',
+            template_id: template.id
+          }
+        ];
+
+        for (const stepData of steps) {
+          await dbUtils.createStep(stepData);
+        }
+        
+        // 다시 템플릿 조회
+        templates = await dbUtils.findTemplatesByConditions({ isPublic: true });
+        console.log('✅ 자동 복구 완료: 템플릿 개수', templates.length);
+        
+      } catch (autoCreateError) {
+        console.error('❌ 자동 템플릿 생성 실패:', autoCreateError);
+        // 자동 생성 실패해도 빈 배열 반환
+        templates = [];
+      }
+    }
+
     res.json({ templates });
 
   } catch (error) {

@@ -226,9 +226,26 @@ export const dbUtils = {
         )
       `)
       .eq('is_default', true)
+      .order('created_at', { ascending: false })
       .single();
     
     if (error && error.code !== 'PGRST116') throw error;
+    
+    // 데이터가 있다면 정렬 보장
+    if (data?.steps) {
+      data.steps.sort((a: any, b: any) => a.step_number - b.step_number);
+      data.steps.forEach((step: any) => {
+        if (step.questions) {
+          step.questions.sort((a: any, b: any) => a.question_number - b.question_number);
+          step.questions.forEach((question: any) => {
+            if (question.options) {
+              question.options.sort((a: any, b: any) => a.option_number - b.option_number);
+            }
+          });
+        }
+      });
+    }
+    
     return data;
   },
 
@@ -423,6 +440,212 @@ export const dbUtils = {
     
     if (error) throw error;
     return data;
+  },
+
+  // 완전한 템플릿 생성 (steps, questions, options 포함)
+  async createCompleteTemplate(templateData: {
+    name: string;
+    description?: string;
+    is_default?: boolean;
+    steps: Array<{
+      step_number: number;
+      title: string;
+      description?: string;
+      questions: Array<{
+        question_number: number;
+        text: string;
+        type: 'MULTIPLE_CHOICE' | 'TEXT' | 'SCORE' | 'YES_NO';
+        required: boolean;
+        max_length?: number;
+        min_length?: number;
+        placeholder?: string;
+        options?: Array<{
+          option_number: number;
+          text: string;
+        }>;
+      }>;
+    }>;
+  }) {
+    // Transaction을 시뮬레이션하기 위해 단계별로 진행하고 에러 시 롤백
+    try {
+      // 1. 템플릿 생성
+      const template = await this.createTemplate({
+        name: templateData.name,
+        description: templateData.description,
+        is_default: templateData.is_default || false
+      });
+
+      // 2. 각 단계 생성
+      for (const stepData of templateData.steps) {
+        const step = await this.createStep({
+          template_id: template.id,
+          step_number: stepData.step_number,
+          title: stepData.title,
+          description: stepData.description
+        });
+
+        // 3. 각 질문 생성
+        for (const questionData of stepData.questions) {
+          const question = await this.createQuestion({
+            step_id: step.id,
+            question_number: questionData.question_number,
+            text: questionData.text,
+            type: questionData.type,
+            required: questionData.required,
+            max_length: questionData.max_length,
+            min_length: questionData.min_length,
+            placeholder: questionData.placeholder
+          });
+
+          // 4. 각 옵션 생성 (MULTIPLE_CHOICE인 경우)
+          if (questionData.options && questionData.options.length > 0) {
+            for (const optionData of questionData.options) {
+              await this.createOption({
+                question_id: question.id,
+                option_number: optionData.option_number,
+                text: optionData.text
+              });
+            }
+          }
+        }
+      }
+
+      // 전체 생성된 템플릿 조회하여 반환
+      return await this.findTemplateById(template.id);
+    } catch (error) {
+      console.error('Complete template creation failed:', error);
+      throw error;
+    }
+  },
+
+  // 기본 템플릿 존재 여부 확인
+  async hasDefaultTemplate() {
+    const { data, error } = await db
+      .from('survey_templates')
+      .select('id')
+      .eq('is_default', true)
+      .limit(1)
+      .single();
+    
+    // 데이터가 없으면 false 반환 (에러가 아님)
+    if (error && error.code === 'PGRST116') {
+      return false;
+    }
+    
+    if (error) throw error;
+    return !!data;
+  },
+
+  // 기본 템플릿 초기화 (데이터베이스에 기본 템플릿이 없는 경우)
+  async initializeDefaultTemplate() {
+    const hasDefault = await this.hasDefaultTemplate();
+    if (hasDefault) {
+      console.log('Default template already exists');
+      return await this.findDefaultTemplate();
+    }
+
+    console.log('Creating default template...');
+    
+    // 기본 템플릿 데이터 정의
+    const defaultTemplateData = {
+      name: '기본 상품 상세페이지 설문',
+      description: '상품 상세페이지 개선을 위한 기본 설문 템플릿입니다.',
+      is_default: true,
+      steps: [
+        {
+          step_number: 1,
+          title: '상품 정보 확인',
+          description: '상품 상세페이지의 정보가 얼마나 도움이 되었는지 알려주세요.',
+          questions: [
+            {
+              question_number: 1,
+              text: '이 상품의 상세 정보가 구매 결정에 얼마나 도움이 되었나요?',
+              type: 'MULTIPLE_CHOICE' as const,
+              required: true,
+              options: [
+                { option_number: 1, text: '매우 도움이 되었다' },
+                { option_number: 2, text: '도움이 되었다' },
+                { option_number: 3, text: '보통이다' },
+                { option_number: 4, text: '별로 도움이 안되었다' },
+                { option_number: 5, text: '전혀 도움이 안되었다' }
+              ]
+            },
+            {
+              question_number: 2,
+              text: '상품 상세페이지에서 부족하다고 느낀 정보가 있다면 무엇인가요?',
+              type: 'TEXT' as const,
+              required: false,
+              placeholder: '부족한 정보를 자유롭게 작성해주세요.'
+            }
+          ]
+        },
+        {
+          step_number: 2,
+          title: '구매 의사결정',
+          description: '상품 구매와 관련된 경험을 알려주세요.',
+          questions: [
+            {
+              question_number: 1,
+              text: '이 상품을 구매하셨나요?',
+              type: 'YES_NO' as const,
+              required: true
+            },
+            {
+              question_number: 2,
+              text: '구매하지 않으셨다면, 가장 큰 이유는 무엇인가요?',
+              type: 'MULTIPLE_CHOICE' as const,
+              required: false,
+              options: [
+                { option_number: 1, text: '가격이 비싸서' },
+                { option_number: 2, text: '정보가 부족해서' },
+                { option_number: 3, text: '신뢰가 부족해서' },
+                { option_number: 4, text: '배송/반품 조건이 불만족스러워서' },
+                { option_number: 5, text: '리뷰가 부족해서' },
+                { option_number: 6, text: '기타' }
+              ]
+            },
+            {
+              question_number: 3,
+              text: '이 상품 페이지를 전반적으로 평가해주세요. (1-10점)',
+              type: 'SCORE' as const,
+              required: true
+            }
+          ]
+        },
+        {
+          step_number: 3,
+          title: '개선 제안',
+          description: '상품 페이지 개선을 위한 제안을 해주세요.',
+          questions: [
+            {
+              question_number: 1,
+              text: '이 상품 페이지에서 가장 개선이 필요한 부분은 무엇인가요?',
+              type: 'MULTIPLE_CHOICE' as const,
+              required: true,
+              options: [
+                { option_number: 1, text: '상품 이미지의 품질이나 개수' },
+                { option_number: 2, text: '상품 설명의 상세함' },
+                { option_number: 3, text: '가격 정보의 명확성' },
+                { option_number: 4, text: '배송/반품 정보' },
+                { option_number: 5, text: '고객 리뷰나 평점' },
+                { option_number: 6, text: '페이지 로딩 속도' },
+                { option_number: 7, text: '모바일 최적화' },
+                { option_number: 8, text: '기타' }
+              ]
+            },
+            {
+              question_number: 2,
+              text: '추가적인 개선 제안이나 의견이 있으시면 자유롭게 작성해주세요.',
+              type: 'TEXT' as const,
+              required: false,
+              placeholder: '개선 제안이나 의견을 자유롭게 작성해주세요.'
+            }
+          ]
+        }
+      ]
+    };
+
+    return await this.createCompleteTemplate(defaultTemplateData);
   }
 };
 
