@@ -54,9 +54,21 @@ export const getSurveys = async (req: AdminRequest, res: Response) => {
 
     const surveys = await dbUtils.findSurveysByConditions(where);
 
+    // 프론트엔드가 기대하는 구조로 데이터 변환
+    const formattedSurveys = (surveys || []).map((survey: any) => ({
+      ...survey,
+      createdAt: survey.created_at,
+      endDate: survey.end_date,
+      maxParticipants: survey.max_participants,
+      totalBudget: survey.total_budget,
+      _count: {
+        responses: survey.responses?.length || 0
+      }
+    }));
+
     res.json({
-      surveys: surveys || [],
-      totalCount: surveys.length,
+      surveys: formattedSurveys,
+      totalCount: formattedSurveys.length,
       page: Number(page),
       limit: Number(limit)
     });
@@ -70,8 +82,8 @@ export const getSurveys = async (req: AdminRequest, res: Response) => {
 // 설문 승인
 export const approveSurvey = async (req: AdminRequest, res: Response) => {
   try {
-    const { id } = req.params;
-    const updatedSurvey = await dbUtils.updateSurvey(id, { status: 'APPROVED' });
+    const { surveyId } = req.params;
+    const updatedSurvey = await dbUtils.updateSurvey(surveyId, { status: 'APPROVED' });
 
     res.json({
       message: 'Survey approved successfully',
@@ -87,10 +99,10 @@ export const approveSurvey = async (req: AdminRequest, res: Response) => {
 // 설문 거부
 export const rejectSurvey = async (req: AdminRequest, res: Response) => {
   try {
-    const { id } = req.params;
+    const { surveyId } = req.params;
     const { reason } = req.body;
     
-    const updatedSurvey = await dbUtils.updateSurvey(id, { 
+    const updatedSurvey = await dbUtils.updateSurvey(surveyId, { 
       status: 'REJECTED',
       rejection_reason: reason 
     });

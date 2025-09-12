@@ -273,7 +273,7 @@ export const dbUtils = {
   async findSurveysByConditions(conditions: any) {
     let query = db.from('surveys').select(`
       *,
-      seller:users!surveys_seller_id_fkey(*),
+      seller:users!surveys_seller_id_fkey(id, name, email),
       template:survey_templates!surveys_template_id_fkey(*)
     `);
     
@@ -377,6 +377,7 @@ export const dbUtils = {
     if (error) throw error;
     return data;
   },
+
 
   // 통계 관련
   async getStats() {
