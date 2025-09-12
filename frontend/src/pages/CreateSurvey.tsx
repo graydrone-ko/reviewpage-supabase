@@ -751,7 +751,7 @@ const CreateSurvey: React.FC = () => {
           </div>
 
           {/* 향상된 설문 문항 편집 섹션 */}
-          {editableSteps.length > 0 && (
+          {!loadingTemplates && (
             <div className="space-y-8">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900">설문 문항 편집</h2>
@@ -793,7 +793,13 @@ const CreateSurvey: React.FC = () => {
               
               {/* Enhanced Step Editors */}
               <div className="space-y-6">
-                {editableSteps.map((step, stepIndex) => (
+                {editableSteps.length === 0 ? (
+                  <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                    <p className="text-gray-500 text-lg">템플릿을 선택하면 편집할 수 있는 설문 문항이 표시됩니다.</p>
+                    <p className="text-gray-400 text-sm mt-2">위에서 설문 템플릿을 클릭해주세요.</p>
+                  </div>
+                ) : (
+                  editableSteps.map((step, stepIndex) => (
                   <StepEditor
                     key={step.id}
                     step={step}

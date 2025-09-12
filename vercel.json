@@ -34,7 +34,8 @@
   "env": {
     "CI": "",
     "NODE_ENV": "production",
-    "SKIP_PREFLIGHT_CHECK": "true"
+    "SKIP_PREFLIGHT_CHECK": "true",
+    "NODE_OPTIONS": "--openssl-legacy-provider"
   },
   "functions": {
     "backend/backend/api/**/*.ts": {

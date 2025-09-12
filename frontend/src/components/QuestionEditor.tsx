@@ -81,17 +81,17 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
           ...opt,
           id: opt.id.startsWith('opt_') ? opt.id : `opt_${Date.now()}_${opt.optionNumber}`
         }));
-      } else if (question.options.length >= 2) {
-        // 현재 옵션이 유효하면 그대로 사용
-        newOptions = question.options;
       } else {
-        // 기본 옵션 생성
+        // 기본 객관식 옵션 생성
         newOptions = [
-          { id: `opt_${Date.now()}_1`, optionNumber: 1, text: '' },
-          { id: `opt_${Date.now()}_2`, optionNumber: 2, text: '' }
+          { id: `opt_${Date.now()}_1`, optionNumber: 1, text: '신뢰할 수 있어 보임' },
+          { id: `opt_${Date.now()}_2`, optionNumber: 2, text: '평범함' },
+          { id: `opt_${Date.now()}_3`, optionNumber: 3, text: '퀄리티가 낮음' },
+          { id: `opt_${Date.now()}_4`, optionNumber: 4, text: '믿음이 가지 않음' }
         ];
       }
     } else if (newType === 'YES_NO') {
+      // 예/아니오는 항상 고정된 2개 옵션
       newOptions = [
         { id: `opt_${Date.now()}_1`, optionNumber: 1, text: '예' },
         { id: `opt_${Date.now()}_2`, optionNumber: 2, text: '아니오' }
@@ -242,7 +242,7 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
           </div>
 
           {/* Options for Multiple Choice, Score, and Yes/No */}
-          {(question.type === 'MULTIPLE_CHOICE' || question.type === 'SCORE' || question.type === 'YES_NO') && (
+          {question.type !== 'TEXT' && (
             <div>
               <div className="flex items-center justify-between mb-3">
                 <label className="block text-sm font-medium text-gray-700">
