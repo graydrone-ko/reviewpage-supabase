@@ -1,19 +1,10 @@
 import axios from 'axios';
 
-// 환경변수 디버깅
-console.log('Environment variables check:', {
-  REACT_APP_API_URL: process.env.REACT_APP_API_URL,
-  NODE_ENV: process.env.NODE_ENV,
-  allEnvVars: Object.keys(process.env).filter(key => key.startsWith('REACT_APP_'))
-});
-
 const API_BASE_URL = process.env.REACT_APP_API_URL || (
   process.env.NODE_ENV === 'development' 
     ? 'http://localhost:3001/api' 
-    : 'https://reviewpage-supabase4.vercel.app/api' // 하드코딩된 백엔드 URL
+    : 'https://reviewpage-supabase4.vercel.app/api'
 );
-
-console.log('Final API_BASE_URL:', API_BASE_URL);
 
 // Export for use in components that use fetch directly
 export const API_URL = API_BASE_URL;

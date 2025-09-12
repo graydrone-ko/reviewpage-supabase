@@ -179,11 +179,9 @@ const CreateSurvey: React.FC = () => {
         status: 'PENDING' // 승인 대기중 상태로 설정
       };
 
-      console.log('Sending survey data:', surveyData);
 
       const response = await api.post('/surveys', surveyData);
       
-      console.log('Survey creation response:', response.data);
       
       alert(`설문이 성공적으로 생성되었습니다!\n제목: ${formData.title}\n총 예산: ${getTotalBudget().toLocaleString()}원\n\n입금 확인 후 설문이 승인됩니다.`);
       navigate('/dashboard');
@@ -817,7 +815,8 @@ const CreateSurvey: React.FC = () => {
                     isExpanded={expandedSteps.has(stepIndex)}
                     onToggleExpand={() => toggleStepExpand(stepIndex)}
                   />
-                ))}
+                  ))
+                )}
               </div>
               
               {/* Enhanced Survey Summary */}

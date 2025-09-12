@@ -88,21 +88,10 @@ const SurveyParticipate: React.FC = () => {
     const currentQuestion = survey.template.steps[currentStepIndex].questions[currentQuestionIndex];
     const currentAnswer = getCurrentAnswer();
     
-    console.log('Validating answer:', {
-      questionType: currentQuestion.type,
-      required: currentQuestion.required,
-      currentValue: currentAnswer?.value,
-      valueType: typeof currentAnswer?.value
-    });
     
     // TEXT 질문은 특별 처리 (0자~19자까지 모두 비활성화)
     if (currentQuestion.type === 'TEXT') {
       const textValue = typeof currentAnswer?.value === 'string' ? currentAnswer.value.trim() : '';
-      console.log('TEXT validation:', {
-        text: textValue,
-        length: textValue.length,
-        valid: textValue.length >= 20
-      });
       return textValue.length >= 20;
     }
     
@@ -186,7 +175,6 @@ const SurveyParticipate: React.FC = () => {
         responses
       });
 
-      console.log('Survey submission successful:', response.data);
       
       alert(`설문 참여가 완료되었습니다! ${response.data.reward?.amount || 0}원 리워드가 지급되었습니다.`);
       navigate('/surveys');

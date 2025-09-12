@@ -16,10 +16,8 @@ const YesNoQuestion: React.FC<YesNoQuestionProps> = ({
   onChange,
   disabled = false
 }) => {
-  console.log('YesNoQuestion render - Current value:', value, typeof value);
   
   const handleOptionChange = (selectedValue: boolean) => {
-    console.log('Option clicked:', selectedValue);
     onChange(selectedValue);
   };
 
