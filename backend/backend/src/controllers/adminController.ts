@@ -10,17 +10,30 @@ export const getDashboardStats = async (req: AdminRequest, res: Response) => {
     const stats = await dbUtils.getStats();
 
     res.json({
-      totalUsers: stats.totalUsers,
-      totalConsumers: Math.floor(stats.totalUsers * 0.8), // 임시 추정값
-      totalSellers: Math.floor(stats.totalUsers * 0.2), // 임시 추정값
-      totalSurveys: stats.totalSurveys,
-      pendingSurveys: 0, // 임시값
-      approvedSurveys: stats.totalSurveys,
-      completedSurveys: 0, // 임시값
-      totalResponses: stats.totalResponses,
-      totalRewards: stats.totalRewards,
-      pendingRewards: 0, // 임시값
-      paidRewards: stats.totalRewards
+      users: {
+        total: stats.totalUsers,
+        consumers: Math.floor(stats.totalUsers * 0.8), // 임시 추정값
+        sellers: Math.floor(stats.totalUsers * 0.2), // 임시 추정값
+        recent: 0 // 임시값 - 최근 7일 가입자
+      },
+      surveys: {
+        total: stats.totalSurveys,
+        pending: 0, // 임시값
+        approved: stats.totalSurveys,
+        completed: 0 // 임시값
+      },
+      responses: {
+        total: stats.totalResponses
+      },
+      rewards: {
+        total: stats.totalRewards,
+        pending: 0, // 임시값
+        paid: stats.totalRewards
+      },
+      notifications: {
+        pendingWithdrawals: 0, // 임시값
+        pendingCancellations: 0 // 임시값
+      }
     });
 
   } catch (error) {
