@@ -42,9 +42,11 @@ const SurveyList: React.FC = () => {
       const response = await api.post('/surveys/participation-status/bulk', {
         surveyIds
       });
-      setParticipationStatus(response.data.participationStatus);
+      setParticipationStatus(response.data.participationStatus || {});
     } catch (err) {
       console.error('참여 상태 조회 실패:', err);
+      // API 실패 시에도 빈 객체로 초기화
+      setParticipationStatus({});
     }
   };
 
@@ -132,7 +134,7 @@ const SurveyList: React.FC = () => {
                     >
                       마감됨
                     </button>
-                  ) : participationStatus[survey.id]?.status === 'PARTICIPATED' ? (
+                  ) : participationStatus && participationStatus[survey.id]?.status === 'PARTICIPATED' ? (
                     <div className="space-y-2">
                       <div className="flex items-center justify-center text-sm text-green-600 mb-2">
                         <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
