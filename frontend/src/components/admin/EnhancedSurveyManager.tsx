@@ -111,13 +111,28 @@ const EnhancedSurveyManager: React.FC = () => {
     setUpdating(surveyId);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/admin/surveys/${surveyId}/status`, {
-        method: 'PATCH',
+      let endpoint = '';
+      let method = 'PATCH';
+      let body = {};
+      
+      if (status === 'APPROVED') {
+        endpoint = `${API_URL}/admin/surveys/${surveyId}/approve`;
+      } else if (status === 'CANCELLED') {
+        endpoint = `${API_URL}/admin/surveys/${surveyId}/reject`;
+        body = { reason: '관리자에 의해 취소됨' };
+      } else {
+        // For other status updates, we'll need to add new endpoints or use a general status endpoint
+        endpoint = `${API_URL}/admin/surveys/${surveyId}/status`;
+        body = { status };
+      }
+      
+      const response = await fetch(endpoint, {
+        method,
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ status })
+        body: JSON.stringify(body)
       });
 
       if (!response.ok) {
@@ -159,16 +174,29 @@ const EnhancedSurveyManager: React.FC = () => {
     try {
       const token = localStorage.getItem('token');
       await Promise.all(
-        Array.from(selectedSurveys).map(surveyId =>
-          fetch(`${API_URL}/admin/surveys/${surveyId}/status`, {
+        Array.from(selectedSurveys).map(surveyId => {
+          let endpoint = '';
+          let body = {};
+          
+          if (status === 'APPROVED') {
+            endpoint = `${API_URL}/admin/surveys/${surveyId}/approve`;
+          } else if (status === 'CANCELLED') {
+            endpoint = `${API_URL}/admin/surveys/${surveyId}/reject`;
+            body = { reason: '일괄 취소됨' };
+          } else {
+            endpoint = `${API_URL}/admin/surveys/${surveyId}/status`;
+            body = { status };
+          }
+          
+          return fetch(endpoint, {
             method: 'PATCH',
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ status })
-          })
-        )
+            body: JSON.stringify(body)
+          });
+        })
       );
 
       // Update surveys list
