@@ -20,6 +20,7 @@ const SurveyParticipate: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [user, setUser] = useState<any>(null);
 
   const fetchSurvey = useCallback(async () => {
     try {
@@ -45,9 +46,55 @@ const SurveyParticipate: React.FC = () => {
     }
   }, [id]);
 
+  // 사용자 나이 계산 함수 (SurveyList와 동일)
+  const calculateUserAge = (birthDate: string) => {
+    if (!birthDate) return null;
+    
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    
+    return age;
+  };
+
+  // 대상자 검증 함수
+  const isEligibleForSurvey = (survey: Survey) => {
+    if (!user || !survey) return true;
+    
+    const userAge = calculateUserAge(user.birthDate);
+    const targetAgeMin = survey.target_age_min || survey.targetAgeMin;
+    const targetAgeMax = survey.target_age_max || survey.targetAgeMax;
+    const targetGender = survey.target_gender || survey.targetGender;
+    
+    // 나이 검증
+    if (userAge && targetAgeMin && targetAgeMax) {
+      if (userAge < targetAgeMin || userAge > targetAgeMax) {
+        return false;
+      }
+    }
+    
+    // 성별 검증
+    if (targetGender && targetGender !== 'ALL' && user.gender !== targetGender) {
+      return false;
+    }
+    
+    return true;
+  };
+
   useEffect(() => {
     if (id) {
       fetchSurvey();
+      
+      // 사용자 정보 로드
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
     }
   }, [id, fetchSurvey]);
 
@@ -325,6 +372,70 @@ const SurveyParticipate: React.FC = () => {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="text-gray-500">로딩 중...</div>
+      </div>
+    );
+  }
+
+  // 대상자 검증 - 설문이 로드된 후 체크
+  if (survey && user && !isEligibleForSurvey(survey)) {
+    const userAge = calculateUserAge(user.birthDate);
+    const targetAgeMin = survey.target_age_min || survey.targetAgeMin;
+    const targetAgeMax = survey.target_age_max || survey.targetAgeMax;
+    const targetGender = survey.target_gender || survey.targetGender;
+    
+    let reasons = [];
+    
+    if (userAge && targetAgeMin && targetAgeMax) {
+      if (userAge < targetAgeMin || userAge > targetAgeMax) {
+        reasons.push(`연령 대상: ${targetAgeMin}-${targetAgeMax}세 (회원님: ${userAge}세)`);
+      }
+    }
+    
+    if (targetGender && targetGender !== 'ALL' && user.gender !== targetGender) {
+      const genderText = targetGender === 'MALE' ? '남성' : '여성';
+      const userGenderText = user.gender === 'MALE' ? '남성' : '여성';
+      reasons.push(`성별 대상: ${genderText} (회원님: ${userGenderText})`);
+    }
+
+    return (
+      <div className="max-w-2xl mx-auto py-8 px-4">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <div className="text-red-600 mb-4">
+            <svg className="w-12 h-12 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-red-900 mb-4">설문 참여 불가</h2>
+          <p className="text-red-800 mb-4">
+            죄송합니다. 이 설문은 다음 조건에 해당하는 분만 참여할 수 있습니다:
+          </p>
+          {reasons.length > 0 && (
+            <div className="bg-white rounded-md p-4 mb-4">
+              <ul className="text-red-700 text-left space-y-2">
+                {reasons.map((reason, index) => (
+                  <li key={index} className="flex items-center">
+                    <span className="w-2 h-2 bg-red-500 rounded-full mr-3 flex-shrink-0"></span>
+                    {reason}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <div className="space-y-3">
+            <button
+              onClick={() => navigate('/surveys')}
+              className="bg-primary-600 text-white px-6 py-2 rounded-md hover:bg-primary-700"
+            >
+              다른 설문 보기
+            </button>
+            <button
+              onClick={() => navigate(-1)}
+              className="block w-full text-gray-600 hover:text-gray-800"
+            >
+              이전 페이지로 돌아가기
+            </button>
+          </div>
+        </div>
       </div>
     );
   }

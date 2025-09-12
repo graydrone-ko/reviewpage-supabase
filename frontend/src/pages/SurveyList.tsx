@@ -15,9 +15,16 @@ const SurveyList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [participationStatus, setParticipationStatus] = useState<Record<string, ParticipationStatus>>({});
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     fetchSurveys();
+    
+    // 사용자 정보 로드
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
   }, []);
 
   const fetchSurveys = async () => {
@@ -53,9 +60,93 @@ const SurveyList: React.FC = () => {
   const getDaysRemaining = (endDate: string) => {
     const now = new Date();
     const end = new Date(endDate);
+    
+    // 시간대 차이를 보정하여 정확한 날짜 계산
+    now.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+    
     const diffTime = end.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    // 디버그 로그 (개발 환경에서만)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('마감일 계산:', {
+        endDate: endDate,
+        parsedEndDate: end.toISOString(),
+        today: now.toISOString(),
+        diffDays: diffDays
+      });
+    }
+    
     return diffDays;
+  };
+
+  // 사용자 나이 계산 함수
+  const calculateUserAge = (birthDate: string) => {
+    if (!birthDate) return null;
+    
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    
+    return age;
+  };
+
+  // 대상자 검증 함수
+  const isEligibleForSurvey = (survey: Survey) => {
+    if (!user) return true; // 로그인하지 않은 경우 일단 허용
+    
+    const userAge = calculateUserAge(user.birthDate);
+    const targetAgeMin = survey.target_age_min || survey.targetAgeMin;
+    const targetAgeMax = survey.target_age_max || survey.targetAgeMax;
+    const targetGender = survey.target_gender || survey.targetGender;
+    
+    // 나이 검증
+    if (userAge && targetAgeMin && targetAgeMax) {
+      if (userAge < targetAgeMin || userAge > targetAgeMax) {
+        return false;
+      }
+    }
+    
+    // 성별 검증
+    if (targetGender && targetGender !== 'ALL' && user.gender !== targetGender) {
+      return false;
+    }
+    
+    return true;
+  };
+
+  // 부적격자 알림 함수
+  const handleIneligibleSurvey = (survey: Survey) => {
+    const userAge = calculateUserAge(user.birthDate);
+    const targetAgeMin = survey.target_age_min || survey.targetAgeMin;
+    const targetAgeMax = survey.target_age_max || survey.targetAgeMax;
+    const targetGender = survey.target_gender || survey.targetGender;
+    
+    let reasons = [];
+    
+    if (userAge && targetAgeMin && targetAgeMax) {
+      if (userAge < targetAgeMin || userAge > targetAgeMax) {
+        reasons.push(`연령 대상: ${targetAgeMin}-${targetAgeMax}세 (회원님: ${userAge}세)`);
+      }
+    }
+    
+    if (targetGender && targetGender !== 'ALL' && user.gender !== targetGender) {
+      const genderText = targetGender === 'MALE' ? '남성' : '여성';
+      const userGenderText = user.gender === 'MALE' ? '남성' : '여성';
+      reasons.push(`성별 대상: ${genderText} (회원님: ${userGenderText})`);
+    }
+    
+    const message = reasons.length > 0 
+      ? `죄송합니다. 이 설문은 다음 조건에 해당하는 분만 참여할 수 있습니다:\n\n${reasons.join('\n')}\n\n다른 설문에 참여해 주세요.`
+      : '죄송합니다. 설문 참여 대상이 아닙니다. 다른 설문에 참여해 주세요.';
+    
+    alert(message);
   };
 
   if (loading) {
@@ -109,13 +200,20 @@ const SurveyList: React.FC = () => {
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center text-sm text-gray-500">
                     <span className="font-medium">대상 연령:</span>
-                    <span className="ml-1">{survey.targetAgeMin}-{survey.targetAgeMax}세</span>
+                    <span className="ml-1">
+                      {survey.target_age_min && survey.target_age_max 
+                        ? `${survey.target_age_min}-${survey.target_age_max}세`
+                        : survey.targetAgeMin && survey.targetAgeMax
+                        ? `${survey.targetAgeMin}-${survey.targetAgeMax}세`
+                        : '전체'}
+                    </span>
                   </div>
                   <div className="flex items-center text-sm text-gray-500">
                     <span className="font-medium">대상 성별:</span>
                     <span className="ml-1">
-                      {survey.targetGender === 'ALL' ? '전체' : 
-                       survey.targetGender === 'MALE' ? '남성' : '여성'}
+                      {(survey.target_gender || survey.targetGender) === 'ALL' ? '전체' : 
+                       (survey.target_gender || survey.targetGender) === 'MALE' ? '남성' : 
+                       (survey.target_gender || survey.targetGender) === 'FEMALE' ? '여성' : '전체'}
                     </span>
                   </div>
                   <div className="flex items-center text-sm text-gray-500">
@@ -149,13 +247,20 @@ const SurveyList: React.FC = () => {
                         답변 수정
                       </Link>
                     </div>
-                  ) : (
+                  ) : isEligibleForSurvey(survey) ? (
                     <Link
                       to={`/surveys/${survey.id}/participate`}
                       className="w-full bg-primary-600 text-white py-2 px-4 rounded-md hover:bg-primary-700 text-center block"
                     >
                       설문 참여하기
                     </Link>
+                  ) : (
+                    <button
+                      onClick={() => handleIneligibleSurvey(survey)}
+                      className="w-full bg-gray-400 text-white py-2 px-4 rounded-md hover:bg-gray-500 text-center block"
+                    >
+                      설문 참여하기
+                    </button>
                   )}
                 </div>
               </div>

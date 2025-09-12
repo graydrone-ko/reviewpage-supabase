@@ -49,9 +49,14 @@ export interface Survey {
   sellerId: string;
   templateId: string;
   template?: SurveyTemplate;
-  targetAgeMin: number;
-  targetAgeMax: number;
-  targetGender: 'MALE' | 'FEMALE' | 'ALL';
+  // camelCase 필드 (이전 호환성)
+  targetAgeMin?: number;
+  targetAgeMax?: number;
+  targetGender?: 'MALE' | 'FEMALE' | 'ALL';
+  // snake_case 필드 (Supabase DB)
+  target_age_min?: number;
+  target_age_max?: number;
+  target_gender?: 'MALE' | 'FEMALE' | 'ALL';
   reward: number;
   maxParticipants: number;
   totalBudget?: number;

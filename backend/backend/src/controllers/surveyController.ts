@@ -113,14 +113,8 @@ export const getSurveys = async (req: AuthRequest, res: Response) => {
       where.status = 'APPROVED';
       where.endDate = new Date().toISOString();
       
-      if (req.user.age) {
-        where.targetAgeMin = req.user.age;
-        where.targetAgeMax = req.user.age;
-      }
-      
-      if (req.user.gender && req.user.gender !== 'OTHER') {
-        where.targetGender = req.user.gender;
-      }
+      // 사용자 나이와 성별 필터링은 프론트엔드에서 처리
+      // 서버에서는 모든 승인된 설문을 전송하고, 클라이언트에서 필터링
     }
 
     if (status) {

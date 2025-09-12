@@ -6,82 +6,63 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ReviewPage is a two-way platform connecting sellers and consumers for product detail page surveys. Sellers can create surveys for their product pages, and consumers participate to earn rewards while providing feedback.
 
-## Development Commands
+## Development Commands (Updated - Supabase + Vercel)
 
-### Monorepo Structure
-- **Root**: Unified build and deployment configuration
-- **Backend**: `backend/backend/` - Express API server (Vercel Serverless Functions)  
-- **Frontend**: `frontend/` - React application (Vercel Static Site)
-- **Database Schema**: `supabase/schema.sql` - Supabase PostgreSQL schema
+### Project Structure
+- `backend/backend/` - Express API server (Vercel Serverless Functions)
+- `frontend/` - React application (Vercel Static Site)
+- `supabase/` - Database schema and migrations
 
-### Quick Start Commands (Run from project root)
+### Backend (Node.js + Express + Supabase)
 ```bash
-# Install all dependencies (monorepo setup)
-npm install
-
-# Build entire project (frontend + backend)
-npm run build
-
-# Development mode (backend only)
-npm run dev
-
-# Production mode (backend only)
-npm start
-```
-
-### Backend Development (Node.js + Express + Supabase)
-```bash
-cd backend/backend
-npm install                # Install backend dependencies
-npm run dev                # Start development server with nodemon (port 3001)
-npm run build:real         # Build TypeScript for production
+cd backend/backend          # Navigate to backend directory
+npm install                # Install dependencies (includes @supabase/supabase-js)
+npm run dev                 # Start development server with nodemon
+npm run build              # Build TypeScript for production
 npm start                  # Start production server
 npm run db:seed            # Create test users in Supabase
 ```
 
-### Frontend Development (React + TypeScript)
+### Frontend (React + TypeScript)
 ```bash
 cd frontend
-npm install --legacy-peer-deps  # Install with peer dependency resolution
-npm start                      # Start development server (port 3000)
-npm run build                 # Build for production (CI='' for Vercel)
-npm test                     # Run Jest tests
+npm install                # Install dependencies
+npm start                  # Start development server (port 3000, proxies to :3001)
+npm run build             # Build for production (Vercel deployment)
+npm test                  # Run tests with Jest
 ```
 
 ### Database Setup (Supabase)
-1. Create new Supabase project  
-2. Run SQL schema: Copy contents of `supabase/schema.sql` to Supabase SQL editor
-3. Set environment variables (see Environment Variables section)
-4. Row Level Security (RLS) policies are pre-configured in schema
+1. Create new Supabase project
+2. Run SQL schema from `supabase/schema.sql`
+3. Set environment variables in both projects
+4. Enable Row Level Security policies
 
 ## Architecture
 
 ### Backend Structure
-- **Express Server**: `backend/backend/src/index.ts` - Development server with security middleware
-- **Vercel Functions**: `backend/backend/api/index.ts` - Serverless function entry point for production
-- **Routes**: Role-based API routing (`/api/auth`, `/api/surveys`, `/api/admin`, `/api/rewards`, `/api/seo`)
-- **Controllers**: Business logic in `src/controllers/` (9 controllers: auth, survey, admin, finance, rewards, etc.)
-- **Middleware**: JWT authentication (`auth.ts`) and admin authorization (`adminAuth.ts`)
-- **Database**: Supabase PostgreSQL with service role and anon key clients
-- **Database Utils**: Abstraction layer in `src/utils/database.ts` for Supabase operations
-- **Supabase Client**: Configuration in `src/lib/supabase.ts` with TypeScript types
-- **Scripts**: Extensive utility scripts (25+ files) for data management, testing, and admin tasks
+- **Entry point**: `backend/backend/src/index.ts` - Express server with security middleware and static file serving
+- **Routes**: Role-based routing (`/api/auth`, `/api/surveys`, `/api/admin`, `/api/frontend`)
+- **Controllers**: Business logic in `src/controllers/` (auth, survey, admin, SEO, finance, rewards)
+- **Middleware**: Authentication (`auth.ts`) and admin auth (`adminAuth.ts`) in `src/middleware/`
+- **Database**: Prisma ORM with PostgreSQL, schema in `prisma/schema.prisma`
+- **Generated Client**: Custom Prisma output location in `src/generated/prisma/`
+- **Scripts**: Extensive utility scripts in `scripts/` for data management, testing, and admin tasks
+- **Static Serving**: Built frontend served from `public/` directory
 
-### Frontend Structure  
-- **App Router**: `frontend/src/App.tsx` - Role-based routing with React Router v7
-- **Pages**: Role-specific pages (`pages/` for users, `pages/admin/` for administration)
-- **Components**: Reusable UI components with Tailwind CSS styling
-- **API Service**: Centralized API client in `services/api.ts` with axios
-- **Hooks**: Custom hooks like `useSEO.ts` for dynamic meta tag management
+### Frontend Structure
+- **Entry point**: `frontend/src/App.tsx` - Router with role-based routes
+- **Pages**: Role-specific pages (`pages/`, `pages/admin/`)
+- **Components**: Reusable UI components (`components/`)
+- **Services**: API client in `services/api.ts`
 - **Types**: Shared TypeScript interfaces in `types/index.ts`
 
-### Database Schema (Supabase)
-- **User Management**: Three roles (SELLER, CONSUMER, ADMIN) with demographics and banking info
-- **Survey System**: Complex template-based surveys with steps, questions, and targeting
-- **Response Collection**: Consumer responses with JSON storage for flexible data
-- **Reward System**: Automatic reward distribution with withdrawal request management  
-- **Admin Features**: Survey approval, cancellation requests, and financial management
-- **RLS Policies**: Row Level Security configured for multi-tenant access control
+### Key Models
+- **User**: Three roles (SELLER, CONSUMER, ADMIN) with demographics
+- **Survey**: Created by sellers with targeting criteria and templates
+- **SurveyTemplate/SurveyStep/SurveyQuestion**: Flexible survey structure
+- **SurveyResponse**: Consumer responses with step-based answers
+- **Reward**: Automatic reward system for completed surveys
 
 ## Authentication & Security
 - JWT-based authentication with role-based access control
@@ -89,36 +70,14 @@ npm test                     # Run Jest tests
 - Admin authentication middleware for admin routes
 - Password hashing with bcryptjs
 
-## Environment Variables
-
-### Backend (.env in backend/backend/)
-```bash
-# Supabase Configuration
-SUPABASE_URL=your_supabase_project_url
-SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-
-# JWT Configuration  
-JWT_SECRET=your_strong_jwt_secret
-
-# Frontend URL for CORS
-FRONTEND_URL=https://your-frontend-domain.vercel.app
-
-# Environment
-NODE_ENV=development|production
-```
-
-### Vercel Deployment Environment Variables
-Set these in Vercel dashboard for both frontend and backend:
-- `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
-- `JWT_SECRET`, `FRONTEND_URL`, `NODE_ENV=production`
-
-## Database Operations (Supabase)
-- **Admin Client**: `supabaseAdmin` from `src/lib/supabase.ts` - Bypasses RLS for server operations
-- **Regular Client**: `supabase` for user-scoped operations (respects RLS)
-- **Database Utils**: Helper functions in `src/utils/database.ts` (findUserByEmail, etc.)
-- **TypeScript Types**: Complete database types defined in supabase.ts
-- **Schema Management**: Direct SQL execution via Supabase dashboard
+## Database Operations (Updated - Supabase)
+- Use Supabase client from `backend/backend/src/lib/supabase.ts`
+- Database utility functions in `backend/backend/src/utils/database.ts`
+- Supabase connection parameters required in `.env`
+- Database schema: `supabase/schema.sql`
+- Row Level Security (RLS) policies configured
+- Development: Local Supabase or cloud instance
+- Production: Supabase cloud PostgreSQL
 
 ## SEO Optimization (Added)
 - **Meta Tags**: Comprehensive meta tags in `public/index.html` with Korean keywords
@@ -166,85 +125,34 @@ Set these in Vercel dashboard for both frontend and backend:
 - **Deployment Config**: `vercel.json` (both frontend and backend)
 - **Scripts**: `backend/backend/scripts/` (extensive collection for admin tasks)
 
-## Utility Scripts
-
-### Important Scripts (backend/backend/scripts/)
+## Scripts Usage
+Common utility scripts in `backend/backend/scripts/`:
 ```bash
 cd backend/backend
-
-# User Management  
-node scripts/createTestUsers.js          # Create test consumer/seller accounts
-node scripts/get-user-details.js         # Get user information by email
-node scripts/create-admin.js             # Create admin user
-
-# Data Management
-node scripts/backup-and-clean-data.js    # Backup and clean database 
-node scripts/check-templates.js          # Verify survey templates
-node scripts/check-completed-responses.js # Check response completion status
-
-# Testing & Workflow
-node scripts/testSurveySystem.js         # Test complete survey workflow
-node scripts/testWorkflow.js             # Test full user workflow
-node scripts/test-withdrawal-request.js  # Test withdrawal system
-
-# Financial Operations  
-node scripts/debug-net-profit.js         # Debug financial calculations
-node scripts/fix-refund-amount.js        # Fix refund calculation issues
-node scripts/test-refund-calculation.js  # Test refund logic
-
-# Template Management
-node scripts/createDefaultTemplate.js    # Create default survey template
-node scripts/deleteAndRecreateTemplate.js # Reset survey templates
-node scripts/cleanupOldTemplates.js      # Clean unused templates
+node scripts/createTestUsers.js           # Create test accounts
+node scripts/backup-and-clean-data.js     # Backup and clean database
+node scripts/get-user-details.js          # Get user information
+node scripts/testSurveySystem.js          # Test survey workflow
 ```
 
-### Script Usage Patterns
-- Always run from `backend/backend/` directory
-- Scripts use Supabase client directly via database utils
-- Test scripts create temporary data for validation
-- Financial scripts include safety checks and confirmations
-
-## Development Workflow  
-
-### Initial Setup
-1. **Clone Repository**: `git clone https://github.com/graydrone-ko/reviewpage-supabase`
-2. **Install Dependencies**: `npm install` (monorepo setup)
-3. **Database Setup**: Create Supabase project, copy schema from `supabase/schema.sql`
-4. **Environment Variables**: Set up `.env` files (see Environment Variables section)
-
-### Development Process  
-1. **Backend Development**: `cd backend/backend && npm run dev` (port 3001)
-2. **Frontend Development**: `cd frontend && npm start` (port 3000, proxies API to 3001)
-3. **Database Changes**: Update `supabase/schema.sql`, apply via Supabase SQL editor
-4. **Testing**: Use utility scripts for workflow validation
-
-### Deployment (Vercel)
-- **Auto Deployment**: Both frontend and backend deploy automatically from git pushes
-- **Build Process**: Root `npm run build` handles both frontend and backend
-- **Environment Variables**: Set in Vercel dashboard for production
-- **Monitoring**: `/health` endpoint available for backend status
-
-## Key Development Notes
-
-### Current Branch Status
-- Working branch: `supabase-complete` (migrated from Prisma to Supabase)
-- Main deployment: Vercel handles serverless functions and static hosting
-- Database: Fully migrated to Supabase with RLS policies
-
-### Testing Strategy  
-- **Frontend**: Jest + React Testing Library (`npm test` in frontend/)
-- **Backend**: Manual testing via utility scripts (no test framework configured)
-- **Integration**: Full workflow testing via scripts in `scripts/` directory
-- **User Testing**: Pre-configured test accounts via `createTestUsers.js`
-
-### Performance Considerations
-- **Frontend**: React 19 with Tailwind CSS, optimized builds for Vercel
-- **Backend**: Express with security middleware, optimized for serverless
-- **Database**: Supabase PostgreSQL with RLS, indexed for query performance  
-- **API**: RESTful endpoints with role-based access control
+## Development Workflow (Updated)
+1. **Database Setup**: Create Supabase project, run schema, configure RLS
+2. **Backend Development**: `cd backend/backend && npm run dev`
+3. **Frontend Development**: `cd frontend && npm start` (proxies to backend)
+4. **Database Changes**: Update `supabase/schema.sql`, apply via Supabase dashboard
+5. **Production Deployment**: 
+   - Backend: Deploy to Vercel (auto from git)
+   - Frontend: Deploy to Vercel (auto from git)
+   - Environment variables set in Vercel dashboard
 
 ## GitHub Repository
-- **URL**: https://github.com/graydrone-ko/reviewpage-supabase
-- **CLI Access**: `gh` commands available for GitHub operations
-- **Deployment**: Auto-deploy from git pushes to main branch
-- **Security**: Environment variables managed via Vercel dashboard (never committed)
+GitHub 주소: https://github.com/graydrone-ko/reviewpage-supabase
+
+## GitHub Configuration
+- GitHub CLI 사용 가능 - gh 명령어로 GitHub 처리
+- 푸시 시 작은 단위로 나누어 진행 권장
+- 환경 변수나 민감한 정보는 .gitignore에 추가
+
+## 모든 커뮤니케이션은 특정 명사를 제외하고 한글로 해
+
+## 이 프로젝트는 배포를 목적으로함으로 코드 변경 시마다 깃허브에 커밋하고 깃포인트를 남길것
