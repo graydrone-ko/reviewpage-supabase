@@ -6,15 +6,11 @@ async function createDefaultTemplate() {
   try {
     console.log('🚀 Supabase 기본 설문 템플릿 생성 시작...');
 
-    // 1. 기본 템플릿 생성
+    // 1. 기본 템플릿 생성 (Supabase snake_case 사용)
     const templateData = {
       name: '상품 상세페이지 리뷰 설문',
       description: '상품 상세페이지의 완성도를 평가하는 포괄적인 설문조사 (5단계 21문항)',
-      is_default: true,
-      is_public: true,
-      created_by: null, // 시스템 생성
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      is_default: true
     };
 
     console.log('📝 템플릿 기본 정보 생성 중...');

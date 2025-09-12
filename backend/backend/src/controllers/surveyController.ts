@@ -450,6 +450,22 @@ export const requestSurveyCancellation = async (req: AuthRequest, res: Response)
   }
 };
 
+// 공개 템플릿 조회 (인증 불필요)
+export const getPublicTemplates = async (req: Request, res: Response) => {
+  try {
+    // 공개 템플릿 조회 (is_default = true로 기본 템플릿만)
+    let templates = await dbUtils.findTemplatesByConditions({ isDefault: true });
+    
+    console.log('공개 템플릿 조회 결과:', templates ? templates.length : 0);
+    
+    res.json({ templates: templates || [] });
+
+  } catch (error) {
+    console.error('Get public templates error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 export const debugTemplates = async (req: Request, res: Response) => {
   try {
     const templates = await dbUtils.findTemplatesByConditions({});

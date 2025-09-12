@@ -9,6 +9,7 @@ import {
   getTemplates,
   getTemplate,
   createDefaultTemplate,
+  getPublicTemplates,
   extendSurvey,
   requestSurveyCancellation,
   debugTemplates
@@ -23,7 +24,8 @@ import { authenticateToken, requireRole } from '../middleware/auth';
 
 const router = Router();
 
-// 디버깅 라우트 (인증 불필요)
+// 공개 라우트 (인증 불필요)
+router.get('/templates/public', getPublicTemplates);
 router.get('/debug/templates', debugTemplates);
 router.post('/debug/create-template', createDefaultTemplate);
 

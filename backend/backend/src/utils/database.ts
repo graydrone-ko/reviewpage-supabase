@@ -361,7 +361,7 @@ export const dbUtils = {
         )
       `)
       .eq('template_id', templateId)
-      .order('step_order', { ascending: true });
+      .order('step_number', { ascending: true });
     
     if (error) throw error;
     return data || [];
