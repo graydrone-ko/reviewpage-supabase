@@ -160,8 +160,11 @@ const Register: React.FC = () => {
       // Redirect based on user role
       if (response.data.user.role === 'SELLER') {
         navigate('/dashboard');
-      } else {
+      } else if (response.data.user.role === 'CONSUMER') {
         navigate('/surveys');
+      } else {
+        // Default fallback to home page
+        navigate('/');
       }
     } catch (err: any) {
       setError(err.response?.data?.error || '회원가입 중 오류가 발생했습니다.');

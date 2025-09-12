@@ -51,6 +51,8 @@ function App() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
+    // 홈페이지로 리다이렉트
+    window.location.href = '/';
   };
 
   return (
