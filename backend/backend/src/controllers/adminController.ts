@@ -121,22 +121,34 @@ export const rejectSurvey = async (req: AdminRequest, res: Response) => {
 // 사용자 관리
 export const getUsers = async (req: AdminRequest, res: Response) => {
   try {
-    const { role, page = 1, limit = 10 } = req.query;
+    const { role, page = 1, limit = 20 } = req.query;
+    const offset = (Number(page) - 1) * Number(limit);
     
-    // 간소화된 사용자 목록 조회
-    const { data: users, error } = await db
-      .from('users')
-      .select('*')
-      .eq(role ? 'role' : 'id', role || '')
-      .limit(Number(limit));
+    // 전체 사용자 수 조회
+    let countQuery = db.from('users').select('id', { count: 'exact', head: true });
+    if (role) {
+      countQuery = countQuery.eq('role', role);
+    }
+    const { count: totalCount } = await countQuery;
+
+    // 사용자 목록 조회
+    let query = db.from('users').select('*').range(offset, offset + Number(limit) - 1);
+    if (role) {
+      query = query.eq('role', role);
+    }
+    
+    const { data: users, error } = await query;
 
     if (error) throw error;
 
     res.json({
       users: users || [],
-      totalCount: users?.length || 0,
-      page: Number(page),
-      limit: Number(limit)
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total: totalCount || 0,
+        pages: Math.ceil((totalCount || 0) / Number(limit))
+      }
     });
 
   } catch (error) {
@@ -213,5 +225,31 @@ export const approveWithdrawal = async (req: AdminRequest, res: Response) => {
 
 // 출금 요청 거부
 export const rejectWithdrawal = async (req: AdminRequest, res: Response) => {
+  res.status(501).json({ error: 'Not implemented yet' });
+};
+
+// 중단 요청 관리
+export const getCancellationRequests = async (req: AdminRequest, res: Response) => {
+  res.status(501).json({ error: 'Not implemented yet' });
+};
+
+// 최근 중단 요청 수 조회
+export const getRecentCancellationRequests = async (req: AdminRequest, res: Response) => {
+  try {
+    // 임시값 반환 - 실제 구현 필요시 데이터베이스 조회 로직 추가
+    res.json({ count: 0 });
+  } catch (error) {
+    console.error('Recent cancellation requests error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// 중단 요청 승인
+export const approveCancellationRequest = async (req: AdminRequest, res: Response) => {
+  res.status(501).json({ error: 'Not implemented yet' });
+};
+
+// 중단 요청 거부
+export const rejectCancellationRequest = async (req: AdminRequest, res: Response) => {
   res.status(501).json({ error: 'Not implemented yet' });
 };

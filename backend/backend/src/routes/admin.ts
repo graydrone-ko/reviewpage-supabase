@@ -11,7 +11,11 @@ import {
   getResponses,
   getWithdrawalRequests,
   approveWithdrawal,
-  rejectWithdrawal
+  rejectWithdrawal,
+  getCancellationRequests,
+  getRecentCancellationRequests,
+  approveCancellationRequest,
+  rejectCancellationRequest
 } from '../controllers/adminController';
 import financeRoutes from './finance';
 
@@ -40,6 +44,12 @@ router.patch('/rewards/:rewardId/approve', approveReward);
 router.get('/withdrawal-requests', getWithdrawalRequests);
 router.patch('/withdrawal-requests/:id/approve', approveWithdrawal);
 router.patch('/withdrawal-requests/:id/reject', rejectWithdrawal);
+
+// 중단요청 관리
+router.get('/cancellation-requests', getCancellationRequests);
+router.get('/cancellation-requests/recent', getRecentCancellationRequests);
+router.patch('/cancellation-requests/:id/approve', approveCancellationRequest);
+router.patch('/cancellation-requests/:id/reject', rejectCancellationRequest);
 
 // 재무 관리
 router.use('/finance', financeRoutes);

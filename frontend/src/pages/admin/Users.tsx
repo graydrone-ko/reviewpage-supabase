@@ -61,8 +61,13 @@ const AdminUsers: React.FC = () => {
       }
 
       const data = await response.json();
-      setUsers(data.users);
-      setPagination(data.pagination);
+      setUsers(data.users || []);
+      setPagination(data.pagination || {
+        page: 1,
+        limit: 20,
+        total: data.totalCount || 0,
+        pages: Math.ceil((data.totalCount || 0) / 20)
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : '오류가 발생했습니다.');
     } finally {
