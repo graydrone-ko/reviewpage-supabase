@@ -99,9 +99,11 @@ const SurveyParticipate: React.FC = () => {
   }, [id, fetchSurvey]);
 
   const handleAnswerChange = (value: string | number | boolean) => {
-    if (!survey?.template) return;
+    if (!survey?.template?.steps || currentStepIndex >= survey.template.steps.length) return;
 
     const currentStep = survey.template.steps[currentStepIndex];
+    if (!currentStep?.questions || currentQuestionIndex >= currentStep.questions.length) return;
+    
     const currentQuestion = currentStep.questions[currentQuestionIndex];
     
     setResponses(prev => prev.map(stepResponse => {
@@ -120,9 +122,11 @@ const SurveyParticipate: React.FC = () => {
   };
 
   const getCurrentAnswer = (): QuestionAnswer | undefined => {
-    if (!survey?.template) return undefined;
+    if (!survey?.template?.steps || currentStepIndex >= survey.template.steps.length) return undefined;
 
     const currentStep = survey.template.steps[currentStepIndex];
+    if (!currentStep?.questions || currentQuestionIndex >= currentStep.questions.length) return undefined;
+    
     const currentQuestion = currentStep.questions[currentQuestionIndex];
     const stepResponse = responses.find(r => r.stepId === currentStep.id);
     
@@ -130,9 +134,12 @@ const SurveyParticipate: React.FC = () => {
   };
 
   const isCurrentAnswerValid = (): boolean => {
-    if (!survey?.template) return false;
+    if (!survey?.template?.steps || currentStepIndex >= survey.template.steps.length) return false;
 
-    const currentQuestion = survey.template.steps[currentStepIndex].questions[currentQuestionIndex];
+    const currentStep = survey.template.steps[currentStepIndex];
+    if (!currentStep?.questions || currentQuestionIndex >= currentStep.questions.length) return false;
+    
+    const currentQuestion = currentStep.questions[currentQuestionIndex];
     const currentAnswer = getCurrentAnswer();
     
     
@@ -166,9 +173,10 @@ const SurveyParticipate: React.FC = () => {
   };
 
   const handleNext = () => {
-    if (!survey?.template) return;
+    if (!survey?.template?.steps || currentStepIndex >= survey.template.steps.length) return;
 
     const currentStep = survey.template.steps[currentStepIndex];
+    if (!currentStep?.questions) return;
     
     // 다음 질문으로 이동
     if (currentQuestionIndex < currentStep.questions.length - 1) {
@@ -193,8 +201,11 @@ const SurveyParticipate: React.FC = () => {
     // 이전 단계로 이동
     else if (currentStepIndex > 0) {
       setCurrentStepIndex(currentStepIndex - 1);
-      if (survey?.template) {
-        setCurrentQuestionIndex(survey.template.steps[currentStepIndex - 1].questions.length - 1);
+      if (survey?.template?.steps && currentStepIndex > 0) {
+        const prevStep = survey.template.steps[currentStepIndex - 1];
+        if (prevStep?.questions?.length) {
+          setCurrentQuestionIndex(prevStep.questions.length - 1);
+        }
       }
     }
   };
@@ -302,23 +313,29 @@ const SurveyParticipate: React.FC = () => {
   };
 
   const getTotalQuestions = (): number => {
-    return survey?.template?.steps.reduce((total, step) => total + step.questions.length, 0) || 0;
+    if (!survey?.template?.steps || survey.template.steps.length === 0) return 0;
+    return survey.template.steps.reduce((total, step) => {
+      return total + (step.questions?.length || 0);
+    }, 0);
   };
 
   const getCurrentQuestionNumber = (): number => {
-    if (!survey?.template) return 1;
+    if (!survey?.template?.steps || survey.template.steps.length === 0) return 1;
     
     let questionNumber = 1;
-    for (let i = 0; i < currentStepIndex; i++) {
-      questionNumber += survey.template.steps[i].questions.length;
+    for (let i = 0; i < currentStepIndex && i < survey.template.steps.length; i++) {
+      const step = survey.template.steps[i];
+      questionNumber += (step?.questions?.length || 0);
     }
     return questionNumber + currentQuestionIndex;
   };
 
   const renderQuestion = () => {
-    if (!survey?.template) return null;
+    if (!survey?.template?.steps || currentStepIndex >= survey.template.steps.length) return null;
 
     const currentStep = survey.template.steps[currentStepIndex];
+    if (!currentStep?.questions || currentQuestionIndex >= currentStep.questions.length) return null;
+    
     const currentQuestion = currentStep.questions[currentQuestionIndex];
     const currentAnswer = getCurrentAnswer();
 
@@ -440,7 +457,7 @@ const SurveyParticipate: React.FC = () => {
     );
   }
 
-  if (!survey || !survey.template) {
+  if (!survey || !survey.template || !survey.template.steps || survey.template.steps.length === 0) {
     return (
       <div className="max-w-2xl mx-auto py-8 px-4 text-center">
         <div className="text-red-600">설문을 찾을 수 없습니다.</div>
@@ -448,7 +465,35 @@ const SurveyParticipate: React.FC = () => {
     );
   }
 
+  // 현재 스텝 인덱스가 유효한지 확인
+  if (currentStepIndex >= survey.template.steps.length) {
+    return (
+      <div className="max-w-2xl mx-auto py-8 px-4 text-center">
+        <div className="text-red-600">잘못된 설문 단계입니다.</div>
+      </div>
+    );
+  }
+
   const currentStep = survey.template.steps[currentStepIndex];
+  
+  // 현재 스텝에 질문이 있는지 확인
+  if (!currentStep || !currentStep.questions || currentStep.questions.length === 0) {
+    return (
+      <div className="max-w-2xl mx-auto py-8 px-4 text-center">
+        <div className="text-red-600">설문 질문을 찾을 수 없습니다.</div>
+      </div>
+    );
+  }
+
+  // 현재 질문 인덱스가 유효한지 확인
+  if (currentQuestionIndex >= currentStep.questions.length) {
+    return (
+      <div className="max-w-2xl mx-auto py-8 px-4 text-center">
+        <div className="text-red-600">잘못된 질문 번호입니다.</div>
+      </div>
+    );
+  }
+
   const totalQuestions = getTotalQuestions();
   const currentQuestionNumber = getCurrentQuestionNumber();
   const isLastQuestion = currentStepIndex === survey.template.steps.length - 1 && 
