@@ -3,6 +3,9 @@ import { body, validationResult } from 'express-validator';
 import { dbUtils } from '../utils/database';
 import { AuthRequest } from '../middleware/auth';
 
+// 익명 사용자 ID
+const ANONYMOUS_USER_ID = 'c91a823e-21c1-4a59-9e30-a6b22fa8c145';
+
 export const submitResponseValidation = [
   body('surveyId').isString().withMessage('Survey ID is required'),
   body('responses').isArray({ min: 1 }).withMessage('At least one response is required'),
@@ -11,11 +14,10 @@ export const submitResponseValidation = [
   body('responses.*.answers.*.questionId').isString().withMessage('Question ID is required')
 ];
 
-export const submitResponse = async (req: AuthRequest, res: Response) => {
+export const submitResponse = async (req: Request, res: Response) => {
   try {
     console.log('Submit response request:', {
-      body: req.body,
-      user: req.user
+      body: req.body
     });
 
     const errors = validationResult(req);
@@ -27,9 +29,7 @@ export const submitResponse = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    if (!req.user || req.user.role !== 'CONSUMER') {
-      return res.status(403).json({ error: 'Only consumers can submit responses' });
-    }
+    // 설문 참여는 비로그인 사용자도 가능 (인증 체크 제거)
 
     const { surveyId, responses } = req.body;
 
@@ -72,45 +72,26 @@ export const submitResponse = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Survey has ended' });
     }
 
-    // Check if user already responded (duplicate prevention)
-    const existingResponse = await dbUtils.findResponseByUserAndSurvey(req.user.id, surveyId);
-
-    if (existingResponse) {
-      console.log('Duplicate response attempt:', {
-        userId: req.user.id,
-        surveyId,
-        existingResponseId: existingResponse.id,
-        existingResponseDate: existingResponse.created_at
-      });
-      return res.status(400).json({ 
-        error: 'You have already responded to this survey',
-        existingResponseDate: existingResponse.created_at,
-        canEdit: true // User can edit their existing response instead
-      });
-    }
-
-    // Check if user meets survey criteria (age and gender checking)
-    // Note: Age calculation would need to be implemented based on birth_date
-    if (survey.target_gender !== 'ALL' && req.user.gender && req.user.gender !== 'ALL') {
-      if (req.user.gender !== survey.target_gender) {
-        return res.status(400).json({ error: 'You do not meet the gender criteria for this survey' });
-      }
-    }
+    // 익명 사용자의 경우 중복 체크와 타겟팅 체크를 스킵
+    // TODO: 향후 필요시 IP 기반 중복 체크나 쿠키 기반 체크 구현 가능
 
     try {
       // Create survey response
       const surveyResponse = await dbUtils.createSurveyResponse({
         survey_id: surveyId,
-        consumer_id: req.user.id,
+        consumer_id: (req as any).user?.id || ANONYMOUS_USER_ID, // 익명 사용자
         responses
       });
 
-      // Create reward
-      const reward = await dbUtils.createReward({
-        user_id: req.user.id,
-        amount: survey.reward,
-        type: 'SURVEY_COMPLETION'
-      });
+      // 로그인한 사용자에게만 리워드 지급
+      let reward = null;
+      if ((req as any).user?.id) {
+        reward = await dbUtils.createReward({
+          user_id: (req as any).user.id,
+          amount: survey.reward,
+          type: 'SURVEY_COMPLETION'
+        });
+      }
 
       // Note: Response count and survey completion logic would need additional queries
       // For now, simplified without transaction support
