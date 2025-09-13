@@ -30,6 +30,9 @@ router.get('/templates/list', getPublicTemplates); // 프론트엔드 호환성�
 router.get('/debug/templates', debugTemplates);
 router.post('/debug/create-template', createDefaultTemplate);
 
+// 설문 참여를 위한 공개 라우트 (인증 불필요)
+router.get('/:id', getSurvey);
+
 // All other routes require authentication
 router.use(authenticateToken);
 
@@ -38,9 +41,6 @@ router.post('/', requireRole(['SELLER']), createSurveyValidation, createSurvey);
 
 // Get surveys (filtered based on user role)
 router.get('/', getSurveys);
-
-// Get specific survey
-router.get('/:id', getSurvey);
 
 // Update survey (sellers only)
 router.patch('/:id', requireRole(['SELLER']), updateSurvey);
