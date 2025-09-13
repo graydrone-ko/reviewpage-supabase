@@ -111,6 +111,7 @@ export const getSurveys = async (req: AuthRequest, res: Response) => {
       where.seller_id = req.user.id;
     } else if (req.user?.role === 'CONSUMER') {
       where.status = 'APPROVED';
+      // 마감되지 않은 설문만 조회 (현재 시간보다 마감일이 미래인 것)
       where.endDate = new Date().toISOString();
       
       // 사용자 나이와 성별 필터링은 프론트엔드에서 처리
@@ -123,10 +124,26 @@ export const getSurveys = async (req: AuthRequest, res: Response) => {
 
     const surveys = await dbUtils.findSurveysByConditions(where);
 
-    // 응답 수가 포함된 설문 목록 생성 (간소화)
+    // 응답 수가 포함된 설문 목록 생성 및 필드명 매핑
     const surveysWithResponseCount = surveys.map((survey: any) => ({
-      ...survey,
-      responseCount: 0 // 임시로 0, 필요시 별도 쿼리로 계산
+      id: survey.id,
+      title: survey.title,
+      description: survey.description,
+      url: survey.url,
+      sellerId: survey.seller_id,
+      templateId: survey.template_id,
+      targetAgeMin: survey.target_age_min,
+      targetAgeMax: survey.target_age_max,
+      targetGender: survey.target_gender,
+      reward: survey.reward,
+      maxParticipants: survey.max_participants,
+      totalBudget: survey.total_budget,
+      status: survey.status,
+      createdAt: survey.created_at,
+      endDate: survey.end_date, // 이 필드가 중요 - Supabase의 end_date를 endDate로 매핑
+      responseCount: survey.responseCount || 0,
+      seller: survey.seller,
+      template: survey.template
     }));
 
     res.json({ surveys: surveysWithResponseCount });
@@ -146,7 +163,29 @@ export const getSurvey = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Survey not found' });
     }
 
-    res.json({ survey });
+    // 필드명 매핑 적용
+    const mappedSurvey = {
+      id: survey.id,
+      title: survey.title,
+      description: survey.description,
+      url: survey.url,
+      sellerId: survey.seller_id,
+      templateId: survey.template_id,
+      targetAgeMin: survey.target_age_min,
+      targetAgeMax: survey.target_age_max,
+      targetGender: survey.target_gender,
+      reward: survey.reward,
+      maxParticipants: survey.max_participants,
+      totalBudget: survey.total_budget,
+      status: survey.status,
+      createdAt: survey.created_at,
+      endDate: survey.end_date, // 이 필드가 중요 - Supabase의 end_date를 endDate로 매핑
+      responseCount: survey.responseCount || 0,
+      seller: survey.seller,
+      template: survey.template
+    };
+
+    res.json({ survey: mappedSurvey });
 
   } catch (error) {
     console.error('Get survey error:', error);
