@@ -57,7 +57,16 @@ export const dbUtils = {
       .select(`
         *,
         seller:users!surveys_seller_id_fkey(*),
-        template:survey_templates!surveys_template_id_fkey(*)
+        template:survey_templates!surveys_template_id_fkey(
+          *,
+          steps:survey_steps(
+            *,
+            questions:survey_questions(
+              *,
+              options:question_options(*)
+            )
+          )
+        )
       `)
       .eq('id', id)
       .single();
