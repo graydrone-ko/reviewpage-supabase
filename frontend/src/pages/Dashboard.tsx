@@ -263,10 +263,27 @@ const Dashboard: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatKoreanTime(new Date(survey.endDate), 'datetime')}
-                      {new Date() > new Date(survey.endDate) && survey.status === 'APPROVED' && (
-                        <div className="text-xs text-red-600">만료됨</div>
-                      )}
+                      {(() => {
+                        try {
+                          const endDate = new Date(survey.endDate);
+                          if (isNaN(endDate.getTime())) {
+                            return <span className="text-red-600">날짜 오류</span>;
+                          }
+                          return formatKoreanTime(endDate, 'datetime');
+                        } catch (error) {
+                          return <span className="text-red-600">날짜 처리 오류</span>;
+                        }
+                      })()}
+                      {(() => {
+                        try {
+                          const endDate = new Date(survey.endDate);
+                          return new Date() > endDate && survey.status === 'APPROVED' && (
+                            <div className="text-xs text-red-600">만료됨</div>
+                          );
+                        } catch (error) {
+                          return null;
+                        }
+                      })()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
@@ -337,7 +354,17 @@ const Dashboard: React.FC = () => {
                   <strong>설문:</strong> {selectedSurvey.title}
                 </p>
                 <p className="text-sm text-gray-600 mb-4">
-                  <strong>현재 마감일:</strong> {formatKoreanTime(new Date(selectedSurvey.endDate), 'datetime')}
+                  <strong>현재 마감일:</strong> {(() => {
+                    try {
+                      const endDate = new Date(selectedSurvey.endDate);
+                      if (isNaN(endDate.getTime())) {
+                        return '날짜 오류';
+                      }
+                      return formatKoreanTime(endDate, 'datetime');
+                    } catch (error) {
+                      return '날짜 처리 오류';
+                    }
+                  })()}
                 </p>
                 <p className="text-xs text-gray-500 mb-4">
                   최대 2회까지, 30일 이내로 연장 가능합니다. 

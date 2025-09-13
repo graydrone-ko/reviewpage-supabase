@@ -96,7 +96,13 @@ const CancellationRequests: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('중단요청 목록 불러오기 실패');
+        if (response.status === 401 || response.status === 403) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+          return;
+        }
+        throw new Error(`중단요청 목록 불러오기 실패: ${response.status}`);
       }
 
       const data = await response.json();
@@ -133,7 +139,13 @@ const CancellationRequests: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('중단요청 처리 실패');
+        if (response.status === 401 || response.status === 403) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+          return;
+        }
+        throw new Error(`중단요청 처리 실패: ${response.status}`);
       }
 
       await fetchStats();

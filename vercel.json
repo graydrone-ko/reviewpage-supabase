@@ -6,7 +6,7 @@
       "use": "@vercel/static-build",
       "config": {
         "distDir": "build",
-        "buildCommand": "CI='' npm run build"
+        "buildCommand": "cd frontend && CI='' npm install --legacy-peer-deps && npm run build"
       }
     },
     {
@@ -27,6 +27,42 @@
       "dest": "/frontend/static/$1"
     },
     {
+      "src": "/_next/(.*)",
+      "dest": "/frontend/_next/$1"
+    },
+    {
+      "src": "/favicon.ico",
+      "dest": "/frontend/favicon.ico"
+    },
+    {
+      "src": "/manifest.json",
+      "dest": "/frontend/manifest.json"
+    },
+    {
+      "src": "/admin/(.*)",
+      "dest": "/frontend/index.html"
+    },
+    {
+      "src": "/surveys/(.*)",
+      "dest": "/frontend/index.html"
+    },
+    {
+      "src": "/rewards",
+      "dest": "/frontend/index.html"
+    },
+    {
+      "src": "/dashboard",
+      "dest": "/frontend/index.html"
+    },
+    {
+      "src": "/login",
+      "dest": "/frontend/index.html"
+    },
+    {
+      "src": "/register",
+      "dest": "/frontend/index.html"
+    },
+    {
       "src": "/(.*)",
       "dest": "/frontend/index.html"
     }
@@ -34,8 +70,7 @@
   "env": {
     "CI": "",
     "NODE_ENV": "production",
-    "SKIP_PREFLIGHT_CHECK": "true",
-    "NODE_OPTIONS": "--openssl-legacy-provider"
+    "SKIP_PREFLIGHT_CHECK": "true"
   },
   "functions": {
     "backend/backend/api/**/*.ts": {

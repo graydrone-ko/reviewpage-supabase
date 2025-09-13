@@ -57,7 +57,14 @@ const AdminUsers: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('사용자 목록 불러오기 실패');
+        if (response.status === 401 || response.status === 403) {
+          // 인증 실패 시 로그인 페이지로 리다이렉트
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+          return;
+        }
+        throw new Error(`사용자 목록 불러오기 실패: ${response.status}`);
       }
 
       const data = await response.json();
