@@ -1,84 +1,18 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "frontend/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "build",
-        "buildCommand": "cd frontend && CI='' npm install --legacy-peer-deps && npm run build"
-      }
-    },
-    {
-      "src": "backend/backend/api/**/*.ts",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["backend/backend/src/**"]
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/backend/backend/api/index"
-    },
-    {
-      "src": "/static/(.*)",
-      "dest": "/frontend/static/$1"
-    },
-    {
-      "src": "/_next/(.*)",
-      "dest": "/frontend/_next/$1"
-    },
-    {
-      "src": "/favicon.ico",
-      "dest": "/frontend/favicon.ico"
-    },
-    {
-      "src": "/manifest.json",
-      "dest": "/frontend/manifest.json"
-    },
-    {
-      "src": "/admin/(.*)",
-      "dest": "/frontend/index.html"
-    },
-    {
-      "src": "/surveys/(.*)",
-      "dest": "/frontend/index.html"
-    },
-    {
-      "src": "/rewards",
-      "dest": "/frontend/index.html"
-    },
-    {
-      "src": "/dashboard",
-      "dest": "/frontend/index.html"
-    },
-    {
-      "src": "/login",
-      "dest": "/frontend/index.html"
-    },
-    {
-      "src": "/register",
-      "dest": "/frontend/index.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/frontend/index.html"
-    }
-  ],
+  "buildCommand": "npm run build:frontend",
+  "outputDirectory": "frontend/build",
+  "installCommand": "npm install",
   "env": {
     "CI": "",
     "NODE_ENV": "production",
-    "SKIP_PREFLIGHT_CHECK": "true"
+    "SKIP_PREFLIGHT_CHECK": "true",
+    "NODE_OPTIONS": "--openssl-legacy-provider"
   },
-  "functions": {
-    "backend/backend/api/**/*.ts": {
-      "runtime": "nodejs20.x",
-      "maxDuration": 30,
-      "memory": 1024
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
-  },
-  "installCommand": "npm install --legacy-peer-deps",
-  "buildCommand": "npm run build"
+  ]
 }
