@@ -206,10 +206,10 @@ const AdminUsers: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <div>
                         {user.role === 'SELLER' && (
-                          <div>설문: {user._count.surveys}개</div>
+                          <div>설문: {user._count?.surveys || 0}개</div>
                         )}
                         {user.role === 'CONSUMER' && (
-                          <div>응답: {user._count.responses}개</div>
+                          <div>응답: {user._count?.responses || 0}개</div>
                         )}
                         {user.role === 'ADMIN' && (
                           <div className="text-purple-600">관리자</div>
