@@ -249,7 +249,7 @@ const AdminDashboard: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
           <button
             onClick={() => navigate('/admin/surveys')}
-            className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow"
+            className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow relative"
           >
             <div className="text-center">
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -259,6 +259,11 @@ const AdminDashboard: React.FC = () => {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">설문 관리</h3>
               <p className="text-gray-600">설문 승인 및 관리</p>
+              {stats.surveys.pending > 0 && (
+                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                  {stats.surveys.pending}
+                </div>
+              )}
             </div>
           </button>
 

@@ -9,18 +9,44 @@ export const getDashboardStats = async (req: AdminRequest, res: Response) => {
     // 기본 통계 조회 (간소화)
     const stats = await dbUtils.getStats();
 
+    // 사용자 역할별 통계
+    const { data: userStats } = await db
+      .from('users')
+      .select('role')
+      .in('role', ['CONSUMER', 'SELLER']);
+    
+    const consumers = userStats?.filter(u => u.role === 'CONSUMER').length || 0;
+    const sellers = userStats?.filter(u => u.role === 'SELLER').length || 0;
+
+    // 설문 상태별 통계
+    const { data: surveyStats } = await db
+      .from('surveys')
+      .select('status');
+    
+    const pendingSurveys = surveyStats?.filter(s => s.status === 'PENDING').length || 0;
+    const approvedSurveys = surveyStats?.filter(s => s.status === 'APPROVED').length || 0;
+    const completedSurveys = surveyStats?.filter(s => s.status === 'COMPLETED').length || 0;
+
+    // 중단 요청 통계
+    const { data: cancellationRequests } = await db
+      .from('survey_cancellation_requests')
+      .select('status')
+      .eq('status', 'PENDING');
+    
+    const pendingCancellations = cancellationRequests?.length || 0;
+
     res.json({
       users: {
         total: stats.totalUsers,
-        consumers: Math.floor(stats.totalUsers * 0.8), // 임시 추정값
-        sellers: Math.floor(stats.totalUsers * 0.2), // 임시 추정값
+        consumers: consumers,
+        sellers: sellers,
         recent: 0 // 임시값 - 최근 7일 가입자
       },
       surveys: {
         total: stats.totalSurveys,
-        pending: 0, // 임시값
-        approved: stats.totalSurveys,
-        completed: 0 // 임시값
+        pending: pendingSurveys,
+        approved: approvedSurveys,
+        completed: completedSurveys
       },
       responses: {
         total: stats.totalResponses
@@ -32,7 +58,7 @@ export const getDashboardStats = async (req: AdminRequest, res: Response) => {
       },
       notifications: {
         pendingWithdrawals: 0, // 임시값
-        pendingCancellations: 0 // 임시값
+        pendingCancellations: pendingCancellations
       }
     });
 
