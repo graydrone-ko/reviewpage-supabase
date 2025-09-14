@@ -11,14 +11,35 @@ export const submitResponseValidation = [
   body('responses').isArray({ min: 1 }).withMessage('At least one response is required'),
   body('responses.*.stepId').isString().withMessage('Step ID is required'),
   body('responses.*.answers').isArray({ min: 1 }).withMessage('At least one answer is required'),
-  body('responses.*.answers.*.questionId').isString().withMessage('Question ID is required')
+  body('responses.*.answers.*.questionId').isString().withMessage('Question ID is required'),
+  body('responses.*.answers.*.value').notEmpty().withMessage('Answer value is required')
 ];
 
 export const submitResponse = async (req: Request, res: Response) => {
   try {
     console.log('Submit response request:', {
-      body: req.body
+      body: req.body,
+      bodyKeys: Object.keys(req.body),
+      surveyId: req.body.surveyId,
+      responses: req.body.responses,
+      responsesType: typeof req.body.responses,
+      responsesLength: Array.isArray(req.body.responses) ? req.body.responses.length : 'not array'
     });
+    
+    // 각 응답의 상세 구조 로깅
+    if (Array.isArray(req.body.responses)) {
+      req.body.responses.forEach((resp: any, index: number) => {
+        console.log(`Response ${index}:`, {
+          stepId: resp.stepId,
+          answersCount: resp.answers?.length,
+          answers: resp.answers?.map((ans: any) => ({
+            questionId: ans.questionId,
+            value: ans.value,
+            valueType: typeof ans.value
+          }))
+        });
+      });
+    }
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -43,15 +64,25 @@ export const submitResponse = async (req: Request, res: Response) => {
     // Validate each response structure
     for (const response of responses) {
       if (!response.stepId || !response.answers || !Array.isArray(response.answers)) {
+        console.log('Invalid response structure:', { stepId: response.stepId, answers: response.answers });
         return res.status(400).json({ 
           error: 'Invalid response format: each response must have stepId and answers array' 
         });
       }
       
       for (const answer of response.answers) {
-        if (!answer.questionId || answer.value === undefined) {
+        if (!answer.questionId) {
+          console.log('Missing questionId:', answer);
           return res.status(400).json({ 
-            error: 'Invalid answer format: each answer must have questionId and value' 
+            error: 'Invalid answer format: questionId is required' 
+          });
+        }
+        
+        // Check for null, undefined, or empty string values
+        if (answer.value === null || answer.value === undefined || answer.value === '') {
+          console.log('Invalid answer value:', { questionId: answer.questionId, value: answer.value, type: typeof answer.value });
+          return res.status(400).json({ 
+            error: `Invalid answer value for question ${answer.questionId}: value cannot be null, undefined, or empty` 
           });
         }
       }
