@@ -12,6 +12,7 @@ dotenv.config();
 import authRoutes from '../src/routes/auth';
 import surveyRoutes from '../src/routes/surveys';
 import adminRoutes from '../src/routes/admin';
+import responseRoutes from '../src/routes/responses';
 
 // Create Express app
 const app = express();
@@ -83,6 +84,7 @@ app.get('/test-db', async (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/surveys', surveyRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/responses', responseRoutes);
 
 // Handle 404
 app.use('*', (req, res) => {
