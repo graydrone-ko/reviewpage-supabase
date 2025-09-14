@@ -220,6 +220,22 @@ const SurveyParticipate: React.FC = () => {
         responses,
         responseCount: responses.length
       });
+      
+      // 각 응답의 상세 구조 로깅
+      responses.forEach((resp, stepIndex) => {
+        console.log(`Step ${stepIndex} (${resp.stepId}):`, {
+          answersCount: resp.answers.length,
+          answers: resp.answers.map((ans, ansIndex) => ({
+            index: ansIndex,
+            questionId: ans.questionId,
+            value: ans.value,
+            valueType: typeof ans.value,
+            isNull: ans.value === null,
+            isUndefined: ans.value === undefined,
+            isEmpty: ans.value === ''
+          }))
+        });
+      });
 
       // Validate all responses before submission
       const validationErrors = validateAllResponses();

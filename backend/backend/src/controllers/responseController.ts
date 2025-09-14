@@ -80,9 +80,23 @@ export const submitResponse = async (req: Request, res: Response) => {
         
         // Check for null, undefined, or empty string values
         if (answer.value === null || answer.value === undefined || answer.value === '') {
-          console.log('Invalid answer value:', { questionId: answer.questionId, value: answer.value, type: typeof answer.value });
+          console.log('❌ Invalid answer value detected:', { 
+            stepId: response.stepId,
+            questionId: answer.questionId, 
+            value: answer.value, 
+            type: typeof answer.value,
+            isNull: answer.value === null,
+            isUndefined: answer.value === undefined,
+            isEmpty: answer.value === ''
+          });
           return res.status(400).json({ 
-            error: `Invalid answer value for question ${answer.questionId}: value cannot be null, undefined, or empty` 
+            error: `Invalid answer value for question ${answer.questionId}: value cannot be null, undefined, or empty`,
+            details: {
+              stepId: response.stepId,
+              questionId: answer.questionId,
+              receivedValue: answer.value,
+              receivedType: typeof answer.value
+            }
           });
         }
       }
