@@ -197,6 +197,19 @@ export const dbUtils = {
     return data || [];
   },
 
+  // 사용자의 특정 설문 응답 확인 (중복 방지용)
+  async findResponseByUserAndSurvey(userId: string, surveyId: string) {
+    const { data, error } = await db
+      .from('survey_responses')
+      .select('*')
+      .eq('consumer_id', userId)
+      .eq('survey_id', surveyId)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
+  },
+
   // 리워드 관련
   async createReward(rewardData: any) {
     const { data, error } = await db
@@ -218,6 +231,28 @@ export const dbUtils = {
     
     if (error) throw error;
     return data || [];
+  },
+
+  async findRewardByUserAndSurvey(userId: string, surveyId: string) {
+    // 리워드 테이블에 survey_id 컬럼이 없으므로, 타임스탬프 기반으로 매칭
+    // 사용자의 설문 응답 시간과 리워드 생성 시간이 5분 이내인 경우를 찾음
+    const userResponses = await this.findResponsesByUserId(userId);
+    const targetResponse = userResponses.find((response: any) => response.survey_id === surveyId);
+    
+    if (!targetResponse) return null;
+    
+    const rewards = await this.findRewardsByUserId(userId);
+    const responseTime = new Date(targetResponse.created_at).getTime();
+    
+    // 응답 시간과 5분 이내에 생성된 SURVEY_COMPLETION 리워드를 찾음
+    const matchedReward = rewards.find((reward: any) => {
+      if (reward.type !== 'SURVEY_COMPLETION') return false;
+      const rewardTime = new Date(reward.created_at).getTime();
+      const timeDiff = Math.abs(rewardTime - responseTime);
+      return timeDiff <= 5 * 60 * 1000; // 5분 이내
+    });
+    
+    return matchedReward || null;
   },
 
   // 템플릿 관련

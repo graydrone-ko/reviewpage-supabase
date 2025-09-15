@@ -120,13 +120,20 @@ export const submitResponse = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Survey has ended' });
     }
 
-    // 익명 사용자의 경우 중복 체크와 타겟팅 체크를 스킵
-    // TODO: 향후 필요시 IP 기반 중복 체크나 쿠키 기반 체크 구현 가능
+    // 로그인한 사용자의 경우 중복 응답 사전 체크
+    let consumerId = (req as any).user?.id;
+    if (consumerId) {
+      console.log('🔍 Checking for existing response from logged user:', consumerId);
+      const existingResponse = await dbUtils.findResponseByUserAndSurvey(consumerId, surveyId);
+      if (existingResponse) {
+        return res.status(400).json({ 
+          error: '이미 이 설문에 참여하셨습니다. 중복 참여는 불가능합니다.',
+          canEdit: false
+        });
+      }
+    }
 
     try {
-      // Create survey response
-      let consumerId = (req as any).user?.id;
-      
       console.log('📝 Survey response creation attempt:', {
         surveyId,
         userId: consumerId,
@@ -156,15 +163,29 @@ export const submitResponse = async (req: Request, res: Response) => {
       if ((req as any).user?.id) {
         console.log('💰 Creating reward for logged user:', (req as any).user.id);
         try {
-          reward = await dbUtils.createReward({
-            user_id: (req as any).user.id,
-            amount: survey.reward,
-            type: 'SURVEY_COMPLETION'
-          });
-          console.log('✅ Reward created successfully:', reward.id);
+          // 리워드 중복 지급 방지 - 동일 사용자의 동일 설문에 대한 리워드 확인
+          const existingReward = await dbUtils.findRewardByUserAndSurvey((req as any).user.id, surveyId);
+          if (existingReward) {
+            console.log('⚠️ Reward already exists for this user and survey, skipping reward creation');
+          } else {
+            reward = await dbUtils.createReward({
+              user_id: (req as any).user.id,
+              amount: survey.reward,
+              type: 'SURVEY_COMPLETION',
+              survey_id: surveyId // 설문 ID 추가 (향후 스키마 업데이트 시 사용)
+            });
+            console.log('✅ Reward created successfully:', reward.id, 'Amount:', survey.reward);
+          }
         } catch (rewardError: any) {
           console.error('❌ Reward creation failed:', rewardError);
-          // 리워드 생성 실패해도 응답은 성공으로 처리
+          // 리워드 생성 실패는 심각한 문제이므로 로깅하고 응답에 포함
+          console.error('Reward creation error details:', {
+            userId: (req as any).user.id,
+            surveyId,
+            rewardAmount: survey.reward,
+            error: rewardError.message,
+            stack: rewardError.stack
+          });
         }
       } else {
         console.log('👤 Anonymous user - skipping reward creation');
