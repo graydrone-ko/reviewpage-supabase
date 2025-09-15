@@ -81,7 +81,8 @@ export const submitResponse = async (req: Request, res: Response) => {
         }
         
         // Check for null, undefined, or empty string values
-        if (answer.value === null || answer.value === undefined || answer.value === '') {
+        // Allow 0 and false as valid values
+        if (answer.value === null || answer.value === undefined || (typeof answer.value === 'string' && answer.value.trim() === '')) {
           console.log('❌ Invalid answer value detected:', { 
             stepId: response.stepId,
             questionId: answer.questionId, 
@@ -89,7 +90,7 @@ export const submitResponse = async (req: Request, res: Response) => {
             type: typeof answer.value,
             isNull: answer.value === null,
             isUndefined: answer.value === undefined,
-            isEmpty: answer.value === ''
+            isEmpty: typeof answer.value === 'string' && answer.value.trim() === ''
           });
           return res.status(400).json({ 
             error: `Invalid answer value for question ${answer.questionId}: value cannot be null, undefined, or empty`,
@@ -126,25 +127,47 @@ export const submitResponse = async (req: Request, res: Response) => {
       // Create survey response
       let consumerId = (req as any).user?.id;
       
+      console.log('📝 Survey response creation attempt:', {
+        surveyId,
+        userId: consumerId,
+        isAnonymous: !consumerId,
+        responsesCount: responses.length
+      });
+      
       // 익명 사용자의 경우 NULL로 저장 (외래키 제약조건 우회)
       if (!consumerId) {
         consumerId = null;
       }
       
-      const surveyResponse = await dbUtils.createSurveyResponse({
+      const responsePayload = {
         survey_id: surveyId,
         consumer_id: consumerId, // 로그인 사용자 ID 또는 NULL (익명)
         responses
-      });
+      };
+      
+      console.log('💾 Database payload:', responsePayload);
+      
+      const surveyResponse = await dbUtils.createSurveyResponse(responsePayload);
 
+      console.log('✅ Survey response created successfully:', surveyResponse.id);
+      
       // 로그인한 사용자에게만 리워드 지급
       let reward = null;
       if ((req as any).user?.id) {
-        reward = await dbUtils.createReward({
-          user_id: (req as any).user.id,
-          amount: survey.reward,
-          type: 'SURVEY_COMPLETION'
-        });
+        console.log('💰 Creating reward for logged user:', (req as any).user.id);
+        try {
+          reward = await dbUtils.createReward({
+            user_id: (req as any).user.id,
+            amount: survey.reward,
+            type: 'SURVEY_COMPLETION'
+          });
+          console.log('✅ Reward created successfully:', reward.id);
+        } catch (rewardError: any) {
+          console.error('❌ Reward creation failed:', rewardError);
+          // 리워드 생성 실패해도 응답은 성공으로 처리
+        }
+      } else {
+        console.log('👤 Anonymous user - skipping reward creation');
       }
 
       // Note: Response count and survey completion logic would need additional queries
