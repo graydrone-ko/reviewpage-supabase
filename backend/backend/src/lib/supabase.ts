@@ -177,7 +177,7 @@ export interface Database {
         Row: {
           id: string
           survey_id: string
-          consumer_id: string
+          consumer_id: string | null // 익명 사용자 허용
           responses: any
           created_at: string
           updated_at: string
@@ -185,7 +185,7 @@ export interface Database {
         Insert: {
           id?: string
           survey_id: string
-          consumer_id: string
+          consumer_id?: string | null // 익명 사용자 허용
           responses: any
           created_at?: string
           updated_at?: string
@@ -193,7 +193,7 @@ export interface Database {
         Update: {
           id?: string
           survey_id?: string
-          consumer_id?: string
+          consumer_id?: string | null // 익명 사용자 허용
           responses?: any
           created_at?: string
           updated_at?: string
