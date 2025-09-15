@@ -3,8 +3,10 @@ import { body, validationResult } from 'express-validator';
 import { dbUtils } from '../utils/database';
 import { AuthRequest } from '../middleware/auth';
 
-// 익명 사용자 ID
-const ANONYMOUS_USER_ID = 'c91a823e-21c1-4a59-9e30-a6b22fa8c145';
+// 익명 사용자 ID 생성 함수 (각 응답마다 고유 ID)
+const generateAnonymousUserId = () => {
+  return `anonymous-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+};
 
 export const submitResponseValidation = [
   body('surveyId').isString().withMessage('Survey ID is required'),
@@ -122,9 +124,16 @@ export const submitResponse = async (req: Request, res: Response) => {
 
     try {
       // Create survey response
+      let consumerId = (req as any).user?.id;
+      
+      // 익명 사용자의 경우 NULL로 저장 (외래키 제약조건 우회)
+      if (!consumerId) {
+        consumerId = null;
+      }
+      
       const surveyResponse = await dbUtils.createSurveyResponse({
         survey_id: surveyId,
-        consumer_id: (req as any).user?.id || ANONYMOUS_USER_ID, // 익명 사용자
+        consumer_id: consumerId, // 로그인 사용자 ID 또는 NULL (익명)
         responses
       });
 
@@ -153,8 +162,24 @@ export const submitResponse = async (req: Request, res: Response) => {
       
       // Handle specific Supabase/PostgreSQL errors
       if (dbError.code === '23505') { // Unique constraint violation
+        // 로그인한 사용자의 중복 응답인 경우
+        if ((req as any).user?.id) {
+          return res.status(400).json({ 
+            error: 'Duplicate response: You have already responded to this survey',
+            canEdit: true
+          });
+        } else {
+          // 익명 사용자의 경우 (이론적으로 발생하지 않아야 함)
+          return res.status(400).json({ 
+            error: 'Response submission failed. Please try again.'
+          });
+        }
+      }
+      
+      // Foreign key constraint violation (존재하지 않는 사용자)
+      if (dbError.code === '23503') {
         return res.status(400).json({ 
-          error: 'Duplicate response: You have already responded to this survey' 
+          error: 'Invalid user reference. Please refresh and try again.'
         });
       }
       

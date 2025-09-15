@@ -111,18 +111,22 @@ CREATE TABLE public.surveys (
     FOREIGN KEY (template_id) REFERENCES public.survey_templates(id)
 );
 
--- Survey Responses 테이블
+-- Survey Responses 테이블 (익명 응답 허용)
 CREATE TABLE public.survey_responses (
     id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
     survey_id TEXT NOT NULL,
-    consumer_id TEXT NOT NULL,
+    consumer_id TEXT, -- NULL 허용 (익명 사용자)
     responses JSONB NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
     FOREIGN KEY (survey_id) REFERENCES public.surveys(id),
-    FOREIGN KEY (consumer_id) REFERENCES public.users(id),
-    UNIQUE(survey_id, consumer_id)
+    FOREIGN KEY (consumer_id) REFERENCES public.users(id)
 );
+
+-- 로그인한 사용자의 중복 응답 방지 (NULL 제외)
+CREATE UNIQUE INDEX idx_unique_logged_user_response 
+ON public.survey_responses (survey_id, consumer_id) 
+WHERE consumer_id IS NOT NULL;
 
 -- Rewards 테이블
 CREATE TABLE public.rewards (
