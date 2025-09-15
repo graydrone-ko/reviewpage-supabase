@@ -11,15 +11,17 @@ const ProductPreview: React.FC<ProductPreviewProps> = ({ productUrl, className =
   const [iframeError, setIframeError] = useState(false);
 
 
-  // 네이버 관련 사이트만 제한 (다른 사이트들은 iframe 시도)
-  const isNaverRestrictedSite = (url: string): boolean => {
-    const naverDomains = [
+  // iframe 제한 사이트 확장 (Coupang 등 API 오류 발생 사이트 포함)
+  const isRestrictedSite = (url: string): boolean => {
+    const restrictedDomains = [
       'smartstore.naver.com',
       'brand.naver.com',
-      'shopping.naver.com'
+      'shopping.naver.com',
+      'coupang.com',          // Coupang API 오류 방지
+      'www.coupang.com'       // www 서브도메인 포함
     ];
     
-    return naverDomains.some(domain => url.includes(domain));
+    return restrictedDomains.some(domain => url.includes(domain));
   };
 
   // URL에서 도메인 추출
@@ -38,9 +40,9 @@ const ProductPreview: React.FC<ProductPreviewProps> = ({ productUrl, className =
   };
 
   useEffect(() => {
-    // 네이버 관련 사이트만 미리 차단
-    if (isNaverRestrictedSite(productUrl)) {
-      setError('naver_restricted');
+    // 제한된 사이트들 미리 차단 (콘솔 오류 방지)
+    if (isRestrictedSite(productUrl)) {
+      setError('site_restricted');
       setLoading(false);
       return;
     }
@@ -67,8 +69,8 @@ const ProductPreview: React.FC<ProductPreviewProps> = ({ productUrl, className =
     setError('iframe_blocked');
   };
 
-  // 네이버 제한 사이트 또는 iframe 로드 실패 시 대체 UI
-  if (error === 'naver_restricted' || iframeError || error === 'iframe_blocked') {
+  // 제한된 사이트 또는 iframe 로드 실패 시 대체 UI
+  if (error === 'site_restricted' || iframeError || error === 'iframe_blocked') {
     const siteName = getDomainName(productUrl);
     
     return (
@@ -111,7 +113,7 @@ const ProductPreview: React.FC<ProductPreviewProps> = ({ productUrl, className =
                     
                     {/* 설명 */}
                     <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-                      {error === 'naver_restricted' 
+                      {error === 'site_restricted' 
                         ? `${siteName}은(는) 보안상의 이유로 다른 사이트 내에서의 미리보기를 제한하고 있습니다.`
                         : `${siteName} 페이지를 불러올 수 없습니다. 사이트 보안 정책으로 인한 제한일 수 있습니다.`
                       }
@@ -143,11 +145,11 @@ const ProductPreview: React.FC<ProductPreviewProps> = ({ productUrl, className =
               </svg>
               <div>
                 <p className="text-sm text-amber-800 font-medium">
-                  {error === 'naver_restricted' ? '네이버 사이트 제한' : '미리보기 제한 안내'}
+                  {error === 'site_restricted' ? '사이트 제한 안내' : '미리보기 제한 안내'}
                 </p>
                 <p className="text-xs text-amber-700 mt-1">
-                  {error === 'naver_restricted' 
-                    ? '네이버 관련 사이트는 보안상 외부에서의 미리보기를 차단합니다. "새 탭에서 상품 보기" 버튼을 클릭하여 실제 페이지를 확인해주세요.'
+                  {error === 'site_restricted' 
+                    ? '해당 사이트는 보안상 외부에서의 미리보기를 차단합니다. "새 탭에서 상품 보기" 버튼을 클릭하여 실제 페이지를 확인해주세요.'
                     : '해당 사이트에서 미리보기를 차단했습니다. "새 탭에서 상품 보기" 버튼을 클릭하여 실제 페이지를 확인해주세요.'
                   }
                 </p>
@@ -190,7 +192,8 @@ const ProductPreview: React.FC<ProductPreviewProps> = ({ productUrl, className =
                   className="w-full border-0"
                   style={{ height: '600px' }}
                   title="상품 페이지 미리보기"
-                  sandbox="allow-scripts allow-same-origin"
+                  sandbox="allow-scripts allow-same-origin allow-forms"
+                  referrerPolicy="no-referrer"
                   onLoad={handleIframeLoad}
                   onError={handleIframeError}
                 />
