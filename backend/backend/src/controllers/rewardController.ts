@@ -29,7 +29,11 @@ export const getMyRewards = async (req: AuthRequest, res: Response) => {
       }
 
       return {
-        ...reward,
+        id: reward.id,
+        amount: reward.amount,
+        type: reward.type,
+        status: reward.status,
+        createdAt: reward.created_at, // created_at을 createdAt으로 매핑
         surveyTitle: matchedSurveyResponse?.surveys?.title || '설문 정보 없음',
         storeName: matchedSurveyResponse?.surveys?.store_name || '-'
       };
