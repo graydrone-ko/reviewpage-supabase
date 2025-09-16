@@ -323,6 +323,24 @@ export const dbUtils = {
     
     const { data, error } = await query;
     if (error) throw error;
+    
+    // 각 설문에 대해 응답 수 계산
+    if (data && data.length > 0) {
+      for (const survey of data) {
+        const { count, error: countError } = await db
+          .from('survey_responses')
+          .select('*', { count: 'exact', head: true })
+          .eq('survey_id', survey.id);
+        
+        if (countError) {
+          console.error('응답 수 계산 오류:', countError);
+          survey.responseCount = 0;
+        } else {
+          survey.responseCount = count || 0;
+        }
+      }
+    }
+    
     return data || [];
   },
 
