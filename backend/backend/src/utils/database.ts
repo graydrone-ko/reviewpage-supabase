@@ -192,6 +192,7 @@ export const dbUtils = {
         surveys!survey_responses_survey_id_fkey (
           id,
           title,
+          store_name,
           reward,
           created_at
         )
