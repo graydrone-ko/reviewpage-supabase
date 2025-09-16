@@ -13,6 +13,8 @@ import authRoutes from '../src/routes/auth';
 import surveyRoutes from '../src/routes/surveys';
 import adminRoutes from '../src/routes/admin';
 import responseRoutes from '../src/routes/responses';
+import rewardRoutes from '../src/routes/rewards';
+import seoRoutes from '../src/routes/seo';
 
 // Create Express app
 const app = express();
@@ -85,6 +87,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/surveys', surveyRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/responses', responseRoutes);
+app.use('/api/rewards', rewardRoutes);
+
+// SEO Routes (for sitemap, robots.txt)
+app.use('/', seoRoutes);
 
 // Handle 404
 app.use('*', (req, res) => {
