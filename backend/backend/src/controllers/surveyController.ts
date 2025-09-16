@@ -423,7 +423,84 @@ export const updateSurveyStatus = async (req: AuthRequest, res: Response) => {
 };
 
 export const getSurveyResponses = async (req: AuthRequest, res: Response) => {
-  res.status(501).json({ error: 'Not implemented yet' });
+  try {
+    const { id } = req.params;
+    
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    // 설문 정보 조회 및 소유권 확인
+    const survey = await dbUtils.findSurveyById(id);
+    if (!survey) {
+      return res.status(404).json({ error: 'Survey not found' });
+    }
+
+    // 판매자인지 확인하고, 자신의 설문인지 확인
+    if (req.user.role !== 'SELLER' && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Only sellers can view survey responses' });
+    }
+
+    if (req.user.role === 'SELLER' && survey.seller_id !== req.user.id) {
+      return res.status(403).json({ error: 'You can only view responses to your own surveys' });
+    }
+
+    // 설문 응답 조회
+    const { data: responses, error } = await db
+      .from('survey_responses')
+      .select(`
+        *,
+        consumer:users!survey_responses_consumer_id_fkey (
+          id,
+          name,
+          email,
+          gender,
+          birth_date
+        )
+      `)
+      .eq('survey_id', id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('설문 응답 조회 오류:', error);
+      return res.status(500).json({ error: 'Failed to fetch survey responses' });
+    }
+
+    // 응답 데이터 포맷팅
+    const formattedResponses = (responses || []).map((response: any) => ({
+      id: response.id,
+      surveyId: response.survey_id,
+      consumerId: response.consumer_id,
+      responses: response.responses,
+      createdAt: response.created_at,
+      updatedAt: response.updated_at,
+      consumer: response.consumer ? {
+        id: response.consumer.id,
+        name: response.consumer.name,
+        email: response.consumer.email,
+        gender: response.consumer.gender,
+        birthDate: response.consumer.birth_date
+      } : null
+    }));
+
+    res.json({
+      survey: {
+        id: survey.id,
+        title: survey.title,
+        description: survey.description,
+        status: survey.status,
+        createdAt: survey.created_at,
+        endDate: survey.end_date,
+        maxParticipants: survey.max_participants,
+        responseCount: formattedResponses.length
+      },
+      responses: formattedResponses
+    });
+
+  } catch (error) {
+    console.error('Get survey responses error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };
 
 export const approveSurvey = async (req: AuthRequest, res: Response) => {
