@@ -28,12 +28,18 @@ export const dbUtils = {
     return data;
   },
 
-  async findUserByPhoneNumber(phoneNumber: string) {
-    const { data, error } = await db
+  async findUserByPhoneNumber(phoneNumber: string, role?: string) {
+    let query = db
       .from('users')
-      .select('id')
-      .eq('phone_number', phoneNumber)
-      .single();
+      .select('id, role')
+      .eq('phone_number', phoneNumber);
+    
+    // 역할이 지정된 경우 해당 역할만 검색
+    if (role) {
+      query = query.eq('role', role);
+    }
+    
+    const { data, error } = await query.single();
     
     if (error && error.code !== 'PGRST116') throw error;
     return data;

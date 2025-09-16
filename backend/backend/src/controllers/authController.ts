@@ -39,11 +39,13 @@ export const register = async (req: Request, res: Response) => {
       return res.status(400).json({ error: '이미 사용 중인 이메일입니다.' });
     }
 
-    // 전화번호 중복 검사
-    const existingUserByPhone = await dbUtils.findUserByPhoneNumber(normalizedPhoneNumber);
+    // 전화번호 중복 검사 (소비자만)
+    if (role === 'CONSUMER') {
+      const existingUserByPhone = await dbUtils.findUserByPhoneNumber(normalizedPhoneNumber, 'CONSUMER');
 
-    if (existingUserByPhone) {
-      return res.status(400).json({ error: '이미 사용 중인 전화번호입니다.' });
+      if (existingUserByPhone) {
+        return res.status(400).json({ error: '이미 사용 중인 전화번호입니다.' });
+      }
     }
 
     // Hash password
