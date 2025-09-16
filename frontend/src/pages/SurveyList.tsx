@@ -85,8 +85,36 @@ const SurveyList: React.FC = () => {
   const calculateUserAge = (birthDate: string) => {
     if (!birthDate) return null;
     
+    // 생년월일 형식 처리: 'YYMMDD' 또는 'YYYYMMDD' 또는 ISO 형식
+    let birth: Date;
+    
+    if (birthDate.length === 6) {
+      // YYMMDD 형식 (예: '900101')
+      const year = parseInt(birthDate.substring(0, 2));
+      const month = parseInt(birthDate.substring(2, 4)) - 1; // 월은 0부터 시작
+      const day = parseInt(birthDate.substring(4, 6));
+      
+      // 50년 이상은 1900년대, 50년 미만은 2000년대로 가정 (현재 2024년 기준)
+      const fullYear = year >= 50 ? 1900 + year : 2000 + year;
+      birth = new Date(fullYear, month, day);
+    } else if (birthDate.length === 8) {
+      // YYYYMMDD 형식 (예: '19900101')
+      const year = parseInt(birthDate.substring(0, 4));
+      const month = parseInt(birthDate.substring(4, 6)) - 1;
+      const day = parseInt(birthDate.substring(6, 8));
+      birth = new Date(year, month, day);
+    } else {
+      // ISO 형식 또는 기타 형식
+      birth = new Date(birthDate);
+    }
+    
+    // 유효한 날짜인지 확인
+    if (isNaN(birth.getTime())) {
+      console.warn('Invalid birth date:', birthDate);
+      return null;
+    }
+    
     const today = new Date();
-    const birth = new Date(birthDate);
     let age = today.getFullYear() - birth.getFullYear();
     const monthDiff = today.getMonth() - birth.getMonth();
     
@@ -99,7 +127,9 @@ const SurveyList: React.FC = () => {
 
   // 대상자 검증 함수
   const isEligibleForSurvey = (survey: Survey) => {
-    if (!user) return true; // 로그인하지 않은 경우 일단 허용
+    if (!user) {
+      return true; // 로그인하지 않은 경우 일단 허용 (로그인 시 자격 검증함)
+    }
     
     const userAge = calculateUserAge(user.birthDate);
     const targetAgeMin = survey.target_age_min || survey.targetAgeMin;
@@ -162,6 +192,11 @@ const SurveyList: React.FC = () => {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">참여 가능한 설문</h1>
         <p className="text-gray-600 mt-2">설문에 참여하고 리워드를 받아보세요!</p>
+        {user && (
+          <div className="mt-2 text-sm text-blue-600">
+            로그인됨: {user.name}님 ({user.birthDate ? calculateUserAge(user.birthDate) : '?'}세)
+          </div>
+        )}
       </div>
 
       {error && (
