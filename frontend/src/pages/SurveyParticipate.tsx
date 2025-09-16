@@ -98,6 +98,37 @@ const SurveyParticipate: React.FC = () => {
     }
   }, [id, fetchSurvey]);
 
+  // 자격 검증
+  useEffect(() => {
+    if (survey && user && !isEligibleForSurvey(survey)) {
+      const userAge = calculateUserAge(user.birthDate);
+      const targetAgeMin = survey.target_age_min || survey.targetAgeMin;
+      const targetAgeMax = survey.target_age_max || survey.targetAgeMax;
+      const targetGender = survey.target_gender || survey.targetGender;
+      
+      let reasons = [];
+      
+      if (userAge && targetAgeMin && targetAgeMax) {
+        if (userAge < targetAgeMin || userAge > targetAgeMax) {
+          reasons.push(`연령 대상: ${targetAgeMin}-${targetAgeMax}세 (회원님: ${userAge}세)`);
+        }
+      }
+      
+      if (targetGender && targetGender !== 'ALL' && user.gender !== targetGender) {
+        const genderText = targetGender === 'MALE' ? '남성' : '여성';
+        const userGenderText = user.gender === 'MALE' ? '남성' : '여성';
+        reasons.push(`성별 대상: ${genderText} (회원님: ${userGenderText})`);
+      }
+      
+      const message = reasons.length > 0 
+        ? `죄송합니다. 이 설문은 다음 조건에 해당하는 분만 참여할 수 있습니다:\n\n${reasons.join('\n')}\n\n다른 설문에 참여해 주세요.`
+        : '죄송합니다. 설문 참여 대상이 아닙니다. 다른 설문에 참여해 주세요.';
+      
+      alert(message);
+      navigate('/surveys');
+    }
+  }, [survey, user, navigate]);
+
   const handleAnswerChange = (value: string | number | boolean) => {
     if (!survey?.template?.steps || currentStepIndex >= survey.template.steps.length) return;
 

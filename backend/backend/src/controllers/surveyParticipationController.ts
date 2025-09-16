@@ -124,12 +124,14 @@ export const getBulkParticipationStatus = async (req: AuthRequest, res: Response
     for (const surveyId of surveyIds) {
       const existingResponse = await dbUtils.findResponseByUserAndSurvey(req.user.id, surveyId);
       participationStatuses[surveyId] = {
-        hasParticipated: !!existingResponse,
-        participation: existingResponse
+        status: existingResponse ? 'PARTICIPATED' : 'AVAILABLE',
+        responseId: existingResponse?.id,
+        completedAt: existingResponse?.completed_at || existingResponse?.created_at,
+        updatedAt: existingResponse?.updated_at
       };
     }
 
-    res.json({ participations: participationStatuses });
+    res.json({ participationStatus: participationStatuses });
 
   } catch (error) {
     console.error('Get bulk participation status error:', error);

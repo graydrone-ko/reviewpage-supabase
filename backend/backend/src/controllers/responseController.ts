@@ -148,7 +148,7 @@ export const submitResponse = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Survey has ended' });
     }
 
-    // 로그인한 사용자의 경우 중복 응답 사전 체크
+    // 로그인한 사용자의 경우 중복 응답 사전 체크 및 자격 검증
     let consumerId = (req as any).user?.id;
     if (consumerId) {
       console.log('🔍 Checking for existing response from logged user:', consumerId);
@@ -158,6 +158,52 @@ export const submitResponse = async (req: Request, res: Response) => {
           error: '이미 이 설문에 참여하셨습니다. 중복 참여는 불가능합니다.',
           canEdit: false
         });
+      }
+
+      // 자격 검증 - 사용자 정보 조회
+      console.log('🔍 Checking user eligibility for survey');
+      const user = await dbUtils.findUserById(consumerId);
+      if (user) {
+        // 나이 계산
+        const calculateUserAge = (birthDate: string) => {
+          if (!birthDate) return null;
+          
+          const today = new Date();
+          const birth = new Date(birthDate);
+          let age = today.getFullYear() - birth.getFullYear();
+          const monthDiff = today.getMonth() - birth.getMonth();
+          
+          if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+            age--;
+          }
+          
+          return age;
+        };
+
+        const userAge = calculateUserAge(user.birth_date);
+        const targetAgeMin = survey.target_age_min;
+        const targetAgeMax = survey.target_age_max;
+        const targetGender = survey.target_gender;
+        
+        // 나이 검증
+        if (userAge && targetAgeMin && targetAgeMax) {
+          if (userAge < targetAgeMin || userAge > targetAgeMax) {
+            return res.status(400).json({ 
+              error: `이 설문은 ${targetAgeMin}-${targetAgeMax}세 대상입니다. (회원님: ${userAge}세)`,
+              eligibilityError: true
+            });
+          }
+        }
+        
+        // 성별 검증
+        if (targetGender && targetGender !== 'ALL' && user.gender !== targetGender) {
+          const genderText = targetGender === 'MALE' ? '남성' : '여성';
+          const userGenderText = user.gender === 'MALE' ? '남성' : '여성';
+          return res.status(400).json({ 
+            error: `이 설문은 ${genderText} 대상입니다. (회원님: ${userGenderText})`,
+            eligibilityError: true
+          });
+        }
       }
     }
 

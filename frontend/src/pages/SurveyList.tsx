@@ -259,7 +259,7 @@ const SurveyList: React.FC = () => {
                       onClick={() => handleIneligibleSurvey(survey)}
                       className="w-full bg-gray-400 text-white py-2 px-4 rounded-md hover:bg-gray-500 text-center block"
                     >
-                      설문 참여하기
+                      설문 조건 미부합
                     </button>
                   )}
                 </div>
