@@ -3,6 +3,7 @@ import {
   createSurvey, 
   getSurveys, 
   getSurvey,
+  getPublicSurveys,
   updateSurvey,
   getSurveyResponses,
   createSurveyValidation,
@@ -24,13 +25,14 @@ import { authenticateToken, requireRole } from '../middleware/auth';
 
 const router = Router();
 
-// 공개 라우트 (인증 불필요)
+// 공개 라우트 (인증 불필요) - 구체적인 경로를 먼저 선언
+router.get('/public', getPublicSurveys); // 익명 사용자를 위한 공개 설문 목록
 router.get('/templates/public', getPublicTemplates);
 router.get('/templates/list', getPublicTemplates); // 프론트엔드 호환성을 위해 추가
 router.get('/debug/templates', debugTemplates);
 router.post('/debug/create-template', createDefaultTemplate);
 
-// 설문 참여를 위한 공개 라우트 (인증 불필요)
+// 설문 참여를 위한 공개 라우트 (인증 불필요) - 가장 나중에 선언
 router.get('/:id', getSurvey);
 
 // All other routes require authentication

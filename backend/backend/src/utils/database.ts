@@ -197,18 +197,6 @@ export const dbUtils = {
     return data || [];
   },
 
-  // 사용자의 특정 설문 응답 확인 (중복 방지용)
-  async findResponseByUserAndSurvey(userId: string, surveyId: string) {
-    const { data, error } = await db
-      .from('survey_responses')
-      .select('*')
-      .eq('consumer_id', userId)
-      .eq('survey_id', surveyId)
-      .single();
-    
-    if (error && error.code !== 'PGRST116') throw error;
-    return data;
-  },
 
   // 리워드 관련
   async createReward(rewardData: any) {

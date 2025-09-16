@@ -19,13 +19,41 @@ export const submitResponseValidation = [
 
 export const submitResponse = async (req: Request, res: Response) => {
   try {
+    // 선택적 인증 처리 (토큰이 있으면 인증, 없으면 익명)
+    const authHeader = req.headers.authorization;
+    let authenticatedUser = null;
+    
+    console.log('🔍 Auth header check:', { 
+      hasAuthHeader: !!authHeader, 
+      authHeader: authHeader ? authHeader.substring(0, 20) + '...' : 'none',
+      startsWithBearer: authHeader ? authHeader.startsWith('Bearer ') : false
+    });
+    
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      console.log('🎫 Token extracted, verifying...');
+      try {
+        const jwt = require('jsonwebtoken');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        authenticatedUser = decoded;
+        (req as any).user = decoded;
+        console.log('🔐 Authenticated user found:', { id: decoded.id, email: decoded.email, role: decoded.role });
+      } catch (tokenError: any) {
+        console.log('⚠️ Invalid token provided, proceeding as anonymous user. Error:', tokenError.message);
+      }
+    } else {
+      console.log('👤 No valid auth header, proceeding as anonymous user');
+    }
+    
     console.log('Submit response request:', {
       body: req.body,
       bodyKeys: Object.keys(req.body),
       surveyId: req.body.surveyId,
       responses: req.body.responses,
       responsesType: typeof req.body.responses,
-      responsesLength: Array.isArray(req.body.responses) ? req.body.responses.length : 'not array'
+      responsesLength: Array.isArray(req.body.responses) ? req.body.responses.length : 'not array',
+      isAuthenticated: !!authenticatedUser,
+      userId: authenticatedUser?.id
     });
     
     // 각 응답의 상세 구조 로깅
@@ -171,8 +199,8 @@ export const submitResponse = async (req: Request, res: Response) => {
             reward = await dbUtils.createReward({
               user_id: (req as any).user.id,
               amount: survey.reward,
-              type: 'SURVEY_COMPLETION',
-              survey_id: surveyId // 설문 ID 추가 (향후 스키마 업데이트 시 사용)
+              type: 'SURVEY_COMPLETION'
+              // survey_id 필드는 현재 스키마에 없음
             });
             console.log('✅ Reward created successfully:', reward.id, 'Amount:', survey.reward);
           }
@@ -191,14 +219,26 @@ export const submitResponse = async (req: Request, res: Response) => {
         console.log('👤 Anonymous user - skipping reward creation');
       }
 
-      // Note: Response count and survey completion logic would need additional queries
-      // For now, simplified without transaction support
+      // 설문 완료 여부 체크 - 템플릿의 모든 단계에 응답했는지 확인
+      const templateSteps = survey.template?.steps || [];
+      const respondedStepIds = responses.map((r: any) => r.stepId);
+      const allStepsCompleted = templateSteps.every((step: any) => 
+        respondedStepIds.includes(step.id)
+      );
+      
+      console.log('📊 Survey completion check:', {
+        templateStepsCount: templateSteps.length,
+        respondedStepsCount: respondedStepIds.length,
+        templateStepIds: templateSteps.map((s: any) => s.id),
+        respondedStepIds,
+        allStepsCompleted
+      });
 
       res.status(201).json({
         message: '응답이 성공적으로 제출되었습니다.',
         response: surveyResponse,
         reward: reward,
-        surveyCompleted: false
+        surveyCompleted: allStepsCompleted
       });
 
     } catch (dbError: any) {

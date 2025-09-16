@@ -154,6 +154,56 @@ export const getSurveys = async (req: AuthRequest, res: Response) => {
   }
 };
 
+// 익명 사용자를 위한 공개 설문 목록 (인증 불필요)
+export const getPublicSurveys = async (req: Request, res: Response) => {
+  try {
+    console.log('📋 공개 설문 목록 요청');
+    
+    // 승인된 설문 중 마감되지 않은 것만 조회
+    const now = new Date().toISOString();
+    const where = {
+      status: 'APPROVED'
+    };
+    
+    const surveys = await dbUtils.findSurveysByConditions(where);
+    
+    // 마감되지 않은 설문만 필터링
+    const activeSurveys = surveys.filter((survey: any) => {
+      const endDate = new Date(survey.end_date);
+      return endDate > new Date();
+    });
+    
+    // 응답 수 추가 및 필드명 매핑
+    const surveysWithResponseCount = activeSurveys.map((survey: any) => ({
+      id: survey.id,
+      title: survey.title,
+      description: survey.description,
+      url: survey.url,
+      sellerId: survey.seller_id,
+      templateId: survey.template_id,
+      targetAgeMin: survey.target_age_min,
+      targetAgeMax: survey.target_age_max,
+      targetGender: survey.target_gender,
+      reward: survey.reward,
+      maxParticipants: survey.max_participants,
+      totalBudget: survey.total_budget,
+      status: survey.status,
+      createdAt: survey.created_at,
+      endDate: survey.end_date,
+      responseCount: survey.responseCount || 0,
+      seller: survey.seller,
+      template: survey.template
+    }));
+    
+    console.log(`✅ 공개 설문 목록 반환: ${surveysWithResponseCount.length}개`);
+    res.json({ surveys: surveysWithResponseCount });
+
+  } catch (error) {
+    console.error('❌ 공개 설문 목록 조회 실패:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 export const getSurvey = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
