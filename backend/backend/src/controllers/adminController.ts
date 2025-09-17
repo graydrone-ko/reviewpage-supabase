@@ -241,7 +241,22 @@ export const approveReward = async (req: AdminRequest, res: Response) => {
 
 // 출금 요청 관리
 export const getWithdrawalRequests = async (req: AdminRequest, res: Response) => {
-  res.status(501).json({ error: 'Not implemented yet' });
+  try {
+    // 현재 시스템에는 출금 요청 기능이 없으므로 빈 배열 반환
+    // 추후 출금 요청 테이블이 생성되면 실제 데이터를 조회하도록 수정
+    res.json({ 
+      requests: [],
+      pagination: {
+        page: 1,
+        limit: 10,
+        total: 0,
+        pages: 0
+      }
+    });
+  } catch (error) {
+    console.error('Get withdrawal requests error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };
 
 // 출금 요청 승인
@@ -256,7 +271,42 @@ export const rejectWithdrawal = async (req: AdminRequest, res: Response) => {
 
 // 중단 요청 관리
 export const getCancellationRequests = async (req: AdminRequest, res: Response) => {
-  res.status(501).json({ error: 'Not implemented yet' });
+  try {
+    // survey_cancellation_requests 테이블에서 중단 요청 조회
+    const { data: requests, error } = await db
+      .from('survey_cancellation_requests')
+      .select(`
+        *,
+        survey:surveys!survey_cancellation_requests_survey_id_fkey (
+          id,
+          title,
+          seller:users!surveys_seller_id_fkey (
+            id,
+            name,
+            email
+          )
+        )
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('중단 요청 조회 오류:', error);
+      return res.status(500).json({ error: 'Failed to fetch cancellation requests' });
+    }
+
+    res.json({ 
+      requests: requests || [],
+      pagination: {
+        page: 1,
+        limit: 10,
+        total: requests?.length || 0,
+        pages: Math.ceil((requests?.length || 0) / 10)
+      }
+    });
+  } catch (error) {
+    console.error('Get cancellation requests error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };
 
 // 최근 중단 요청 수 조회
