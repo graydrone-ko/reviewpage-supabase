@@ -466,22 +466,184 @@ export const getSurveyResponses = async (req: AuthRequest, res: Response) => {
       return res.status(500).json({ error: 'Failed to fetch survey responses' });
     }
 
-    // 응답 데이터 포맷팅
-    const formattedResponses = (responses || []).map((response: any) => ({
-      id: response.id,
-      surveyId: response.survey_id,
-      consumerId: response.consumer_id,
-      responses: response.responses,
-      createdAt: response.created_at,
-      updatedAt: response.updated_at,
-      consumer: response.consumer ? {
-        id: response.consumer.id,
-        name: response.consumer.name,
-        email: response.consumer.email,
-        gender: response.consumer.gender,
-        birthDate: response.consumer.birth_date
-      } : null
-    }));
+    // 설문 템플릿과 질문 정보 조회
+    const surveyWithTemplate = await dbUtils.findSurveyWithTemplate(id);
+    console.log('🔍 Debug - surveyWithTemplate:', !!surveyWithTemplate);
+    console.log('🔍 Debug - has template:', !!surveyWithTemplate?.template);
+    console.log('🔍 Debug - template ID:', surveyWithTemplate?.template?.id);
+    console.log('🔍 Debug - template steps:', surveyWithTemplate?.template?.steps?.length || 0);
+    
+    // 응답 데이터 포맷팅 및 질문 정보 매핑
+    const formattedResponses = (responses || []).map((response: any) => {
+      // 나이 계산
+      const calculateAge = (birthDate: string) => {
+        if (!birthDate || birthDate.length !== 6) return null;
+        const year = parseInt(birthDate.substring(0, 2));
+        const month = parseInt(birthDate.substring(2, 4));
+        const day = parseInt(birthDate.substring(4, 6));
+        const fullYear = year >= 50 ? 1900 + year : 2000 + year;
+        const birth = new Date(fullYear, month - 1, day);
+        const today = new Date();
+        let age = today.getFullYear() - birth.getFullYear();
+        const monthDiff = today.getMonth() - birth.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+          age--;
+        }
+        return age;
+      };
+
+      // 응답 데이터를 질문 정보와 매핑하여 포맷팅
+      const formattedSteps = (response.responses || []).map((step: any) => {
+        // 템플릿에서 해당 단계 찾기
+        const templateStep = surveyWithTemplate?.template?.steps?.find(
+          (s: any) => s.id === step.stepId
+        );
+
+        const formattedAnswers = (step.answers || []).map((answer: any) => {
+          // 질문 정보 찾기
+          const question = templateStep?.questions?.find(
+            (q: any) => q.id === answer.questionId
+          );
+
+          let formattedValue = String(answer.value || '');
+          let optionText = '';
+
+          // 질문 타입에 따른 값 포맷팅
+          if (question) {
+            switch (question.type) {
+              case 'MULTIPLE_CHOICE':
+                const option = question.options?.find(
+                  (opt: any) => opt.id === answer.value
+                );
+                if (option) {
+                  formattedValue = option.text;
+                  optionText = option.text;
+                }
+                break;
+              case 'YES_NO':
+                formattedValue = answer.value === true ? '예' : '아니오';
+                break;
+              case 'SCORE':
+                formattedValue = `${answer.value}/5`;
+                break;
+              case 'TEXT':
+                formattedValue = String(answer.value || '');
+                break;
+            }
+          }
+
+          return {
+            questionId: answer.questionId,
+            questionText: question?.text || '질문 정보 없음',
+            questionType: question?.type || 'UNKNOWN',
+            value: answer.value,
+            formattedValue,
+            optionText
+          };
+        });
+
+        return {
+          stepId: step.stepId,
+          stepTitle: templateStep?.title || '단계 정보 없음',
+          answers: formattedAnswers
+        };
+      });
+
+      return {
+        id: response.id,
+        surveyId: response.survey_id,
+        consumerId: response.consumer_id,
+        consumerName: response.consumer?.name || null,
+        consumerAge: response.consumer?.birth_date ? calculateAge(response.consumer.birth_date) : null,
+        consumerGender: response.consumer?.gender || null,
+        responses: formattedSteps,
+        createdAt: response.created_at,
+        updatedAt: response.updated_at,
+        consumer: response.consumer ? {
+          id: response.consumer.id,
+          name: response.consumer.name,
+          email: response.consumer.email,
+          gender: response.consumer.gender,
+          birthDate: response.consumer.birth_date
+        } : null
+      };
+    });
+
+    // 통계 데이터 생성
+    const statistics = [];
+    if (surveyWithTemplate?.template?.steps && formattedResponses.length > 0) {
+      for (const step of surveyWithTemplate.template.steps) {
+        for (const question of step.questions || []) {
+          const questionStats = {
+            questionId: question.id,
+            questionText: question.text,
+            questionType: question.type,
+            statistics: {
+              totalResponses: 0,
+              options: [] as Array<{optionText: string, count: number, percentage: number}>,
+              averageScore: 0,
+              textResponses: [] as string[],
+              yesCount: 0,
+              noCount: 0
+            }
+          };
+
+          // 해당 질문에 대한 모든 응답 수집
+          const questionAnswers: any[] = [];
+          for (const response of formattedResponses) {
+            for (const stepResponse of response.responses) {
+              const answer = stepResponse.answers.find((a: any) => a.questionId === question.id);
+              if (answer) {
+                questionAnswers.push(answer);
+              }
+            }
+          }
+
+          questionStats.statistics.totalResponses = questionAnswers.length;
+
+          // 질문 타입별 통계 계산
+          switch (question.type) {
+            case 'MULTIPLE_CHOICE':
+              const optionCounts: {[key: string]: {text: string, count: number}} = {};
+              for (const answer of questionAnswers) {
+                const optionText = answer.formattedValue;
+                if (optionText) {
+                  if (!optionCounts[optionText]) {
+                    optionCounts[optionText] = { text: optionText, count: 0 };
+                  }
+                  optionCounts[optionText].count++;
+                }
+              }
+              questionStats.statistics.options = Object.values(optionCounts).map(option => ({
+                optionText: option.text,
+                count: option.count,
+                percentage: questionAnswers.length > 0 ? (option.count / questionAnswers.length) * 100 : 0
+              }));
+              break;
+
+            case 'SCORE':
+              const scores = questionAnswers.map(a => Number(a.value)).filter(v => !isNaN(v));
+              if (scores.length > 0) {
+                questionStats.statistics.averageScore = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+              }
+              break;
+
+            case 'YES_NO':
+              questionStats.statistics.yesCount = questionAnswers.filter(a => a.value === true).length;
+              questionStats.statistics.noCount = questionAnswers.filter(a => a.value === false).length;
+              break;
+
+            case 'TEXT':
+              questionStats.statistics.textResponses = questionAnswers
+                .map(a => String(a.value || ''))
+                .filter(text => text.trim().length > 0);
+              break;
+          }
+
+          statistics.push(questionStats);
+        }
+      }
+    }
 
     res.json({
       survey: {
@@ -492,9 +654,11 @@ export const getSurveyResponses = async (req: AuthRequest, res: Response) => {
         createdAt: survey.created_at,
         endDate: survey.end_date,
         maxParticipants: survey.max_participants,
-        responseCount: formattedResponses.length
+        responseCount: formattedResponses.length,
+        template: surveyWithTemplate?.template || null
       },
-      responses: formattedResponses
+      responses: formattedResponses,
+      statistics: statistics
     });
 
   } catch (error) {
