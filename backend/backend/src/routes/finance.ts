@@ -1,5 +1,11 @@
 import { Router } from 'express';
 import { 
+  getFinanceStats,
+  getPayments,
+  getTransactions,
+  getWithdrawals,
+  approveWithdrawal,
+  rejectWithdrawal,
   getSellerTransactions,
   getConsumerTransactions,
   getSellerBalance,
@@ -14,8 +20,16 @@ const router = Router();
 router.use(authenticateToken);
 router.use(requireRole(['ADMIN']));
 
-// Transaction records
-router.get('/transactions', getAllTransactions);
+// Admin finance dashboard
+router.get('/stats', getFinanceStats);
+router.get('/payments', getPayments);
+router.get('/transactions', getTransactions);
+router.get('/withdrawals', getWithdrawals);
+router.post('/withdrawal/approve', approveWithdrawal);
+router.post('/withdrawal/reject', rejectWithdrawal);
+
+// Transaction records for specific roles
+router.get('/transactions/all', getAllTransactions);
 router.get('/seller-transactions', getSellerTransactions);
 router.get('/consumer-transactions', getConsumerTransactions);
 
