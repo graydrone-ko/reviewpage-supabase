@@ -186,23 +186,58 @@ export const getUsers = async (req: AdminRequest, res: Response) => {
     if (error) throw error;
 
     // 프론트엔드가 기대하는 필드명으로 매핑
+    const userIds = (users || []).map((user: any) => user.id);
+
+    let surveyCountsMap: Record<string, number> = {};
+    let responseCountsMap: Record<string, number> = {};
+
+    if (userIds.length > 0) {
+      const [surveysResult, responsesResult] = await Promise.all([
+        db
+          .from('surveys')
+          .select('id, seller_id')
+          .in('seller_id', userIds)
+          .not('seller_id', 'is', null),
+        db
+          .from('survey_responses')
+          .select('id, consumer_id')
+          .in('consumer_id', userIds)
+          .not('consumer_id', 'is', null)
+      ]);
+
+      if (surveysResult.error) throw surveysResult.error;
+      if (responsesResult.error) throw responsesResult.error;
+
+      surveyCountsMap = (surveysResult.data || []).reduce((acc: Record<string, number>, item: any) => {
+        if (item.seller_id) {
+          acc[item.seller_id] = (acc[item.seller_id] || 0) + 1;
+        }
+        return acc;
+      }, {});
+
+      responseCountsMap = (responsesResult.data || []).reduce((acc: Record<string, number>, item: any) => {
+        if (item.consumer_id) {
+          acc[item.consumer_id] = (acc[item.consumer_id] || 0) + 1;
+        }
+        return acc;
+      }, {});
+    }
+
     const mappedUsers = (users || []).map((user: any) => ({
       id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
-      birthDate: user.birth_date, // birth_date -> birthDate
-      phoneNumber: user.phone_number, // phone_number -> phoneNumber
+      birthDate: user.birth_date,
+      phoneNumber: user.phone_number,
       gender: user.gender,
-      createdAt: user.created_at, // created_at -> createdAt
-      updatedAt: user.updated_at, // updated_at -> updatedAt
+      createdAt: user.created_at,
+      updatedAt: user.updated_at,
       bankCode: user.bank_code,
       accountNumber: user.account_number,
-      // 활동 사항 추가 (추후 실제 활동 데이터 연결)
-      activitySummary: {
-        totalSurveys: 0, // 참여한 설문 수
-        totalRewards: 0, // 받은 리워드 총액
-        lastActivity: user.updated_at // 마지막 활동
+      _count: {
+        surveys: surveyCountsMap[user.id] || 0,
+        responses: responseCountsMap[user.id] || 0
       }
     }));
 
