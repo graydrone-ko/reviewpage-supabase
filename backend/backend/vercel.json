@@ -5,8 +5,7 @@
   "buildCommand": "npm run vercel-build",
   "functions": {
     "api/**/*.ts": {
-      "maxDuration": 30,
-      "runtime": "nodejs18.x"
+      "maxDuration": 30
     }
   },
   "routes": [
