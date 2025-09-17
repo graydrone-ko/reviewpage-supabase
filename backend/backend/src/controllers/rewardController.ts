@@ -39,11 +39,15 @@ export const getMyRewards = async (req: AuthRequest, res: Response) => {
       };
     });
 
-    const totalEarned = rewards.reduce((sum: number, reward: any) => sum + reward.amount, 0);
+    const totalEarned = rewards
+      .filter((reward: any) => reward.status === 'EARNED')
+      .reduce((sum: number, reward: any) => sum + reward.amount, 0);
+    const totalPending = rewards
+      .filter((reward: any) => reward.status === 'PENDING')
+      .reduce((sum: number, reward: any) => sum + reward.amount, 0);
     const totalPaid = rewards
       .filter((reward: any) => reward.status === 'PAID')
       .reduce((sum: number, reward: any) => sum + reward.amount, 0);
-    const totalPending = totalEarned - totalPaid;
 
     res.json({
       rewards: enrichedRewards,
@@ -72,16 +76,16 @@ export const requestWithdrawal = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Valid amount is required' });
     }
 
-    // Calculate available balance
-    const { data: rewards, error: rewardsError } = await db
+    // Calculate available balance from EARNED rewards (적립된 리워드)
+    const { data: earnedRewards, error: earnedRewardsError } = await db
       .from('rewards')
       .select('*')
       .eq('user_id', req.user.id)
-      .eq('status', 'PENDING');
+      .eq('status', 'EARNED');
     
-    if (rewardsError) throw rewardsError;
+    if (earnedRewardsError) throw earnedRewardsError;
 
-    const availableBalance = (rewards || []).reduce((sum: number, reward: any) => sum + reward.amount, 0);
+    const availableBalance = (earnedRewards || []).reduce((sum: number, reward: any) => sum + reward.amount, 0);
 
     // Check if available balance is less than minimum withdrawal amount
     if (availableBalance < 10000) {
@@ -109,6 +113,35 @@ export const requestWithdrawal = async (req: AuthRequest, res: Response) => {
       .single();
     
     if (withdrawalError) throw withdrawalError;
+
+    // 출금 신청 금액만큼 EARNED 리워드들을 PENDING 상태로 변경
+    let remainingAmount = amount;
+    const rewardsToUpdate = [];
+    
+    for (const reward of earnedRewards || []) {
+      if (remainingAmount <= 0) break;
+      
+      rewardsToUpdate.push(reward.id);
+      remainingAmount -= reward.amount;
+    }
+    
+    // 선택된 리워드들을 PENDING 상태로 업데이트
+    if (rewardsToUpdate.length > 0) {
+      const { error: updateError } = await db
+        .from('rewards')
+        .update({ 
+          status: 'PENDING',
+          updated_at: new Date().toISOString()
+        })
+        .in('id', rewardsToUpdate);
+      
+      if (updateError) {
+        console.error('Failed to update reward status:', updateError);
+        throw updateError;
+      }
+      
+      console.log(`📝 Updated ${rewardsToUpdate.length} rewards to PENDING status for withdrawal request`);
+    }
 
     console.log(`💰 출금 요청 생성됨: ${req.user.name || 'Unknown'} (${req.user.email}) - ₩${amount.toLocaleString()}`);
     

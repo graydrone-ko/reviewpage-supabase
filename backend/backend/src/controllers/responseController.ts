@@ -273,7 +273,8 @@ export const submitResponse = async (req: Request, res: Response) => {
             reward = await dbUtils.createReward({
               user_id: (req as any).user.id,
               amount: survey.reward,
-              type: 'SURVEY_COMPLETION'
+              type: 'SURVEY_COMPLETION',
+              status: 'EARNED' // 설문 완료 시 리워드 적립 상태로 설정
               // survey_id 필드는 현재 스키마에 없음
             });
             console.log('✅ Reward created successfully:', reward.id, 'Amount:', survey.reward);

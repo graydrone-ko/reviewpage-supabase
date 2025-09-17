@@ -260,6 +260,24 @@ export const getRewards = async (req: AdminRequest, res: Response) => {
     
     if (error) throw error;
 
+    // 사용자별 누계 리워드 금액 계산
+    const userTotals: { [key: string]: { earned: number, pending: number, paid: number } } = {};
+    
+    for (const reward of rewards || []) {
+      const userId = reward.user_id;
+      if (!userTotals[userId]) {
+        userTotals[userId] = { earned: 0, pending: 0, paid: 0 };
+      }
+      
+      if (reward.status === 'EARNED') {
+        userTotals[userId].earned += reward.amount;
+      } else if (reward.status === 'PENDING') {
+        userTotals[userId].pending += reward.amount;
+      } else if (reward.status === 'PAID') {
+        userTotals[userId].paid += reward.amount;
+      }
+    }
+
     // 프론트엔드가 기대하는 필드명으로 매핑
     const mappedRewards = (rewards || []).map((reward: any) => ({
       id: reward.id,
@@ -277,7 +295,11 @@ export const getRewards = async (req: AdminRequest, res: Response) => {
         name: reward.user.name,
         email: reward.user.email,
         role: reward.user.role
-      } : null
+      } : null,
+      // 사용자별 누계 금액 추가
+      userTotals: userTotals[reward.user_id] || { earned: 0, pending: 0, paid: 0 },
+      // 액션 버튼 활성화 조건 (PENDING 상태만 지급 완료 처리 가능)
+      canMarkAsPaid: reward.status === 'PENDING'
     }));
 
     res.json({
@@ -296,9 +318,55 @@ export const getRewards = async (req: AdminRequest, res: Response) => {
   }
 };
 
-// 리워드 지급 승인
+// 리워드 지급 승인 (PENDING -> PAID 상태 변경)
 export const approveReward = async (req: AdminRequest, res: Response) => {
-  res.status(501).json({ error: 'Not implemented yet' });
+  try {
+    const { rewardId } = req.params;
+    
+    // 해당 리워드 조회
+    const { data: reward, error: rewardError } = await db
+      .from('rewards')
+      .select('*')
+      .eq('id', rewardId)
+      .single();
+      
+    if (rewardError) throw rewardError;
+    
+    if (!reward) {
+      return res.status(404).json({ error: 'Reward not found' });
+    }
+    
+    // PENDING 상태인 리워드만 PAID로 변경 가능
+    if (reward.status !== 'PENDING') {
+      return res.status(400).json({ 
+        error: `리워드 상태가 '지급 대기'가 아닙니다. 현재 상태: ${reward.status}` 
+      });
+    }
+    
+    // 리워드 상태를 PAID로 업데이트
+    const { data: updatedReward, error: updateError } = await db
+      .from('rewards')
+      .update({ 
+        status: 'PAID',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', rewardId)
+      .select()
+      .single();
+      
+    if (updateError) throw updateError;
+    
+    console.log(`💰 리워드 지급 완료: ID ${rewardId}, 금액: ₩${reward.amount}`);
+    
+    res.json({
+      message: '리워드 지급이 완료되었습니다.',
+      reward: updatedReward
+    });
+    
+  } catch (error) {
+    console.error('Approve reward error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };
 
 // 출금 요청 관리
