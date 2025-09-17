@@ -314,7 +314,7 @@ const AdminRewards: React.FC = () => {
                           ? updating === reward.id ? '처리 중...' : '지급 완료'
                           : reward.status === 'PAID'
                             ? '지급 완료됨'
-                            : '출금 신청 대기'}
+                            : '출금 신청 전'}
                       </button>
                     </td>
                   </tr>
