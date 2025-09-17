@@ -427,15 +427,74 @@ export const rejectWithdrawal = async (req: AdminRequest, res: Response) => {
 // 중단 요청 관리
 export const getCancellationRequests = async (req: AdminRequest, res: Response) => {
   try {
-    // 중단 요청 테이블이 없거나 구조가 다를 수 있으므로 빈 데이터 반환
-    // 추후 실제 중단 요청 테이블 구조가 확정되면 수정
-    res.json({ 
-      requests: [],
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const limit = parseInt(req.query.limit as string, 10) || 20;
+    const status = req.query.status as string | undefined;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    let query = db
+      .from('surveys')
+      .select(
+        `
+          id,
+          title,
+          store_name,
+          total_budget,
+          reward,
+          cancellation_status,
+          cancellation_requested_at,
+          seller:users!surveys_seller_id_fkey(
+            id,
+            name,
+            email,
+            phone_number,
+            bank_code,
+            account_number
+          ),
+          survey_responses(count)
+        `,
+        { count: 'exact' }
+      )
+      .not('cancellation_requested_at', 'is', null)
+      .order('cancellation_requested_at', { ascending: false })
+      .range(from, to);
+
+    if (status && status !== 'ALL') {
+      query = query.eq('cancellation_status', status);
+    }
+
+    const { data, error, count } = await query;
+    if (error) throw error;
+
+    const cancellationRequests = (data || []).map((item: any) => ({
+      id: item.id,
+      title: item.title,
+      storeName: item.store_name,
+      totalBudget: item.total_budget,
+      reward: item.reward,
+      cancellationStatus: item.cancellation_status || 'PENDING',
+      cancellationRequestedAt: item.cancellation_requested_at,
+      seller: {
+        id: item.seller?.id,
+        name: item.seller?.name,
+        email: item.seller?.email,
+        phoneNumber: item.seller?.phone_number,
+        bankCode: item.seller?.bank_code,
+        accountNumber: item.seller?.account_number
+      },
+      _count: {
+        responses: item.survey_responses?.[0]?.count ?? 0
+      }
+    }));
+
+    res.json({
+      cancellationRequests,
       pagination: {
-        page: 1,
-        limit: 10,
-        total: 0,
-        pages: 0
+        page,
+        limit,
+        total: count || 0,
+        pages: Math.ceil((count || 0) / limit)
       }
     });
   } catch (error) {
@@ -444,23 +503,219 @@ export const getCancellationRequests = async (req: AdminRequest, res: Response) 
   }
 };
 
-// 최근 중단 요청 수 조회
+export const getCancellationRequestStats = async (req: AdminRequest, res: Response) => {
+  try {
+    const { data, error } = await db
+      .from('surveys')
+      .select(`
+        id,
+        reward,
+        total_budget,
+        cancellation_status,
+        cancellation_requested_at,
+        survey_responses(count)
+      `)
+      .not('cancellation_requested_at', 'is', null);
+
+    if (error) throw error;
+
+    const requests = data || [];
+    const total = requests.length;
+
+    const normalizeStatus = (status: string | null) => status || 'PENDING';
+
+    const pendingRequests = requests.filter(req => normalizeStatus(req.cancellation_status) === 'PENDING');
+    const approvedRequests = requests.filter(req => normalizeStatus(req.cancellation_status) === 'APPROVED');
+    const rejectedRequests = requests.filter(req => normalizeStatus(req.cancellation_status) === 'REJECTED');
+
+    const calculateRefund = (survey: any) => {
+      const rewardPerResponse = Number(survey.reward) || 0;
+      const completedResponses = survey.survey_responses?.[0]?.count ?? 0;
+      const totalBudget = Number(survey.total_budget) || 0;
+
+      if (!rewardPerResponse) {
+        return 0;
+      }
+
+      const maxParticipants = Math.round(totalBudget / (rewardPerResponse * 1.1));
+      const remainingSlots = Math.max(0, maxParticipants - completedResponses);
+      const refundRewards = remainingSlots * rewardPerResponse;
+      const refundFee = refundRewards * 0.1;
+      return Math.max(0, refundRewards + refundFee);
+    };
+
+    const pendingRefundAmount = pendingRequests.reduce((sum, survey) => sum + calculateRefund(survey), 0);
+
+    const { data: approvedRefunds, error: approvedRefundsError } = await db
+      .from('survey_cancellation_requests')
+      .select('refund_amount')
+      .eq('status', 'APPROVED');
+
+    if (approvedRefundsError) throw approvedRefundsError;
+
+    const approvedRefundAmount = (approvedRefunds || []).reduce((sum, record: any) => {
+      return sum + Number(record.refund_amount || 0);
+    }, 0);
+
+    res.json({
+      total,
+      pending: pendingRequests.length,
+      approved: approvedRequests.length,
+      rejected: rejectedRequests.length,
+      refunds: {
+        pending: pendingRefundAmount,
+        approved: approvedRefundAmount
+      }
+    });
+  } catch (error) {
+    console.error('Get cancellation request stats error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 export const getRecentCancellationRequests = async (req: AdminRequest, res: Response) => {
   try {
-    // 임시값 반환 - 실제 구현 필요시 데이터베이스 조회 로직 추가
-    res.json({ count: 0 });
+    const limit = parseInt(req.query.limit as string, 10) || 5;
+
+    const { data, error } = await db
+      .from('surveys')
+      .select(
+        `
+          id,
+          title,
+          cancellation_requested_at,
+          seller:users!surveys_seller_id_fkey(id, name, email)
+        `
+      )
+      .not('cancellation_requested_at', 'is', null)
+      .eq('cancellation_status', 'PENDING')
+      .order('cancellation_requested_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+
+    res.json({ recentRequests: data || [] });
   } catch (error) {
     console.error('Recent cancellation requests error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-// 중단 요청 승인
-export const approveCancellationRequest = async (req: AdminRequest, res: Response) => {
-  res.status(501).json({ error: 'Not implemented yet' });
-};
+export const processCancellationRequest = async (req: AdminRequest, res: Response) => {
+  try {
+    const { surveyId } = req.params;
+    const { action, reason } = req.body;
 
-// 중단 요청 거부
-export const rejectCancellationRequest = async (req: AdminRequest, res: Response) => {
-  res.status(501).json({ error: 'Not implemented yet' });
+    if (!['approve', 'reject'].includes(action)) {
+      return res.status(400).json({ error: 'Invalid action. Must be approve or reject.' });
+    }
+
+    const { data: survey, error: surveyError } = await db
+      .from('surveys')
+      .select(`
+        *,
+        seller:users!surveys_seller_id_fkey(id, name, email, account_number, bank_code),
+        responses:survey_responses(id)
+      `)
+      .eq('id', surveyId)
+      .single();
+
+    if (surveyError) {
+      if (surveyError.code === 'PGRST116') {
+        return res.status(404).json({ error: 'Survey not found' });
+      }
+      throw surveyError;
+    }
+
+    if (!survey?.cancellation_requested_at) {
+      return res.status(400).json({ error: 'No cancellation request found for this survey' });
+    }
+
+    const currentStatus = survey.cancellation_status || 'PENDING';
+    if (currentStatus !== 'PENDING') {
+      return res.status(400).json({ error: 'Cancellation request already processed' });
+    }
+
+    let refundAmount = 0;
+
+    if (action === 'approve') {
+      const rewardPerResponse = Number(survey.reward) || 0;
+      const completedResponses = (survey.responses || []).length;
+      const totalBudget = Number(survey.total_budget) || 0;
+
+      if (rewardPerResponse > 0) {
+        const maxParticipants = Math.round(totalBudget / (rewardPerResponse * 1.1));
+        const remainingSlots = Math.max(0, maxParticipants - completedResponses);
+        const refundRewards = remainingSlots * rewardPerResponse;
+        const refundFee = refundRewards * 0.1;
+        refundAmount = Math.max(0, refundRewards + refundFee);
+      }
+    }
+
+    const updatePayload: Record<string, any> = {
+      cancellation_status: action === 'approve' ? 'APPROVED' : 'REJECTED'
+    };
+
+    if (reason) {
+      updatePayload.rejection_reason = reason;
+    }
+
+    if (action === 'approve') {
+      updatePayload.status = 'CANCELLED';
+    }
+
+    const { data: updatedSurvey, error: updateError } = await db
+      .from('surveys')
+      .update(updatePayload)
+      .eq('id', surveyId)
+      .select(`
+        *,
+        seller:users!surveys_seller_id_fkey(id, name, email),
+        responses:survey_responses(id)
+      `)
+      .single();
+
+    if (updateError) throw updateError;
+
+    if (action === 'approve') {
+      const upsertPayload = {
+        survey_id: surveyId,
+        reason: reason || '관리자 승인',
+        refund_amount: refundAmount,
+        status: 'APPROVED',
+        processed_at: new Date().toISOString(),
+        processed_by: req.admin?.id || null
+      };
+
+      const { error: upsertError } = await db
+        .from('survey_cancellation_requests')
+        .upsert(upsertPayload, { onConflict: 'survey_id' });
+
+      if (upsertError) throw upsertError;
+
+      if (refundAmount > 0) {
+        const { error: rewardInsertError } = await db
+          .from('rewards')
+          .insert({
+            user_id: survey.seller_id,
+            amount: -refundAmount,
+            type: 'REFUND',
+            status: 'PAID'
+          });
+
+        if (rewardInsertError) throw rewardInsertError;
+      }
+    }
+
+    const actionLabel = action === 'approve' ? '승인' : '거절';
+
+    res.json({
+      message: `중단요청이 ${actionLabel}되었습니다`,
+      survey: updatedSurvey,
+      refundAmount: action === 'approve' ? refundAmount : null
+    });
+  } catch (error) {
+    console.error('Process cancellation request error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };

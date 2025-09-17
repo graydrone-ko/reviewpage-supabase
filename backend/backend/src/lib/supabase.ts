@@ -205,7 +205,7 @@ export interface Database {
           user_id: string
           amount: number
           type: 'SURVEY_COMPLETION' | 'BONUS' | 'REFUND'
-          status: 'PENDING' | 'PAID'
+          status: 'EARNED' | 'PENDING' | 'PAID'
           created_at: string
           updated_at: string
         }
@@ -214,7 +214,7 @@ export interface Database {
           user_id: string
           amount: number
           type: 'SURVEY_COMPLETION' | 'BONUS' | 'REFUND'
-          status?: 'PENDING' | 'PAID'
+          status?: 'EARNED' | 'PENDING' | 'PAID'
           created_at?: string
           updated_at?: string
         }
@@ -223,7 +223,7 @@ export interface Database {
           user_id?: string
           amount?: number
           type?: 'SURVEY_COMPLETION' | 'BONUS' | 'REFUND'
-          status?: 'PENDING' | 'PAID'
+          status?: 'EARNED' | 'PENDING' | 'PAID'
           created_at?: string
           updated_at?: string
         }

@@ -13,9 +13,9 @@ import {
   approveWithdrawal,
   rejectWithdrawal,
   getCancellationRequests,
+  getCancellationRequestStats,
   getRecentCancellationRequests,
-  approveCancellationRequest,
-  rejectCancellationRequest
+  processCancellationRequest
 } from '../controllers/adminController';
 import financeRoutes from './finance';
 
@@ -47,9 +47,9 @@ router.patch('/withdrawal-requests/:id/reject', rejectWithdrawal);
 
 // 중단요청 관리
 router.get('/cancellation-requests', getCancellationRequests);
+router.get('/cancellation-requests/stats', getCancellationRequestStats);
 router.get('/cancellation-requests/recent', getRecentCancellationRequests);
-router.patch('/cancellation-requests/:id/approve', approveCancellationRequest);
-router.patch('/cancellation-requests/:id/reject', rejectCancellationRequest);
+router.patch('/cancellation-requests/:surveyId/process', processCancellationRequest);
 
 // 재무 관리
 router.use('/finance', financeRoutes);
