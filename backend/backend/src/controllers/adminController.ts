@@ -167,8 +167,29 @@ export const getUsers = async (req: AdminRequest, res: Response) => {
 
     if (error) throw error;
 
+    // 프론트엔드가 기대하는 필드명으로 매핑
+    const mappedUsers = (users || []).map((user: any) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      birthDate: user.birth_date, // birth_date -> birthDate
+      phoneNumber: user.phone_number, // phone_number -> phoneNumber
+      gender: user.gender,
+      createdAt: user.created_at, // created_at -> createdAt
+      updatedAt: user.updated_at, // updated_at -> updatedAt
+      bankCode: user.bank_code,
+      accountNumber: user.account_number,
+      // 활동 사항 추가 (추후 실제 활동 데이터 연결)
+      activitySummary: {
+        totalSurveys: 0, // 참여한 설문 수
+        totalRewards: 0, // 받은 리워드 총액
+        lastActivity: user.updated_at // 마지막 활동
+      }
+    }));
+
     res.json({
-      users: users || [],
+      users: mappedUsers,
       pagination: {
         page: Number(page),
         limit: Number(limit),
@@ -209,23 +230,64 @@ export const getResponses = async (req: AdminRequest, res: Response) => {
 // 리워드 관리
 export const getRewards = async (req: AdminRequest, res: Response) => {
   try {
-    const { status, userId, page = 1, limit = 10 } = req.query;
+    const { status, userId, page = 1, limit = 20 } = req.query;
+    const offset = (Number(page) - 1) * Number(limit);
     
-    // 간소화된 리워드 조회
-    let query = db.from('rewards').select('*');
+    // 전체 리워드 수 조회
+    let countQuery = db.from('rewards').select('id', { count: 'exact', head: true });
+    if (status) countQuery = countQuery.eq('status', status);
+    if (userId) countQuery = countQuery.eq('user_id', userId);
+    const { count: totalCount } = await countQuery;
+
+    // 사용자 정보와 함께 리워드 조회
+    let query = db.from('rewards')
+      .select(`
+        *,
+        user:users!rewards_user_id_fkey(
+          id,
+          name,
+          email,
+          role
+        )
+      `)
+      .range(offset, offset + Number(limit) - 1)
+      .order('created_at', { ascending: false });
     
     if (status) query = query.eq('status', status);
     if (userId) query = query.eq('user_id', userId);
     
-    const { data: rewards, error } = await query.limit(Number(limit));
+    const { data: rewards, error } = await query;
     
     if (error) throw error;
 
+    // 프론트엔드가 기대하는 필드명으로 매핑
+    const mappedRewards = (rewards || []).map((reward: any) => ({
+      id: reward.id,
+      userId: reward.user_id,        // user_id -> userId
+      type: reward.type,
+      amount: reward.amount,
+      status: reward.status,
+      description: reward.description,
+      surveyId: reward.survey_id,    // survey_id -> surveyId (있는 경우)
+      createdAt: reward.created_at,  // created_at -> createdAt
+      updatedAt: reward.updated_at,  // updated_at -> updatedAt
+      // 사용자 정보 추가
+      user: reward.user ? {
+        id: reward.user.id,
+        name: reward.user.name,
+        email: reward.user.email,
+        role: reward.user.role
+      } : null
+    }));
+
     res.json({
-      rewards: rewards || [],
-      totalCount: rewards?.length || 0,
-      page: Number(page),
-      limit: Number(limit)
+      rewards: mappedRewards,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total: totalCount || 0,
+        pages: Math.ceil((totalCount || 0) / Number(limit))
+      }
     });
 
   } catch (error) {
