@@ -14,7 +14,8 @@ interface Reward {
 interface RewardSummary {
   totalEarned: number;
   totalPaid: number;
-  totalPending: number;
+  totalAccrued: number;
+  totalWithdrawalPending: number;
 }
 
 const Rewards: React.FC = () => {
@@ -22,7 +23,8 @@ const Rewards: React.FC = () => {
   const [summary, setSummary] = useState<RewardSummary>({
     totalEarned: 0,
     totalPaid: 0,
-    totalPending: 0
+    totalAccrued: 0,
+    totalWithdrawalPending: 0
   });
   const [withdrawalAmount, setWithdrawalAmount] = useState('');
   const [loading, setLoading] = useState(true);
@@ -39,6 +41,7 @@ const Rewards: React.FC = () => {
       const response = await api.get('/rewards/my');
       setRewards(response.data.rewards);
       setSummary(response.data.summary);
+      setWithdrawalAmount(response.data.summary.totalAccrued > 0 ? String(response.data.summary.totalAccrued) : '');
     } catch (err: any) {
       setError('리워드 정보를 불러오는 중 오류가 발생했습니다.');
     } finally {
@@ -53,7 +56,7 @@ const Rewards: React.FC = () => {
     setSuccess('');
 
     try {
-      const amount = parseInt(withdrawalAmount);
+      const amount = parseInt(withdrawalAmount, 10);
       await api.post('/rewards/withdraw', { amount });
       
       setSuccess('출금 신청이 완료되었습니다.');
@@ -79,8 +82,10 @@ const Rewards: React.FC = () => {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
+      case 'EARNED':
+        return '리워드 적립';
       case 'PENDING':
-        return '제출 완료';
+        return '지급 대기';
       case 'PAID':
         return '지급 완료';
       default:
@@ -101,7 +106,7 @@ const Rewards: React.FC = () => {
       <h1 className="text-2xl font-bold text-gray-900 mb-6">내 리워드</h1>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <h3 className="text-sm font-medium text-gray-500">총 적립 금액</h3>
           <p className="text-2xl font-bold text-gray-900">
@@ -111,7 +116,13 @@ const Rewards: React.FC = () => {
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <h3 className="text-sm font-medium text-gray-500">출금 가능 금액</h3>
           <p className="text-2xl font-bold text-primary-600">
-            {summary.totalPending.toLocaleString()}원
+            {summary.totalAccrued.toLocaleString()}원
+          </p>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <h3 className="text-sm font-medium text-gray-500">출금 대기 금액</h3>
+          <p className="text-2xl font-bold text-yellow-600">
+            {summary.totalWithdrawalPending.toLocaleString()}원
           </p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow-sm border">
@@ -123,9 +134,14 @@ const Rewards: React.FC = () => {
       </div>
 
       {/* Withdrawal Form */}
-      {summary.totalPending > 0 && (
+      {summary.totalAccrued > 0 && (
         <div className="bg-white p-6 rounded-lg shadow-sm border mb-8">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">출금 신청</h2>
+          {summary.totalWithdrawalPending > 0 && (
+            <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded mb-4">
+              이미 출금 대기 중인 금액이 있습니다. 관리자 처리가 완료된 후 다시 신청할 수 있습니다.
+            </div>
+          )}
           
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded mb-4">
@@ -139,7 +155,7 @@ const Rewards: React.FC = () => {
             </div>
           )}
           
-          {summary.totalPending < 10000 ? (
+          {summary.totalAccrued < 10000 ? (
             <div className="bg-orange-50 border border-orange-200 text-orange-700 px-4 py-3 rounded mb-4">
               <div className="flex items-center space-x-2">
                 <svg className="w-5 h-5 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
@@ -148,7 +164,7 @@ const Rewards: React.FC = () => {
                 <span className="font-medium">출금 가능 금액이 최소 출금 가능 10,000원보다 작습니다.</span>
               </div>
               <p className="text-sm mt-2">
-                현재 출금 가능 금액: {summary.totalPending.toLocaleString()}원<br/>
+                현재 출금 가능 금액: {summary.totalAccrued.toLocaleString()}원<br/>
                 최소 출금 금액: 10,000원
               </p>
             </div>
@@ -157,7 +173,7 @@ const Rewards: React.FC = () => {
               <form onSubmit={handleWithdrawal} className="flex items-end space-x-4">
                 <div className="flex-1">
                   <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
-                    출금 금액 (최소 10,000원)
+                    출금 금액 (현재 출금 가능 금액 전체만 신청 가능)
                   </label>
                   <input
                     type="number"
@@ -165,16 +181,17 @@ const Rewards: React.FC = () => {
                     value={withdrawalAmount}
                     onChange={(e) => setWithdrawalAmount(e.target.value)}
                     min="10000"
-                    max={summary.totalPending}
+                    max={summary.totalAccrued}
                     step="1000"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
                     placeholder="출금할 금액을 입력하세요"
                     required
+                    readOnly
                   />
                 </div>
                 <button
                   type="submit"
-                  disabled={withdrawing || !withdrawalAmount}
+                  disabled={withdrawing || !withdrawalAmount || summary.totalWithdrawalPending > 0}
                   className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {withdrawing ? '처리 중...' : '출금 신청'}

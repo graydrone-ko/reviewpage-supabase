@@ -6,7 +6,7 @@ interface Reward {
   id: string;
   amount: number;
   type: 'SURVEY_COMPLETION' | 'BONUS';
-  status: 'PENDING' | 'PAID';
+  status: 'EARNED' | 'PENDING' | 'PAID';
   createdAt: string;
   updatedAt: string;
   user: {
@@ -17,6 +17,13 @@ interface Reward {
     phoneNumber?: string;
     bankCode?: string;
     accountNumber?: string;
+  };
+  userTotalAmount?: number;
+  userAccruedAmount?: number;
+  userTotals?: {
+    earned: number;
+    pending: number;
+    paid: number;
   };
 }
 
@@ -81,7 +88,7 @@ const AdminRewards: React.FC = () => {
     }
   };
 
-  const updateRewardStatus = async (rewardId: string, status: 'PENDING' | 'PAID') => {
+  const updateRewardStatus = async (rewardId: string, status: 'EARNED' | 'PENDING' | 'PAID') => {
     setUpdating(rewardId);
     try {
       const token = localStorage.getItem('token');
@@ -100,7 +107,8 @@ const AdminRewards: React.FC = () => {
 
       // 목록 새로고침
       fetchRewards();
-      alert(`리워드 상태가 ${status === 'PAID' ? '지급완료' : '대기중'}으로 변경되었습니다.`);
+      const statusLabel = status === 'PAID' ? '지급 완료' : status === 'PENDING' ? '지급 대기' : '리워드 적립';
+      alert(`리워드 상태가 ${statusLabel}으로 변경되었습니다.`);
     } catch (err) {
       alert(err instanceof Error ? err.message : '오류가 발생했습니다.');
     } finally {
@@ -124,10 +132,12 @@ const AdminRewards: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const styles = {
+      EARNED: 'bg-blue-100 text-blue-800',
       PENDING: 'bg-yellow-100 text-yellow-800',
       PAID: 'bg-green-100 text-green-800'
     };
     const labels = {
+      EARNED: '리워드 적립',
       PENDING: '지급 대기',
       PAID: '지급 완료'
     };
@@ -198,6 +208,7 @@ const AdminRewards: React.FC = () => {
                 className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">전체</option>
+                <option value="EARNED">리워드 적립</option>
                 <option value="PENDING">지급 대기</option>
                 <option value="PAID">지급 완료</option>
               </select>
@@ -252,6 +263,12 @@ const AdminRewards: React.FC = () => {
                             📞 {formatPhoneNumber(reward.user.phoneNumber || '')}
                           </div>
                         </div>
+                        <div className="text-xs text-gray-600">
+                          누계 리워드: <span className="font-semibold text-gray-800">{formatCurrency(reward.userTotalAmount || 0)}</span>
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          출금 가능: {formatCurrency(reward.userAccruedAmount || 0)}
+                        </div>
                         {reward.user.bankCode && reward.user.accountNumber && (
                           <div className="bg-green-50 p-2 rounded border">
                             <div className="text-xs font-medium text-green-900">
@@ -288,23 +305,17 @@ const AdminRewards: React.FC = () => {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {reward.status === 'PENDING' ? (
-                        <button
-                          onClick={() => updateRewardStatus(reward.id, 'PAID')}
-                          disabled={updating === reward.id}
-                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {updating === reward.id ? '처리 중...' : '지급 완료'}
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => updateRewardStatus(reward.id, 'PENDING')}
-                          disabled={updating === reward.id}
-                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {updating === reward.id ? '처리 중...' : '대기로 변경'}
-                        </button>
-                      )}
+                      <button
+                        onClick={() => updateRewardStatus(reward.id, 'PAID')}
+                        disabled={updating === reward.id || reward.status !== 'PENDING'}
+                        className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {reward.status === 'PENDING'
+                          ? updating === reward.id ? '처리 중...' : '지급 완료'
+                          : reward.status === 'PAID'
+                            ? '지급 완료됨'
+                            : '출금 신청 대기'}
+                      </button>
                     </td>
                   </tr>
                 ))}

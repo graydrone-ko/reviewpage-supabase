@@ -36,6 +36,14 @@ export const getDashboardStats = async (req: AdminRequest, res: Response) => {
         amount: true
       }
     });
+    const earnedRewards = await prisma.reward.aggregate({
+      _sum: {
+        amount: true
+      },
+      where: {
+        status: 'EARNED'
+      }
+    });
     const pendingRewards = await prisma.reward.aggregate({
       _sum: {
         amount: true
@@ -96,6 +104,7 @@ export const getDashboardStats = async (req: AdminRequest, res: Response) => {
       },
       rewards: {
         total: totalRewards._sum.amount || 0,
+        earned: earnedRewards._sum.amount || 0,
         pending: pendingRewards._sum.amount || 0,
         paid: paidRewards._sum.amount || 0
       },
@@ -350,7 +359,9 @@ export const getRewards = async (req: AdminRequest, res: Response) => {
     const limit = parseInt(req.query.limit as string) || 20;
     const status = req.query.status as string;
 
-    const where = status ? { status: status as 'PENDING' | 'PAID' } : {};
+    const statusFilter = status ? (status as 'EARNED' | 'PENDING' | 'PAID') : undefined;
+
+    const where = statusFilter ? { status: statusFilter } : {};
 
     const rewards = await prisma.reward.findMany({
       where,
@@ -374,8 +385,53 @@ export const getRewards = async (req: AdminRequest, res: Response) => {
 
     const total = await prisma.reward.count({ where });
 
+    const userIds = [...new Set(rewards.map(reward => reward.userId))];
+
+    let userTotalsMap: Record<string, number> = {};
+    let userAccruedMap: Record<string, number> = {};
+
+    if (userIds.length > 0) {
+      const [userTotals, userAccruedTotals] = await Promise.all([
+        prisma.reward.groupBy({
+          by: ['userId'],
+          where: {
+            userId: { in: userIds }
+          },
+          _sum: {
+            amount: true
+          }
+        }),
+        prisma.reward.groupBy({
+          by: ['userId'],
+          where: {
+            userId: { in: userIds },
+            status: 'EARNED'
+          },
+          _sum: {
+            amount: true
+          }
+        })
+      ]);
+
+      userTotalsMap = userTotals.reduce<Record<string, number>>((acc, item) => {
+        acc[item.userId] = item._sum.amount || 0;
+        return acc;
+      }, {});
+
+      userAccruedMap = userAccruedTotals.reduce<Record<string, number>>((acc, item) => {
+        acc[item.userId] = item._sum.amount || 0;
+        return acc;
+      }, {});
+    }
+
+    const rewardsWithUserTotals = rewards.map(reward => ({
+      ...reward,
+      userTotalAmount: userTotalsMap[reward.userId] || 0,
+      userAccruedAmount: userAccruedMap[reward.userId] || 0
+    }));
+
     res.json({
-      rewards,
+      rewards: rewardsWithUserTotals,
       pagination: {
         page,
         limit,
@@ -396,8 +452,36 @@ export const updateRewardStatus = async (req: AdminRequest, res: Response) => {
     const { rewardId } = req.params;
     const { status } = req.body;
 
-    if (!['PENDING', 'PAID'].includes(status)) {
+    if (!['EARNED', 'PENDING', 'PAID'].includes(status)) {
       return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    const existingReward = await prisma.reward.findUnique({
+      where: { id: rewardId },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
+      }
+    });
+
+    if (!existingReward) {
+      return res.status(404).json({ error: 'Reward not found' });
+    }
+
+    if (status === 'PAID' && existingReward.status !== 'PENDING') {
+      return res.status(400).json({ error: '지급 완료 처리는 출금 대기 상태에서만 가능합니다.' });
+    }
+
+    if (status === 'PENDING' && existingReward.status === 'PAID') {
+      return res.status(400).json({ error: '지급 완료된 리워드는 지급 대기로 되돌릴 수 없습니다.' });
+    }
+
+    if (status === 'EARNED' && existingReward.status === 'PAID') {
+      return res.status(400).json({ error: '지급 완료된 리워드는 적립 상태로 되돌릴 수 없습니다.' });
     }
 
     const reward = await prisma.reward.update({

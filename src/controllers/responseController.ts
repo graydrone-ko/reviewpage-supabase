@@ -127,7 +127,8 @@ export const submitResponse = async (req: AuthRequest, res: Response) => {
         data: {
           userId: req.user!.id,
           amount: survey.reward,
-          type: 'SURVEY_COMPLETION'
+          type: 'SURVEY_COMPLETION',
+          status: 'EARNED'
         }
       });
 

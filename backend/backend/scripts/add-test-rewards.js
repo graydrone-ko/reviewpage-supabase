@@ -55,7 +55,7 @@ async function addTestRewards() {
             userId: testConsumer.id,
             amount: rewardData.amount,
             type: rewardData.type,
-            status: 'PENDING'
+            status: 'EARNED'
           }
         });
 
@@ -72,16 +72,16 @@ async function addTestRewards() {
     });
 
     const finalTotal = finalRewards.reduce((sum, reward) => sum + reward.amount, 0);
-    const finalPending = finalRewards
-      .filter(r => r.status === 'PENDING')
+    const finalAccrued = finalRewards
+      .filter(r => r.status === 'EARNED')
       .reduce((sum, reward) => sum + reward.amount, 0);
 
     console.log(`\n📈 최종 결과:`);
     console.log(`   총 적립: ₩${finalTotal.toLocaleString()}`);
-    console.log(`   출금 가능: ₩${finalPending.toLocaleString()}`);
+    console.log(`   출금 가능: ₩${finalAccrued.toLocaleString()}`);
     console.log(`   리워드 건수: ${finalRewards.length}건`);
     
-    if (finalPending >= 10000) {
+    if (finalAccrued >= 10000) {
       console.log(`\n✅ 출금 테스트 가능 (최소 ₩10,000 이상 보유)`);
     } else {
       console.log(`\n⚠️  출금 테스트 불가 (₩10,000 미만)`);

@@ -40,9 +40,11 @@ export const getMyRewards = async (req: AuthRequest, res: Response) => {
     });
 
     const totalEarned = rewards
+      .reduce((sum: number, reward: any) => sum + reward.amount, 0);
+    const totalAccrued = rewards
       .filter((reward: any) => reward.status === 'EARNED')
       .reduce((sum: number, reward: any) => sum + reward.amount, 0);
-    const totalPending = rewards
+    const totalWithdrawalPending = rewards
       .filter((reward: any) => reward.status === 'PENDING')
       .reduce((sum: number, reward: any) => sum + reward.amount, 0);
     const totalPaid = rewards
@@ -54,7 +56,8 @@ export const getMyRewards = async (req: AuthRequest, res: Response) => {
       summary: {
         totalEarned,
         totalPaid,
-        totalPending
+        totalAccrued,
+        totalWithdrawalPending
       }
     });
 
@@ -74,6 +77,19 @@ export const requestWithdrawal = async (req: AuthRequest, res: Response) => {
 
     if (!amount || amount <= 0) {
       return res.status(400).json({ error: 'Valid amount is required' });
+    }
+
+    // 이미 출금 대기 중인 리워드가 있는지 확인
+    const { count: pendingRewardCount, error: pendingCountError } = await db
+      .from('rewards')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', req.user.id)
+      .eq('status', 'PENDING');
+
+    if (pendingCountError) throw pendingCountError;
+
+    if ((pendingRewardCount || 0) > 0) {
+      return res.status(400).json({ error: '이미 출금 대기 중인 리워드가 있습니다. 관리자 처리가 완료된 후 다시 신청하세요.' });
     }
 
     // Calculate available balance from EARNED rewards (적립된 리워드)
@@ -101,6 +117,10 @@ export const requestWithdrawal = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: '출금 요청 금액이 사용 가능한 잔액을 초과합니다.' });
     }
 
+    if (amount !== availableBalance) {
+      return res.status(400).json({ error: '출금 요청 금액은 현재 출금 가능 금액과 동일해야 합니다.' });
+    }
+
     // 출금 요청을 데이터베이스에 저장
     const { data: withdrawalRequest, error: withdrawalError } = await db
       .from('withdrawal_requests')
@@ -115,32 +135,23 @@ export const requestWithdrawal = async (req: AuthRequest, res: Response) => {
     if (withdrawalError) throw withdrawalError;
 
     // 출금 신청 금액만큼 EARNED 리워드들을 PENDING 상태로 변경
-    let remainingAmount = amount;
-    const rewardsToUpdate = [];
-    
-    for (const reward of earnedRewards || []) {
-      if (remainingAmount <= 0) break;
-      
-      rewardsToUpdate.push(reward.id);
-      remainingAmount -= reward.amount;
-    }
-    
-    // 선택된 리워드들을 PENDING 상태로 업데이트
-    if (rewardsToUpdate.length > 0) {
+    const rewardIdsToUpdate = (earnedRewards || []).map((reward: any) => reward.id);
+
+    if (rewardIdsToUpdate.length > 0) {
       const { error: updateError } = await db
         .from('rewards')
         .update({ 
           status: 'PENDING',
           updated_at: new Date().toISOString()
         })
-        .in('id', rewardsToUpdate);
-      
+        .in('id', rewardIdsToUpdate);
+
       if (updateError) {
         console.error('Failed to update reward status:', updateError);
         throw updateError;
       }
-      
-      console.log(`📝 Updated ${rewardsToUpdate.length} rewards to PENDING status for withdrawal request`);
+
+      console.log(`📝 Updated ${rewardIdsToUpdate.length} rewards to PENDING status for withdrawal request`);
     }
 
     console.log(`💰 출금 요청 생성됨: ${req.user.name || 'Unknown'} (${req.user.email}) - ₩${amount.toLocaleString()}`);
@@ -202,10 +213,20 @@ export const getRewardStats = async (req: AuthRequest, res: Response) => {
     const paidRewardsAmount = (paidRewardsData || []).reduce((sum: number, reward: any) => sum + reward.amount, 0);
     const pendingRewardsAmount = (pendingRewardsData || []).reduce((sum: number, reward: any) => sum + reward.amount, 0);
 
+    const { data: earnedRewardsData, error: earnedRewardsDataError } = await db
+      .from('rewards')
+      .select('amount')
+      .eq('status', 'EARNED');
+
+    if (earnedRewardsDataError) throw earnedRewardsDataError;
+
+    const earnedRewardsAmount = (earnedRewardsData || []).reduce((sum: number, reward: any) => sum + reward.amount, 0);
+
     res.json({
       totalRewards: totalRewardsAmount,
       paidRewards: paidRewardsAmount,
       pendingRewards: pendingRewardsAmount,
+      earnedRewards: earnedRewardsAmount,
       userCount: userCount || 0,
       responseCount: responseCount || 0
     });

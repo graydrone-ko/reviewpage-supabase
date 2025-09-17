@@ -35,6 +35,28 @@ export const getDashboardStats = async (req: AdminRequest, res: Response) => {
     
     const pendingCancellations = cancellationRequests?.length || 0;
 
+    const { data: rewardStats, error: rewardStatsError } = await db
+      .from('rewards')
+      .select('status, amount');
+
+    if (rewardStatsError) throw rewardStatsError;
+
+    const rewardTotals = (rewardStats || []).reduce(
+      (acc, reward) => {
+        const amount = Number(reward.amount) || 0;
+        acc.total += amount;
+        if (reward.status === 'EARNED') {
+          acc.earned += amount;
+        } else if (reward.status === 'PENDING') {
+          acc.pending += amount;
+        } else if (reward.status === 'PAID') {
+          acc.paid += amount;
+        }
+        return acc;
+      },
+      { total: 0, earned: 0, pending: 0, paid: 0 }
+    );
+
     res.json({
       users: {
         total: stats.totalUsers,
@@ -51,11 +73,7 @@ export const getDashboardStats = async (req: AdminRequest, res: Response) => {
       responses: {
         total: stats.totalResponses
       },
-      rewards: {
-        total: stats.totalRewards,
-        pending: 0, // 임시값
-        paid: stats.totalRewards
-      },
+      rewards: rewardTotals,
       notifications: {
         pendingWithdrawals: 0, // 임시값
         pendingCancellations: pendingCancellations
@@ -279,7 +297,11 @@ export const getRewards = async (req: AdminRequest, res: Response) => {
     }
 
     // 프론트엔드가 기대하는 필드명으로 매핑
-    const mappedRewards = (rewards || []).map((reward: any) => ({
+    const mappedRewards = (rewards || []).map((reward: any) => {
+      const totals = userTotals[reward.user_id] || { earned: 0, pending: 0, paid: 0 };
+      const totalAmount = totals.earned + totals.pending + totals.paid;
+
+      return {
       id: reward.id,
       userId: reward.user_id,        // user_id -> userId
       type: reward.type,
@@ -297,10 +319,13 @@ export const getRewards = async (req: AdminRequest, res: Response) => {
         role: reward.user.role
       } : null,
       // 사용자별 누계 금액 추가
-      userTotals: userTotals[reward.user_id] || { earned: 0, pending: 0, paid: 0 },
+      userTotals: totals,
+      userTotalAmount: totalAmount,
+      userAccruedAmount: totals.earned,
       // 액션 버튼 활성화 조건 (PENDING 상태만 지급 완료 처리 가능)
       canMarkAsPaid: reward.status === 'PENDING'
-    }));
+    };
+    });
 
     res.json({
       rewards: mappedRewards,

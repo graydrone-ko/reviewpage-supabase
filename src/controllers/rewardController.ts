@@ -58,17 +58,23 @@ export const getMyRewards = async (req: AuthRequest, res: Response) => {
     });
 
     const totalEarned = rewards.reduce((sum, reward) => sum + reward.amount, 0);
+    const totalAccrued = rewards
+      .filter(reward => reward.status === 'EARNED')
+      .reduce((sum, reward) => sum + reward.amount, 0);
+    const totalWithdrawalPending = rewards
+      .filter(reward => reward.status === 'PENDING')
+      .reduce((sum, reward) => sum + reward.amount, 0);
     const totalPaid = rewards
       .filter(reward => reward.status === 'PAID')
       .reduce((sum, reward) => sum + reward.amount, 0);
-    const totalPending = totalEarned - totalPaid;
 
     res.json({
       rewards: enrichedRewards,
       summary: {
         totalEarned,
         totalPaid,
-        totalPending
+        totalAccrued,
+        totalWithdrawalPending
       }
     });
 
@@ -90,11 +96,26 @@ export const requestWithdrawal = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Valid amount is required' });
     }
 
-    // Calculate available balance
-    const rewards = await prisma.reward.findMany({
+    // 이미 출금 대기 중인 리워드가 있는지 확인
+    const existingWithdrawalPending = await prisma.reward.count({
       where: {
         userId: req.user.id,
         status: 'PENDING'
+      }
+    });
+
+    if (existingWithdrawalPending > 0) {
+      return res.status(400).json({ error: '이미 출금 대기 중인 리워드가 있습니다. 관리자 처리가 완료된 후 다시 신청하세요.' });
+    }
+
+    // 출금 가능 잔액은 적립(EARNED) 상태의 리워드 합계
+    const rewards = await prisma.reward.findMany({
+      where: {
+        userId: req.user.id,
+        status: 'EARNED'
+      },
+      orderBy: {
+        createdAt: 'asc'
       }
     });
 
@@ -114,17 +135,39 @@ export const requestWithdrawal = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: '출금 요청 금액이 사용 가능한 잔액을 초과합니다.' });
     }
 
-    // 출금 요청을 데이터베이스에 저장
-    const withdrawalRequest = await prisma.withdrawalRequest.create({
-      data: {
-        userId: req.user.id,
-        amount: amount,
-        status: 'PENDING'
+    if (amount !== availableBalance) {
+      return res.status(400).json({ error: '출금 요청 금액은 현재 출금 가능 금액과 동일해야 합니다.' });
+    }
+
+    const rewardIdsToUpdate = rewards.map(reward => reward.id);
+
+    const withdrawalRequest = await prisma.$transaction(async (tx) => {
+      const request = await tx.withdrawalRequest.create({
+        data: {
+          userId: req.user!.id,
+          amount,
+          status: 'PENDING'
+        }
+      });
+
+      if (rewardIdsToUpdate.length > 0) {
+        await tx.reward.updateMany({
+          where: {
+            id: {
+              in: rewardIdsToUpdate
+            }
+          },
+          data: {
+            status: 'PENDING'
+          }
+        });
       }
+
+      return request;
     });
 
     console.log(`💰 출금 요청 생성됨: ${req.user.name || 'Unknown'} (${req.user.email}) - ₩${amount.toLocaleString()}`);
-    
+
     res.json({
       message: '출금 신청이 완료되었습니다. 관리자 승인 후 처리됩니다.',
       amount,
@@ -168,6 +211,15 @@ export const getRewardStats = async (req: AuthRequest, res: Response) => {
       }
     });
 
+    const earnedRewards = await prisma.reward.aggregate({
+      where: {
+        status: 'EARNED'
+      },
+      _sum: {
+        amount: true
+      }
+    });
+
     const userCount = await prisma.user.count({
       where: {
         role: 'CONSUMER'
@@ -180,6 +232,7 @@ export const getRewardStats = async (req: AuthRequest, res: Response) => {
       totalRewards: totalRewards._sum.amount || 0,
       paidRewards: paidRewards._sum.amount || 0,
       pendingRewards: pendingRewards._sum.amount || 0,
+      earnedRewards: earnedRewards._sum.amount || 0,
       userCount,
       responseCount
     });

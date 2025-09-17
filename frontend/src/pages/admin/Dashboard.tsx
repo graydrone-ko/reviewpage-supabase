@@ -20,6 +20,7 @@ interface DashboardStats {
   };
   rewards: {
     total: number;
+    earned: number;
     pending: number;
     paid: number;
   };
@@ -185,8 +186,9 @@ const AdminDashboard: React.FC = () => {
               </div>
             </div>
             <div className="mt-4 text-sm text-gray-500">
-              <p>대기: ₩{stats.rewards.pending.toLocaleString()}</p>
-              <p>지급: ₩{stats.rewards.paid.toLocaleString()}</p>
+              <p>적립: ₩{(stats.rewards.earned ?? 0).toLocaleString()}</p>
+              <p>출금 대기: ₩{stats.rewards.pending.toLocaleString()}</p>
+              <p>지급 완료: ₩{stats.rewards.paid.toLocaleString()}</p>
             </div>
           </div>
         </div>

@@ -7,7 +7,7 @@ CREATE TYPE public.gender_enum AS ENUM ('MALE', 'FEMALE', 'ALL');
 CREATE TYPE public.survey_status_enum AS ENUM ('PENDING', 'APPROVED', 'COMPLETED', 'CANCELLED', 'SUSPENDED');
 CREATE TYPE public.cancellation_status_enum AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
 CREATE TYPE public.reward_type_enum AS ENUM ('SURVEY_COMPLETION', 'BONUS', 'REFUND');
-CREATE TYPE public.reward_status_enum AS ENUM ('PENDING', 'PAID');
+CREATE TYPE public.reward_status_enum AS ENUM ('EARNED', 'PENDING', 'PAID');
 CREATE TYPE public.question_type_enum AS ENUM ('MULTIPLE_CHOICE', 'TEXT', 'SCORE', 'YES_NO');
 CREATE TYPE public.withdrawal_status_enum AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
 
@@ -134,7 +134,7 @@ CREATE TABLE public.rewards (
     user_id TEXT NOT NULL,
     amount NUMERIC NOT NULL,
     type reward_type_enum NOT NULL,
-    status reward_status_enum DEFAULT 'PENDING' NOT NULL,
+    status reward_status_enum DEFAULT 'EARNED' NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
     FOREIGN KEY (user_id) REFERENCES public.users(id)

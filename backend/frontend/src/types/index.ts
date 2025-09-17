@@ -88,7 +88,7 @@ export interface Reward {
   id: string;
   userId: string;
   amount: number;
-  type: 'survey_completion' | 'bonus';
-  status: 'pending' | 'paid';
+  type: 'SURVEY_COMPLETION' | 'BONUS' | 'REFUND';
+  status: 'EARNED' | 'PENDING' | 'PAID';
   createdAt: Date;
 }

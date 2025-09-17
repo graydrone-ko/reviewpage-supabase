@@ -90,7 +90,8 @@ async function testWorkflow() {
       data: {
         userId: consumers[0].id,
         amount: testSurvey.reward,
-        type: 'SURVEY_COMPLETION'
+        type: 'SURVEY_COMPLETION',
+        status: 'EARNED'
       }
     });
     
@@ -126,7 +127,8 @@ async function testWorkflow() {
       data: {
         userId: consumers[1].id,
         amount: testSurvey.reward,
-        type: 'SURVEY_COMPLETION'
+        type: 'SURVEY_COMPLETION',
+        status: 'EARNED'
       }
     });
     
