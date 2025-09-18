@@ -74,7 +74,7 @@ const Home: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-3">소비자</h3>
                 <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-                  설문 1개당 최대 5,000원
+                  설문 1개당<br className="sm:hidden" /> 최대 5,000원
                 </p>
                 <p className="text-gray-600">간단한 설문 참여로 즉시 현금 적립</p>
               </div>
@@ -220,7 +220,7 @@ const Home: React.FC = () => {
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-20">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              온라인 부업 설문조사 시작하는 방법
+              온라인 부업<br className="sm:hidden" /> 설문조사 시작하는 방법
               <br />
               <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 간단 3단계
@@ -349,7 +349,7 @@ const Home: React.FC = () => {
                   <span className="text-2xl">🛡️</span>
                 </div>
                 <div className="text-3xl font-bold text-indigo-600 mb-4">운영자도 셀러</div>
-                <p className="text-gray-600 text-lg">설문 퀄리티 사전 검증으로 높은 품질 보장</p>
+                <p className="text-gray-600 text-lg px-2">설문 퀄리티 사전 검증으로 높은 품질 보장</p>
               </div>
             </div>
             
@@ -360,7 +360,7 @@ const Home: React.FC = () => {
                   <span className="text-2xl">⭐</span>
                 </div>
                 <div className="text-3xl font-bold text-green-600 mb-4">4.8/5점</div>
-                <p className="text-gray-600 text-lg">사용자들의 높은 만족도와 긍정적인 피드백</p>
+                <p className="text-gray-600 text-lg px-2">사용자들의 높은 만족도와 긍정적인 피드백</p>
               </div>
             </div>
             
@@ -371,7 +371,7 @@ const Home: React.FC = () => {
                   <span className="text-2xl">💯</span>
                 </div>
                 <div className="text-3xl font-bold text-blue-600 mb-4">100%</div>
-                <p className="text-gray-600 text-lg">계획 인원 미달성 시 미진행 건 전액 환불</p>
+                <p className="text-gray-600 text-lg px-2">계획 인원 미달성 시 미진행 건 전액 환불</p>
               </div>
             </div>
           </div>
