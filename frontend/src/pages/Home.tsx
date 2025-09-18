@@ -105,21 +105,6 @@ const Home: React.FC = () => {
             </div>
           </div>
 
-          {/* Floating Stats */}
-          <div className="mt-16 grid grid-cols-3 gap-8 max-w-3xl mx-auto">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600 mb-2">1,000+</div>
-              <div className="text-gray-600">누적 설문 참여자</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-indigo-600 mb-2">₩50M+</div>
-              <div className="text-gray-600">누적 리워드 지급</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600 mb-2">95%</div>
-              <div className="text-gray-600">사용자 만족도</div>
-            </div>
-          </div>
         </div>
       </section>
 
