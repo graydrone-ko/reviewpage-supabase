@@ -153,18 +153,17 @@ export const getFinanceStats = async (req: AuthRequest, res: Response) => {
     const pendingWithdrawals = pendingRewards.reduce((sum: number, reward: any) => sum + parseNumber(reward.amount), 0);
 
     // 완료된 설문 응답에서 수수료 계산 (설문 진행 리워드의 10%)
+    // survey_responses 테이블에는 status 컬럼이 없으므로, 응답이 있고 설문이 승인된 경우를 완료로 간주
     const { data: responseRows, error: responseError } = await db
       .from('survey_responses')
       .select(`
         created_at,
-        status,
         survey:surveys!survey_responses_survey_id_fkey (reward, status)
       `);
 
     if (responseError) throw responseError;
 
     const completedResponses = (responseRows || []).filter((response: any) => (
-      response.status === 'COMPLETED' &&
       response.survey?.status === 'APPROVED' &&
       matchesRange(response.created_at, range)
     ));
