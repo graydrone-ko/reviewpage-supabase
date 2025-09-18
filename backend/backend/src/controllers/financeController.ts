@@ -136,7 +136,7 @@ export const getFinanceStats = async (req: AuthRequest, res: Response) => {
 
     const { data: rewardRows, error: rewardError } = await db
       .from('rewards')
-      .select('amount, status, created_at, updated_at');
+      .select('amount, status, type, created_at, updated_at');
 
     if (rewardError) throw rewardError;
 
@@ -147,31 +147,24 @@ export const getFinanceStats = async (req: AuthRequest, res: Response) => {
     const totalWithdrawn = paidRewards.reduce((sum: number, reward: any) => sum + parseNumber(reward.amount), 0);
 
     const pendingRewards = (rewardRows || []).filter((reward: any) => (
-      reward.status === 'PENDING' && matchesRange(reward.created_at, range)
+      reward.status === 'PENDING' && matchesRange(reward.updated_at || reward.created_at, range)
     ));
 
     const pendingWithdrawals = pendingRewards.reduce((sum: number, reward: any) => sum + parseNumber(reward.amount), 0);
 
-    // 완료된 설문 응답에서 수수료 계산 (설문 진행 리워드의 10%)
-    // survey_responses 테이블에는 status 컬럼이 없으므로, 응답이 있고 설문이 승인된 경우를 완료로 간주
-    const { data: responseRows, error: responseError } = await db
-      .from('survey_responses')
-      .select(`
-        created_at,
-        survey:surveys!survey_responses_survey_id_fkey (reward, status)
-      `);
-
-    if (responseError) throw responseError;
-
-    const completedResponses = (responseRows || []).filter((response: any) => (
-      response.survey?.status === 'APPROVED' &&
-      matchesRange(response.created_at, range)
+    // 순수익(수수료)은 적립된 리워드의 10%로 계산한다.
+    const revenueRewardStatuses = ['EARNED', 'PENDING', 'PAID'];
+    const accruedRewards = (rewardRows || []).filter((reward: any) => (
+      revenueRewardStatuses.includes(reward.status) &&
+      reward.type !== 'REFUND' &&
+      matchesRange(reward.updated_at || reward.created_at, range)
     ));
 
-    const netProfit = completedResponses.reduce((sum: number, response: any) => {
-      const reward = parseNumber(response?.survey?.reward);
-      return sum + reward * 0.1;
-    }, 0);
+    const accruedRewardTotal = accruedRewards.reduce((sum: number, reward: any) => (
+      sum + parseNumber(reward.amount)
+    ), 0);
+
+    const netProfit = accruedRewardTotal * 0.1;
 
     res.json({
       totalRevenue: Math.round(totalRevenue),
