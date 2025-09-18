@@ -55,52 +55,54 @@ const Home: React.FC = () => {
             판매자는 고객 의견으로 <span className="text-purple-600 font-bold">매출 증대</span>하는 윈윈 플랫폼
           </p>
           
-          <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-12">
-            <div className="group bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/50 transform hover:scale-105 transition-all duration-300 hover:shadow-2xl">
-              <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full">
-                <span className="text-2xl">🎯</span>
+          <div className="max-w-5xl mx-auto mb-12">
+            <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+              <div className="group bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/50 transform hover:scale-105 transition-all duration-300 hover:shadow-2xl">
+                <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full">
+                  <span className="text-2xl">🎯</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">판매자</h3>
+                <p className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-2">
+                  월 매출 평균 30% 증가
+                </p>
+                <p className="text-gray-600">실제 고객 데이터 기반 상세페이지 개선</p>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">판매자</h3>
-              <p className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-2">
-                월 매출 평균 30% 증가
-              </p>
-              <p className="text-gray-600">실제 고객 데이터 기반 상세페이지 개선</p>
-            </div>
-            
-            <div className="group bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/50 transform hover:scale-105 transition-all duration-300 hover:shadow-2xl">
-              <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full">
-                <span className="text-2xl">💰</span>
+              
+              <div className="group bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/50 transform hover:scale-105 transition-all duration-300 hover:shadow-2xl">
+                <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full">
+                  <span className="text-2xl">💰</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">소비자</h3>
+                <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+                  설문 1개당 최대 5,000원
+                </p>
+                <p className="text-gray-600">간단한 설문 참여로 즉시 현금 적립</p>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">소비자</h3>
-              <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-                설문 1개당 최대 5,000원
-              </p>
-              <p className="text-gray-600">간단한 설문 참여로 즉시 현금 적립</p>
             </div>
-          </div>
 
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <button
-              onClick={handleSellerCTA}
-              className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 overflow-hidden"
-            >
-              <span className="absolute inset-0 bg-gradient-to-r from-purple-700 to-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-              <span className="relative flex items-center">
-                <span className="mr-2">📋</span>
-                상세페이지 설문 작성
-              </span>
-            </button>
-            
-            <button
-              onClick={handleConsumerCTA}
-              className="group relative px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 overflow-hidden"
-            >
-              <span className="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-              <span className="relative flex items-center">
-                <span className="mr-2">💸</span>
-                설문하고 돈벌기
-              </span>
-            </button>
+            <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-6">
+              <button
+                onClick={handleSellerCTA}
+                className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 overflow-hidden"
+              >
+                <span className="absolute inset-0 bg-gradient-to-r from-purple-700 to-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                <span className="relative flex items-center justify-center">
+                  <span className="mr-2">📋</span>
+                  상세페이지 설문 작성
+                </span>
+              </button>
+              
+              <button
+                onClick={handleConsumerCTA}
+                className="group relative px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 overflow-hidden"
+              >
+                <span className="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                <span className="relative flex items-center justify-center">
+                  <span className="mr-2">💸</span>
+                  설문하고 돈벌기
+                </span>
+              </button>
+            </div>
           </div>
 
           {/* Floating Stats */}
