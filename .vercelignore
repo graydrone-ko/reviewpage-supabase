@@ -59,7 +59,6 @@ fix-*.js
 # Scripts that are not needed for production
 backend/backend/scripts/
 migrations/
-frontend/
 
 # Development dependencies
 backend/backend/prisma/
