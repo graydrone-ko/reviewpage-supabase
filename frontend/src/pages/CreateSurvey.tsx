@@ -72,14 +72,26 @@ const CreateSurvey: React.FC = () => {
   const fetchTemplates = async () => {
     try {
       const response = await api.get('/surveys/templates/list');
-      setTemplates(response.data.templates);
-      
-      // 기본 템플릿 자동 선택 및 편집 가능한 형태로 변환
-      const defaultTemplate = response.data.templates.find((t: SurveyTemplate) => t.isDefault);
-      if (defaultTemplate) {
-        setSelectedTemplate(defaultTemplate);
-        setFormData(prev => ({ ...prev, templateId: defaultTemplate.id }));
-        convertTemplateToEditable(defaultTemplate);
+      const fetchedTemplates: SurveyTemplate[] = response.data.templates || [];
+      setTemplates(fetchedTemplates);
+
+      const defaultTemplate =
+        fetchedTemplates.find((t) => t.isDefault) || fetchedTemplates[0];
+
+      const hasValidSelection =
+        selectedTemplate && fetchedTemplates.some((t) => t.id === selectedTemplate.id);
+
+      if (defaultTemplate && (!hasValidSelection || editableSteps.length === 0)) {
+        const templateToUse = hasValidSelection
+          ? (selectedTemplate as SurveyTemplate)
+          : defaultTemplate;
+
+        if (!hasValidSelection) {
+          setSelectedTemplate(templateToUse);
+        }
+
+        setFormData((prev) => ({ ...prev, templateId: templateToUse.id }));
+        convertTemplateToEditable(templateToUse);
       }
     } catch (err) {
       console.error('템플릿 로딩 실패:', err);
@@ -1017,18 +1029,18 @@ const CreateSurvey: React.FC = () => {
               )}
 
               {/* 제출 버튼 */}
-              <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+              <div className="sticky bottom-0 left-0 right-0 z-20 flex justify-end gap-4 border-t border-white/60 bg-white/85 px-8 py-6 backdrop-blur-lg">
                 <button
                   type="button"
                   onClick={() => navigate('/dashboard')}
-                  className="px-6 py-3 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-2xl text-gray-700 hover:bg-white/80 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                  className="rounded-2xl border border-gray-200 bg-white/70 px-6 py-3 text-gray-700 shadow-lg transition-all duration-300 hover:scale-105 hover:bg-white/80 backdrop-blur-sm"
                 >
                   취소
                 </button>
                 <button
                   type="submit"
                   disabled={loading || !selectedTemplate || editableSteps.length === 0}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl font-semibold"
+                  className="rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <div className="flex items-center">
                     {loading ? (
