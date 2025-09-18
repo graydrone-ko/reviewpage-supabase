@@ -39,7 +39,7 @@ interface WithdrawalRecord {
 interface TransactionRecord {
   id: string;
   type: 'DEPOSIT' | 'WITHDRAWAL';
-  subType: 'SURVEY_PAYMENT' | 'REFUND' | 'REWARD';
+  subType: 'SURVEY_PAYMENT' | 'REFUND' | 'REWARD' | 'REWARD_WITHDRAWAL';
   amount: number;
   status: string;
   createdAt: string;
@@ -536,7 +536,8 @@ const AdminFinance: React.FC = () => {
                               'bg-purple-100 text-purple-800'
                             }`}>
                               {transaction.subType === 'SURVEY_PAYMENT' ? '설문결제' : 
-                               transaction.subType === 'REFUND' ? '환불' : '리워드 적립'}
+                               transaction.subType === 'REFUND' ? '환불' :
+                               transaction.subType === 'REWARD_WITHDRAWAL' ? '리워드 출금' : '리워드 적립'}
                             </span>
                           </div>
                         </td>
@@ -701,8 +702,8 @@ const AdminFinance: React.FC = () => {
                               ? 'bg-orange-100 text-orange-800'
                               : 'bg-blue-100 text-blue-800'
                           }`}>
-                            {withdrawal.type === 'REFUND' ? '환불' : 
-                             withdrawal.type === 'SURVEY_COMPLETION' ? '리워드' : '기타'}
+                            {withdrawal.type === 'REFUND' ? '환불' :
+                             withdrawal.type === 'REWARD_WITHDRAWAL' ? '리워드 출금' : '기타'}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">

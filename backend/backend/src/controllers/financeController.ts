@@ -315,7 +315,7 @@ export const getWithdrawals = async (req: AuthRequest, res: Response) => {
         status: convertStatus(record.status),
         requestedAt: record.requested_at,
         completedAt: record.status === 'APPROVED' ? record.processed_at : null,
-        type: 'REWARD'
+        type: 'REWARD_WITHDRAWAL'
       }))
       .sort((a, b) => new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime());
 
@@ -453,7 +453,7 @@ export const getTransactions = async (req: AuthRequest, res: Response) => {
       transactions.push({
         id: `withdrawal_${reward.id}`,
         type: 'WITHDRAWAL',
-        subType: reward.type === 'REFUND' ? 'REFUND' : 'REWARD',
+        subType: reward.type === 'REFUND' ? 'REFUND' : 'REWARD_WITHDRAWAL',
         amount: Math.abs(parseNumber(reward.amount)),
         createdAt: reward.created_at,
         processedAt: reward.updated_at,
@@ -467,9 +467,9 @@ export const getTransactions = async (req: AuthRequest, res: Response) => {
           bankCode: reward.user.bank_code,
           accountNumber: reward.user.account_number
         } : undefined,
-        metadata: {
-          description: reward.type === 'REFUND' ? '환불 처리' : '리워드 적립'
-        }
+        metadata: reward.type === 'REFUND'
+          ? { description: '환불 처리' }
+          : { description: '리워드 출금' }
       } as TransactionRecord);
     });
 
