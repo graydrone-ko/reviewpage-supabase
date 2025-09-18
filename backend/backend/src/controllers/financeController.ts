@@ -152,17 +152,24 @@ export const getFinanceStats = async (req: AuthRequest, res: Response) => {
 
     const pendingWithdrawals = pendingRewards.reduce((sum: number, reward: any) => sum + parseNumber(reward.amount), 0);
 
+    // 완료된 설문 응답에서 수수료 계산 (설문 진행 리워드의 10%)
     const { data: responseRows, error: responseError } = await db
       .from('survey_responses')
-      .select('created_at, survey:surveys!survey_responses_survey_id_fkey (reward)');
+      .select(`
+        created_at,
+        status,
+        survey:surveys!survey_responses_survey_id_fkey (reward, status)
+      `);
 
     if (responseError) throw responseError;
 
-    const filteredResponses = (responseRows || []).filter((response: any) => (
+    const completedResponses = (responseRows || []).filter((response: any) => (
+      response.status === 'COMPLETED' &&
+      response.survey?.status === 'APPROVED' &&
       matchesRange(response.created_at, range)
     ));
 
-    const netProfit = filteredResponses.reduce((sum: number, response: any) => {
+    const netProfit = completedResponses.reduce((sum: number, response: any) => {
       const reward = parseNumber(response?.survey?.reward);
       return sum + reward * 0.1;
     }, 0);
@@ -469,7 +476,7 @@ export const getTransactions = async (req: AuthRequest, res: Response) => {
           accountNumber: reward.user.account_number
         } : undefined,
         metadata: {
-          description: reward.type === 'REFUND' ? '환불 처리' : '리워드 출금'
+          description: reward.type === 'REFUND' ? '환불 처리' : '리워드 적립'
         }
       } as TransactionRecord);
     });

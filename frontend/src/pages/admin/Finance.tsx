@@ -536,7 +536,7 @@ const AdminFinance: React.FC = () => {
                               'bg-purple-100 text-purple-800'
                             }`}>
                               {transaction.subType === 'SURVEY_PAYMENT' ? '설문결제' : 
-                               transaction.subType === 'REFUND' ? '환불' : '리워드'}
+                               transaction.subType === 'REFUND' ? '환불' : '리워드 적립'}
                             </span>
                           </div>
                         </td>
