@@ -161,182 +161,324 @@ const Dashboard: React.FC = () => {
     return maxDate.toISOString().split('T')[0];
   };
 
+  // Dashboard stats
+  const getStats = () => {
+    const approved = surveys.filter(s => s.status === 'APPROVED').length;
+    const pending = surveys.filter(s => s.status === 'PENDING').length;
+    const completed = surveys.filter(s => s.status === 'COMPLETED').length;
+    const cancelled = surveys.filter(s => s.status === 'CANCELLED').length;
+    
+    const totalResponses = surveys.reduce((sum, survey) => sum + (survey.responseCount || 0), 0);
+    const totalBudget = surveys.reduce((sum, survey) => 
+      sum + (survey.reward * (survey.maxParticipants || 50) * 1.1), 0);
+    
+    return { approved, pending, completed, cancelled, totalResponses, totalBudget };
+  };
+
+  const stats = getStats();
+
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-gray-500">로딩 중...</div>
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-lg font-medium text-gray-600">로딩 중...</div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto py-8 px-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">판매자 대시보드</h1>
-        <Link
-          to="/surveys/create"
-          className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700"
-        >
-          새 설문 생성
-        </Link>
-      </div>
-
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded mb-6">
-          {error}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6">
+        {/* Header section */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+            판매자 대시보드
+          </h1>
+          <p className="text-gray-600 text-lg">설문 현황을 한눈에 확인하고 관리하세요</p>
         </div>
-      )}
 
-      <div className="bg-white shadow-sm rounded-lg">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">내 설문 목록</h2>
+        {/* Stats overview */}
+        <div className="relative overflow-hidden rounded-2xl border border-white/50 bg-white/80 backdrop-blur-sm shadow-xl mb-8 p-8">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-white/0 to-purple-50/50 opacity-50" />
+          <div className="relative z-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-sm font-semibold text-gray-700">총 설문 수</h3>
+                </div>
+                <p className="text-3xl font-bold text-gray-900">{surveys.length}</p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                    진행중 {stats.approved}
+                  </span>
+                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                    대기중 {stats.pending}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-sm font-semibold text-gray-700">총 응답 수</h3>
+                </div>
+                <p className="text-3xl font-bold text-gray-900">{stats.totalResponses}</p>
+                <div className="text-sm text-gray-600">
+                  전체 설문 응답 합계
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                    </svg>
+                  </div>
+                  <h3 className="text-sm font-semibold text-gray-700">총 예산</h3>
+                </div>
+                <p className="text-3xl font-bold text-gray-900">{stats.totalBudget.toLocaleString()}원</p>
+                <div className="text-sm text-gray-600">
+                  수수료 포함 금액
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-sm font-semibold text-gray-700">완료된 설문</h3>
+                </div>
+                <p className="text-3xl font-bold text-gray-900">{stats.completed}</p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                    완료 {stats.completed}
+                  </span>
+                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                    취소 {stats.cancelled}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        
+
+        {/* Action buttons */}
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">내 설문 목록</h2>
+          <Link
+            to="/surveys/create"
+            className="group relative px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 overflow-hidden"
+          >
+            <span className="absolute inset-0 bg-gradient-to-r from-blue-700 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+            <span className="relative flex items-center">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              새 설문 생성
+            </span>
+          </Link>
+        </div>
+
+        {/* Error message */}
+        {error && (
+          <div className="bg-red-50/80 backdrop-blur-sm border border-red-200 text-red-700 px-6 py-4 rounded-2xl shadow-lg mb-6">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              {error}
+            </div>
+          </div>
+        )}
+
+        {/* Survey list */}
         {surveys.length === 0 ? (
-          <div className="p-6 text-center text-gray-500">
-            아직 생성된 설문이 없습니다.
+          <div className="relative overflow-hidden rounded-2xl border border-white/50 bg-white/80 backdrop-blur-sm shadow-xl p-12 text-center">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-white/0 to-purple-50/50 opacity-50" />
+            <div className="relative z-10 space-y-4">
+              <div className="w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <p className="text-xl text-gray-600 mb-4">아직 생성된 설문이 없습니다.</p>
+              <Link
+                to="/surveys/create"
+                className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                첫 설문 생성하기
+              </Link>
+            </div>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    설문 제목
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    상태
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    총 예산
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    진행현황
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    종료일
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    작업
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {surveys.map((survey) => (
-                  <tr key={survey.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {survey.title}
-                      </div>
-                      <div className="text-sm text-gray-500 truncate max-w-xs">
-                        {survey.description || '설명 없음'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(survey)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {(survey.reward * (survey.maxParticipants || 50) * 1.1).toLocaleString()}원
-                      <div className="text-xs text-gray-500">
-                        건당 {survey.reward.toLocaleString()}원 × {survey.maxParticipants || 50}명
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div>
-                        <div className="font-medium">
-                          {survey.responseCount || 0}/{survey.maxParticipants || 50}명
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {surveys.map((survey) => {
+              const progressPercentage = Math.round(((survey.responseCount || 0) / (survey.maxParticipants || 50)) * 100);
+              const isExpired = new Date() > new Date(survey.endDate) && survey.status === 'APPROVED';
+
+              return (
+                <div key={survey.id} className="group relative overflow-hidden rounded-2xl border border-white/50 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-white/0 to-purple-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="relative z-10 p-6">
+                    {/* Header */}
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="space-y-2 flex-1 mr-4">
+                        <h3 className="text-lg font-bold text-gray-900 line-clamp-2">{survey.title}</h3>
+                        <div className="flex flex-wrap gap-1.5">
+                          {getStatusBadge(survey)}
+                          {isExpired && (
+                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                              만료됨
+                            </span>
+                          )}
                         </div>
+                      </div>
+                      
+                      {/* Actions dropdown */}
+                      {(canExtend(survey) || canRequestCancellation(survey)) && (
+                        <div className="relative inline-block">
+                          <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                            </svg>
+                          </button>
+                          <select
+                            className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                            onChange={(e) => {
+                              const action = e.target.value;
+                              if (action === 'extend') {
+                                setSelectedSurvey(survey);
+                                setShowExtensionModal(true);
+                              } else if (action === 'cancel') {
+                                setSelectedSurvey(survey);
+                                setShowCancellationModal(true);
+                              }
+                              e.target.value = '';
+                            }}
+                            defaultValue=""
+                          >
+                            <option value="">작업 선택</option>
+                            {canExtend(survey) && <option value="extend">마감연장</option>}
+                            {canRequestCancellation(survey) && <option value="cancel">중단요청</option>}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                      {survey.description || '설명 없음'}
+                    </p>
+
+                    {/* Stats grid */}
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="space-y-1">
+                        <div className="text-xs text-gray-500 flex items-center">
+                          <svg className="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                          </svg>
+                          총 예산
+                        </div>
+                        <div className="font-semibold text-gray-900">
+                          {(survey.reward * (survey.maxParticipants || 50) * 1.1).toLocaleString()}원
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          건당 {survey.reward.toLocaleString()}원 × {survey.maxParticipants || 50}명
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <div className="text-xs text-gray-500 flex items-center">
+                          <svg className="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                          </svg>
+                          진행현황
+                        </div>
+                        <div className="font-semibold text-gray-900">
+                          {survey.responseCount || 0}/{survey.maxParticipants || 50}명
+                          {survey.status === 'APPROVED' && (
+                            <span className="text-xs ml-1 text-gray-500">
+                              ({progressPercentage}% 완료)
+                            </span>
+                          )}
+                        </div>
+                        
+                        {/* Progress bar */}
                         {survey.status === 'APPROVED' && (
-                          <div className="text-xs text-gray-500">
-                            ({Math.round(((survey.responseCount || 0) / (survey.maxParticipants || 50)) * 100)}% 완료)
+                          <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
+                            <div 
+                              className="bg-gradient-to-r from-blue-500 to-purple-500 h-full rounded-full transition-all duration-500"
+                              style={{ width: `${progressPercentage}%` }}
+                            />
                           </div>
                         )}
-                        {survey.status === 'PENDING' && (
-                          <div className="text-xs text-gray-500">승인 대기중</div>
-                        )}
-                        {survey.status === 'COMPLETED' && (
-                          <div className="text-xs text-green-600">설문 완료</div>
-                        )}
-                        {survey.status === 'CANCELLED' && (
-                          <div className="text-xs text-red-600">설문 취소</div>
-                        )}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {(() => {
-                        try {
-                          const endDate = new Date(survey.endDate);
-                          if (isNaN(endDate.getTime())) {
-                            return <span className="text-red-600">날짜 오류</span>;
-                          }
-                          return formatKoreanTime(endDate, 'datetime');
-                        } catch (error) {
-                          return <span className="text-red-600">날짜 처리 오류</span>;
-                        }
-                      })()}
-                      {(() => {
-                        try {
-                          const endDate = new Date(survey.endDate);
-                          return new Date() > endDate && survey.status === 'APPROVED' && (
-                            <div className="text-xs text-red-600">만료됨</div>
-                          );
-                        } catch (error) {
-                          return null;
-                        }
-                      })()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    </div>
+
+                    {/* Footer */}
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                      <div className="space-y-1">
+                        <div className="text-xs text-gray-500 flex items-center">
+                          <svg className="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          종료일
+                        </div>
+                        <div className={`font-medium text-sm ${isExpired ? 'text-red-600' : 'text-gray-900'}`}>
+                          {(() => {
+                            try {
+                              const endDate = new Date(survey.endDate);
+                              if (isNaN(endDate.getTime())) {
+                                return <span className="text-red-600">날짜 오류</span>;
+                              }
+                              return formatKoreanTime(endDate, 'date');
+                            } catch (error) {
+                              return <span className="text-red-600">날짜 처리 오류</span>;
+                            }
+                          })()}
+                        </div>
+                      </div>
+                      
                       <div className="flex items-center space-x-2">
                         <Link
                           to={`/surveys/${survey.id}`}
-                          className="text-primary-600 hover:text-primary-900"
+                          className="px-3 py-1.5 text-sm bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center"
                         >
                           상세보기
+                          <svg className="ml-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                          </svg>
                         </Link>
                         
                         {survey.status === 'APPROVED' && (survey.responseCount || 0) > 0 && (
                           <Link
                             to={`/surveys/${survey.id}/responses`}
-                            className="text-blue-600 hover:text-blue-900"
+                            className="px-3 py-1.5 text-sm bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200"
                           >
-                            응답내용
+                            응답보기
                           </Link>
                         )}
-
-                        {/* 드롭다운 메뉴 */}
-                        {(canExtend(survey) || canRequestCancellation(survey)) && (
-                          <div className="relative inline-block text-left">
-                            <select
-                              className="text-gray-600 border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              onChange={(e) => {
-                                const action = e.target.value;
-                                if (action === 'extend') {
-                                  setSelectedSurvey(survey);
-                                  setShowExtensionModal(true);
-                                } else if (action === 'cancel') {
-                                  setSelectedSurvey(survey);
-                                  setShowCancellationModal(true);
-                                }
-                                e.target.value = '';
-                              }}
-                              defaultValue=""
-                            >
-                              <option value="">작업 선택</option>
-                              {canExtend(survey) && (
-                                <option value="extend">마감연장</option>
-                              )}
-                              {canRequestCancellation(survey) && (
-                                <option value="cancel">중단요청</option>
-                              )}
-                            </select>
-                          </div>
-                        )}
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
