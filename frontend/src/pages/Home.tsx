@@ -349,7 +349,7 @@ const Home: React.FC = () => {
                   <span className="text-2xl">🛡️</span>
                 </div>
                 <div className="text-3xl font-bold text-indigo-600 mb-4">운영자도 셀러</div>
-                <p className="text-gray-600 text-lg px-2">설문 퀄리티 사전 검증으로 높은 품질 보장</p>
+                <p className="text-gray-600 text-lg px-2">전문화 된 사전 설문 템플릿 제공<br />(판매자 수정 가능)</p>
               </div>
             </div>
             
@@ -360,7 +360,7 @@ const Home: React.FC = () => {
                   <span className="text-2xl">⭐</span>
                 </div>
                 <div className="text-3xl font-bold text-green-600 mb-4">4.8/5점</div>
-                <p className="text-gray-600 text-lg px-2">사용자들의 높은 만족도와 긍정적인 피드백</p>
+                <p className="text-gray-600 text-lg px-2">사용자들의 높은 만족도와<br />긍정적인 피드백</p>
               </div>
             </div>
             
@@ -371,7 +371,7 @@ const Home: React.FC = () => {
                   <span className="text-2xl">💯</span>
                 </div>
                 <div className="text-3xl font-bold text-blue-600 mb-4">100%</div>
-                <p className="text-gray-600 text-lg px-2">계획 인원 미달성 시 미진행 건 전액 환불</p>
+                <p className="text-gray-600 text-lg px-2">계획 인원 미달성 시<br />미진행 건 전액 환불 가능</p>
               </div>
             </div>
           </div>
