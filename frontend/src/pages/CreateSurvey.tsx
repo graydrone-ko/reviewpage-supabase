@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { SurveyTemplate, SurveyQuestion, QuestionOption, SurveyStep } from '../types';
@@ -57,7 +58,9 @@ const CreateSurvey: React.FC = () => {
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const navigate = useNavigate();
+  const formId = 'create-survey-form';
 
   function getDefaultEndDate(): string {
     // 한국시간 기준 7일 후
@@ -67,6 +70,7 @@ const CreateSurvey: React.FC = () => {
 
   useEffect(() => {
     fetchTemplates();
+    setIsClient(true);
   }, []);
 
   const fetchTemplates = async () => {
@@ -429,7 +433,7 @@ const CreateSurvey: React.FC = () => {
           <div className="relative z-10">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-8 text-center">새 설문 생성</h1>
 
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form id={formId} onSubmit={handleSubmit} className="space-y-8">
               {error && (
                 <div className="bg-red-50/80 backdrop-blur-sm border border-red-200 text-red-700 px-6 py-4 rounded-2xl shadow-lg">
                   <div className="flex items-center">
@@ -1029,41 +1033,45 @@ const CreateSurvey: React.FC = () => {
               )}
 
               {/* 제출 버튼 */}
-              <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 pb-4">
-                <div className="pointer-events-auto flex w-full max-w-5xl items-center justify-end gap-4 rounded-3xl border border-white/60 bg-white/90 px-6 py-4 shadow-2xl backdrop-blur-xl">
-                  <button
-                    type="button"
-                    onClick={() => navigate('/dashboard')}
-                    className="rounded-2xl border border-gray-200 bg-white/70 px-6 py-3 text-gray-700 shadow-lg transition-all duration-300 hover:scale-105 hover:bg-white/80 backdrop-blur-sm"
-                  >
-                    취소
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading || !selectedTemplate || editableSteps.length === 0}
-                    className="rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <div className="flex items-center">
-                      {loading ? (
-                        <>
-                          <svg className="-ml-1 mr-3 h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                          </svg>
-                          생성 중...
-                        </>
-                      ) : (
-                        <>
-                          <svg className="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                          </svg>
-                          설문 생성
-                        </>
-                      )}
-                    </div>
-                  </button>
-                </div>
-              </div>
+              {isClient && createPortal(
+                <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 pb-4">
+                  <div className="pointer-events-auto flex w-full max-w-5xl items-center justify-end gap-4 rounded-3xl border border-white/60 bg-white/95 px-6 py-4 shadow-2xl backdrop-blur-xl">
+                    <button
+                      type="button"
+                      onClick={() => navigate('/dashboard')}
+                      className="rounded-2xl border border-gray-200 bg-white/80 px-6 py-3 text-gray-700 shadow-lg transition-all duration-300 hover:scale-105 hover:bg-white"
+                    >
+                      취소
+                    </button>
+                    <button
+                      type="submit"
+                      form={formId}
+                      disabled={loading || !selectedTemplate || editableSteps.length === 0}
+                      className="rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <div className="flex items-center">
+                        {loading ? (
+                          <>
+                            <svg className="-ml-1 mr-3 h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                            생성 중...
+                          </>
+                        ) : (
+                          <>
+                            <svg className="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            설문 생성
+                          </>
+                        )}
+                      </div>
+                    </button>
+                  </div>
+                </div>,
+                document.body
+              )}
             </form>
 
             {/* 입금 안내 모달 */}
