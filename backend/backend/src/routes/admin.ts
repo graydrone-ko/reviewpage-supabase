@@ -10,8 +10,7 @@ import {
   approveReward,
   getResponses,
   getWithdrawalRequests,
-  approveWithdrawal,
-  rejectWithdrawal,
+  processWithdrawalRequest,
   getCancellationRequests,
   getCancellationRequestStats,
   getRecentCancellationRequests,
@@ -42,8 +41,15 @@ router.patch('/rewards/:rewardId/approve', approveReward);
 
 // 출금요청 관리
 router.get('/withdrawal-requests', getWithdrawalRequests);
-router.patch('/withdrawal-requests/:id/approve', approveWithdrawal);
-router.patch('/withdrawal-requests/:id/reject', rejectWithdrawal);
+router.patch('/withdrawal-requests/:id/process', processWithdrawalRequest);
+router.patch('/withdrawal-requests/:id/approve', (req, res) => {
+  req.body = { ...req.body, action: 'approve' };
+  return processWithdrawalRequest(req as any, res);
+});
+router.patch('/withdrawal-requests/:id/reject', (req, res) => {
+  req.body = { ...req.body, action: 'reject' };
+  return processWithdrawalRequest(req as any, res);
+});
 
 // 중단요청 관리
 router.get('/cancellation-requests', getCancellationRequests);

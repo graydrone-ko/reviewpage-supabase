@@ -501,7 +501,8 @@ export const approveWithdrawal = async (req: AuthRequest, res: Response) => {
       .from('withdrawal_requests')
       .update({
         status: 'APPROVED',
-        processed_at: processedAt
+        processed_at: processedAt,
+        processed_by: req.user.id
       })
       .eq('id', withdrawalId)
       .select('user_id')
@@ -539,15 +540,34 @@ export const rejectWithdrawal = async (req: AuthRequest, res: Response) => {
 
     const processedAt = new Date().toISOString();
 
+    const { data: requestRow, error: requestError } = await db
+      .from('withdrawal_requests')
+      .select('user_id')
+      .eq('id', withdrawalId)
+      .single();
+
+    if (requestError) throw requestError;
+
     const { error } = await db
       .from('withdrawal_requests')
       .update({
         status: 'REJECTED',
-        processed_at: processedAt
+        processed_at: processedAt,
+        processed_by: req.user.id
       })
       .eq('id', withdrawalId);
 
     if (error) throw error;
+
+    if (requestRow?.user_id) {
+      const { error: revertError } = await db
+        .from('rewards')
+        .update({ status: 'EARNED', updated_at: processedAt })
+        .eq('user_id', requestRow.user_id)
+        .eq('status', 'PENDING');
+
+      if (revertError) throw revertError;
+    }
 
     res.json({ message: 'Withdrawal rejected successfully' });
 

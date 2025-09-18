@@ -57,6 +57,13 @@ export const getDashboardStats = async (req: AdminRequest, res: Response) => {
       { total: 0, earned: 0, pending: 0, paid: 0 }
     );
 
+    const { count: pendingWithdrawalCount, error: pendingWithdrawalError } = await db
+      .from('withdrawal_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'PENDING');
+
+    if (pendingWithdrawalError) throw pendingWithdrawalError;
+
     res.json({
       users: {
         total: stats.totalUsers,
@@ -75,7 +82,7 @@ export const getDashboardStats = async (req: AdminRequest, res: Response) => {
       },
       rewards: rewardTotals,
       notifications: {
-        pendingWithdrawals: 0, // 임시값
+        pendingWithdrawals: pendingWithdrawalCount || 0,
         pendingCancellations: pendingCancellations
       }
     });
@@ -429,18 +436,81 @@ export const approveReward = async (req: AdminRequest, res: Response) => {
   }
 };
 
-// 출금 요청 관리
+// 출금 요청 목록 조회
 export const getWithdrawalRequests = async (req: AdminRequest, res: Response) => {
   try {
-    // 현재 시스템에는 출금 요청 기능이 없으므로 빈 배열 반환
-    // 추후 출금 요청 테이블이 생성되면 실제 데이터를 조회하도록 수정
-    res.json({ 
-      requests: [],
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const limit = parseInt(req.query.limit as string, 10) || 20;
+    const status = (req.query.status as string) || undefined;
+    const offset = (page - 1) * limit;
+
+    let query = db
+      .from('withdrawal_requests')
+      .select(
+        `
+          id,
+          user_id,
+          amount,
+          status,
+          requested_at,
+          processed_at,
+          processed_by,
+          note,
+          user:users!withdrawal_requests_user_id_fkey(
+            id,
+            name,
+            email,
+            role,
+            phone_number,
+            bank_code,
+            account_number
+          )
+        `,
+        { count: 'exact' }
+      )
+      .order('requested_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (status) {
+      query = query.eq('status', status);
+    }
+
+    const { data, error, count } = await query;
+
+    if (error) throw error;
+
+    const total = count || 0;
+    const requests = (data || []).map((record: any) => {
+      const userInfo = Array.isArray(record.user) ? record.user[0] : record.user;
+
+      return {
+        id: record.id,
+        userId: record.user_id,
+        amount: Number(record.amount) || 0,
+        status: record.status,
+        requestedAt: record.requested_at,
+        processedAt: record.processed_at,
+        processedBy: record.processed_by,
+        note: record.note,
+        user: {
+          id: userInfo?.id || '',
+          name: userInfo?.name || '',
+          email: userInfo?.email || '',
+          role: userInfo?.role || 'CONSUMER',
+          phoneNumber: userInfo?.phone_number || '',
+          bankCode: userInfo?.bank_code || '',
+          accountNumber: userInfo?.account_number || ''
+        }
+      };
+    });
+
+    res.json({
+      requests,
       pagination: {
-        page: 1,
-        limit: 10,
-        total: 0,
-        pages: 0
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
       }
     });
   } catch (error) {
@@ -449,14 +519,127 @@ export const getWithdrawalRequests = async (req: AdminRequest, res: Response) =>
   }
 };
 
-// 출금 요청 승인
-export const approveWithdrawal = async (req: AdminRequest, res: Response) => {
-  res.status(501).json({ error: 'Not implemented yet' });
-};
+// 출금 요청 승인/거절 처리
+export const processWithdrawalRequest = async (req: AdminRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { action, note } = req.body as { action?: 'approve' | 'reject'; note?: string };
 
-// 출금 요청 거부
-export const rejectWithdrawal = async (req: AdminRequest, res: Response) => {
-  res.status(501).json({ error: 'Not implemented yet' });
+    if (!action || !['approve', 'reject'].includes(action)) {
+      return res.status(400).json({ error: 'Invalid action. Must be approve or reject' });
+    }
+
+    const { data: withdrawal, error: withdrawalError } = await db
+      .from('withdrawal_requests')
+      .select('id, user_id, amount, status')
+      .eq('id', id)
+      .single();
+
+    if (withdrawalError) {
+      if (withdrawalError.code === 'PGRST116') {
+        return res.status(404).json({ error: '출금 요청을 찾을 수 없습니다.' });
+      }
+      throw withdrawalError;
+    }
+
+    if (!withdrawal) {
+      return res.status(404).json({ error: '출금 요청을 찾을 수 없습니다.' });
+    }
+
+    if (withdrawal.status !== 'PENDING') {
+      return res.status(400).json({ error: '이미 처리된 출금 요청입니다.' });
+    }
+
+    const processedAt = new Date().toISOString();
+
+    if (action === 'approve') {
+      const { error: rewardUpdateError } = await db
+        .from('rewards')
+        .update({ status: 'PAID', updated_at: processedAt })
+        .eq('user_id', withdrawal.user_id)
+        .eq('status', 'PENDING');
+
+      if (rewardUpdateError) throw rewardUpdateError;
+    } else {
+      const { error: rewardRevertError } = await db
+        .from('rewards')
+        .update({ status: 'EARNED', updated_at: processedAt })
+        .eq('user_id', withdrawal.user_id)
+        .eq('status', 'PENDING');
+
+      if (rewardRevertError) throw rewardRevertError;
+    }
+
+    const { data: updatedRequest, error: updateError } = await db
+      .from('withdrawal_requests')
+      .update({
+        status: action === 'approve' ? 'APPROVED' : 'REJECTED',
+        processed_at: processedAt,
+        processed_by: req.admin?.id || null,
+        note: note || null
+      })
+      .eq('id', id)
+      .select(
+        `
+          id,
+          user_id,
+          amount,
+          status,
+          requested_at,
+          processed_at,
+          processed_by,
+          note,
+          user:users!withdrawal_requests_user_id_fkey(
+            id,
+            name,
+            email,
+            role,
+            phone_number,
+            bank_code,
+            account_number
+          )
+        `
+      )
+      .single();
+
+    if (updateError) throw updateError;
+
+    const actionLabel = action === 'approve' ? '승인' : '거절';
+    const updatedUser = updatedRequest ? (Array.isArray(updatedRequest.user) ? updatedRequest.user[0] : updatedRequest.user) : null;
+    console.log(`💰 출금 요청 ${actionLabel}: ${updatedUser?.name || withdrawal.user_id} - ₩${Number(withdrawal.amount).toLocaleString()}`);
+
+    let formattedRequest;
+    if (updatedRequest) {
+      const userInfo = Array.isArray(updatedRequest.user) ? updatedRequest.user[0] : updatedRequest.user;
+      formattedRequest = {
+        id: updatedRequest.id,
+        userId: updatedRequest.user_id,
+        amount: Number(updatedRequest.amount) || 0,
+        status: updatedRequest.status,
+        requestedAt: updatedRequest.requested_at,
+        processedAt: updatedRequest.processed_at,
+        processedBy: updatedRequest.processed_by,
+        note: updatedRequest.note,
+        user: {
+          id: userInfo?.id || '',
+          name: userInfo?.name || '',
+          email: userInfo?.email || '',
+          role: userInfo?.role || 'CONSUMER',
+          phoneNumber: userInfo?.phone_number || '',
+          bankCode: userInfo?.bank_code || '',
+          accountNumber: userInfo?.account_number || ''
+        }
+      };
+    }
+
+    res.json({
+      message: `출금 요청이 ${actionLabel}되었습니다.`,
+      request: formattedRequest
+    });
+  } catch (error) {
+    console.error('Process withdrawal request error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };
 
 // 중단 요청 관리
