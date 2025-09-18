@@ -8,6 +8,13 @@
       "maxDuration": 30
     }
   },
+  "github": {
+    "enabled": true,
+    "deploymentEnabled": {
+      "main": true
+    },
+    "autoJobCancelation": true
+  },
   "routes": [
     {
       "src": "/(.*)",
