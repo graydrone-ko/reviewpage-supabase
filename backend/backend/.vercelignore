@@ -41,7 +41,6 @@ COMPLETE_SOLUTION.js
 IMMEDIATE_FIX.js
 
 # Development configuration
-tsconfig.json
 README.md
 Dockerfile
 nixpacks.toml
