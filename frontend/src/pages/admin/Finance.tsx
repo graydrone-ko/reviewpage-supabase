@@ -39,7 +39,7 @@ interface WithdrawalRecord {
 interface TransactionRecord {
   id: string;
   type: 'DEPOSIT' | 'WITHDRAWAL';
-  subType: 'SURVEY_PAYMENT' | 'REFUND' | 'REWARD' | 'REWARD_WITHDRAWAL';
+  subType: 'SURVEY_PAYMENT' | 'REFUND' | 'REWARD' | 'REWARD_EARNED' | 'REWARD_WITHDRAWAL';
   amount: number;
   status: string;
   createdAt: string;
@@ -531,13 +531,21 @@ const AdminFinance: React.FC = () => {
                               {transaction.type === 'DEPOSIT' ? '입금' : '출금'}
                             </span>
                             <span className={`inline-flex px-2 py-1 text-xs rounded-full ${
-                              transaction.subType === 'SURVEY_PAYMENT' ? 'bg-blue-100 text-blue-800' :
-                              transaction.subType === 'REFUND' ? 'bg-orange-100 text-orange-800' :
-                              'bg-purple-100 text-purple-800'
+                              transaction.subType === 'SURVEY_PAYMENT'
+                                ? 'bg-blue-100 text-blue-800'
+                                : transaction.subType === 'REFUND'
+                                ? 'bg-orange-100 text-orange-800'
+                                : transaction.subType === 'REWARD_WITHDRAWAL'
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-green-100 text-green-800'
                             }`}>
-                              {transaction.subType === 'SURVEY_PAYMENT' ? '설문결제' : 
-                               transaction.subType === 'REFUND' ? '환불' :
-                               transaction.subType === 'REWARD_WITHDRAWAL' ? '리워드 출금' : '리워드 적립'}
+                              {transaction.subType === 'SURVEY_PAYMENT'
+                                ? '설문결제'
+                                : transaction.subType === 'REFUND'
+                                ? '환불'
+                                : transaction.subType === 'REWARD_WITHDRAWAL'
+                                ? '리워드 출금'
+                                : '리워드 적립'}
                             </span>
                           </div>
                         </td>

@@ -6,7 +6,7 @@ import { AuthRequest } from '../middleware/auth';
 interface TransactionRecord {
   id: string;
   type: 'DEPOSIT' | 'WITHDRAWAL';
-  subType: 'SURVEY_PAYMENT' | 'REFUND' | 'REWARD';
+  subType: 'SURVEY_PAYMENT' | 'REFUND' | 'REWARD_EARNED' | 'REWARD_WITHDRAWAL';
   amount: number;
   createdAt: string;
   processedAt?: string | null;
@@ -444,33 +444,78 @@ export const getTransactions = async (req: AuthRequest, res: Response) => {
         return;
       }
 
-      const status = reward.status === 'PAID' ? 'COMPLETED' : reward.status === 'PENDING' ? 'PENDING' : reward.status;
+      const amount = Math.abs(parseNumber(reward.amount));
+      const userPayload = reward.user
+        ? {
+            id: reward.user.id,
+            name: reward.user.name,
+            email: reward.user.email,
+            role: reward.user.role || 'CONSUMER',
+            phoneNumber: reward.user.phone_number,
+            bankCode: reward.user.bank_code,
+            accountNumber: reward.user.account_number
+          }
+        : undefined;
 
-      if (!matchesStatusFilter(status) || !matchesTypeFilter('WITHDRAWAL')) {
+      if (reward.type === 'REFUND') {
+        const statusLabel = reward.status === 'PAID' ? 'COMPLETED' : reward.status === 'PENDING' ? 'PENDING' : reward.status;
+        if (!matchesStatusFilter(statusLabel) || !matchesTypeFilter('WITHDRAWAL')) {
+          return;
+        }
+
+        transactions.push({
+          id: `reward_refund_${reward.id}`,
+          type: 'WITHDRAWAL',
+          subType: 'REFUND',
+          amount,
+          createdAt: reward.created_at,
+          processedAt: reward.updated_at,
+          status: statusLabel,
+          user: userPayload,
+          metadata: { description: '환불 처리' }
+        } as TransactionRecord);
         return;
       }
 
-      transactions.push({
-        id: `withdrawal_${reward.id}`,
-        type: 'WITHDRAWAL',
-        subType: reward.type === 'REFUND' ? 'REFUND' : 'REWARD_WITHDRAWAL',
-        amount: Math.abs(parseNumber(reward.amount)),
-        createdAt: reward.created_at,
-        processedAt: reward.updated_at,
-        status,
-        user: reward.user ? {
-          id: reward.user.id,
-          name: reward.user.name,
-          email: reward.user.email,
-          role: reward.user.role || 'CONSUMER',
-          phoneNumber: reward.user.phone_number,
-          bankCode: reward.user.bank_code,
-          accountNumber: reward.user.account_number
-        } : undefined,
-        metadata: reward.type === 'REFUND'
-          ? { description: '환불 처리' }
-          : { description: '리워드 출금' }
-      } as TransactionRecord);
+      if (reward.status === 'EARNED') {
+        const statusLabel = 'COMPLETED';
+        if (!matchesStatusFilter(statusLabel) || !matchesTypeFilter('DEPOSIT')) {
+          return;
+        }
+
+        transactions.push({
+          id: `reward_earned_${reward.id}`,
+          type: 'DEPOSIT',
+          subType: 'REWARD_EARNED',
+          amount,
+          createdAt: reward.created_at,
+          processedAt: reward.created_at,
+          status: statusLabel,
+          user: userPayload,
+          metadata: { description: '리워드 적립' }
+        } as TransactionRecord);
+        return;
+      }
+
+      if (reward.status === 'PENDING' || reward.status === 'PAID') {
+        const statusLabel = reward.status === 'PAID' ? 'COMPLETED' : 'PENDING';
+        if (!matchesStatusFilter(statusLabel) || !matchesTypeFilter('WITHDRAWAL')) {
+          return;
+        }
+
+        transactions.push({
+          id: `reward_withdrawal_${reward.id}`,
+          type: 'WITHDRAWAL',
+          subType: 'REWARD_WITHDRAWAL',
+          amount,
+          createdAt: reward.created_at,
+          processedAt: reward.updated_at,
+          status: statusLabel,
+          user: userPayload,
+          metadata: { description: statusLabel === 'COMPLETED' ? '리워드 출금' : '리워드 출금 대기' }
+        } as TransactionRecord);
+        return;
+      }
     });
 
     transactions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -630,9 +675,9 @@ export const getConsumerTransactions = async (req: AuthRequest, res: Response) =
       transactions.push({
         id: reward.id,
         type: 'DEPOSIT',
-        subType: 'REWARD',
+        subType: 'REWARD_EARNED',
         amount: parseNumber(reward.amount),
-        description: `설문 참여 리워드`,
+        description: '리워드 적립',
         createdAt: reward.created_at,
         relatedId: reward.id
       });
