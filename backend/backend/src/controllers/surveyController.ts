@@ -687,24 +687,6 @@ export const rejectSurvey = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const requestCancellation = async (req: AuthRequest, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { reason } = req.body;
-    
-    const cancellationRequest = await dbUtils.createCancellationRequest({
-      survey_id: id,
-      reason,
-      status: 'PENDING'
-    });
-    
-    await dbUtils.updateSurvey(id, { status: 'CANCELLED' });
-    
-    res.json({ message: 'Cancellation requested successfully' });
-  } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
-  }
-};
 
 // 누락된 함수들 추가
 export const updateSurvey = async (req: AuthRequest, res: Response) => {
@@ -756,17 +738,52 @@ export const requestSurveyCancellation = async (req: AuthRequest, res: Response)
       return res.status(403).json({ error: 'Only sellers can request survey cancellation' });
     }
 
+    // 설문 정보 조회 및 소유권 확인
+    const survey = await dbUtils.findSurveyById(id);
+    if (!survey) {
+      return res.status(404).json({ error: 'Survey not found' });
+    }
+
+    if (survey.seller_id !== req.user.id) {
+      return res.status(403).json({ error: 'You can only cancel your own surveys' });
+    }
+
+    // 응답 수 조회
+    const { count: responseCount, error: countError } = await db
+      .from('survey_responses')
+      .select('*', { count: 'exact', head: true })
+      .eq('survey_id', id);
+
+    if (countError) {
+      console.error('응답 수 조회 오류:', countError);
+      return res.status(500).json({ error: 'Failed to fetch response count' });
+    }
+
+    const completedResponses = responseCount || 0;
+    const remainingParticipants = (survey.max_participants || 50) - completedResponses;
+    
+    // 환불 금액 계산 (미진행분 리워드 + 수수료)
+    const refundRewards = remainingParticipants * survey.reward;
+    const refundFee = refundRewards * 0.1;
+    const totalRefund = refundRewards + refundFee;
+
     const cancellationRequest = await dbUtils.createCancellationRequest({
       survey_id: id,
       reason,
+      refund_amount: totalRefund,
       status: 'PENDING'
     });
     
-    await dbUtils.updateSurvey(id, { status: 'CANCELLED' });
+    // 설문 상태를 중단 요청중으로 변경 (실제 취소는 관리자 승인 후)
+    await dbUtils.updateSurvey(id, { 
+      cancellation_status: 'PENDING',
+      cancellation_requested_at: new Date().toISOString()
+    });
     
     res.json({ 
       message: 'Survey cancellation requested successfully',
-      request: cancellationRequest
+      request: cancellationRequest,
+      refundAmount: totalRefund
     });
   } catch (error) {
     console.error('Request survey cancellation error:', error);
