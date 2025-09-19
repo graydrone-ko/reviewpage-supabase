@@ -27,7 +27,6 @@ export const calculateAge = (birthDate: string): number => {
 export const validateBirthDate = (birthDate: string): boolean => {
   if (birthDate.length !== 6) return false;
   
-  const year = parseInt(birthDate.slice(0, 2));
   const month = parseInt(birthDate.slice(2, 4));
   const day = parseInt(birthDate.slice(4, 6));
   

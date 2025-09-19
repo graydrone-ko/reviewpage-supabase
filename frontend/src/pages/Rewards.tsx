@@ -69,16 +69,6 @@ const Rewards: React.FC = () => {
     }
   };
 
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'SURVEY_COMPLETION':
-        return '설문 완료';
-      case 'BONUS':
-        return '보너스';
-      default:
-        return type;
-    }
-  };
 
   const getStatusLabel = (status: string) => {
     switch (status) {

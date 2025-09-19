@@ -17,13 +17,6 @@ const Home: React.FC = () => {
     navigate('/surveys');
   };
 
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   return (
     <div className="min-h-screen bg-white overflow-hidden">
       {/* Hero Section */}

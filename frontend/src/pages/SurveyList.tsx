@@ -68,15 +68,7 @@ const SurveyList: React.FC = () => {
     const diffTime = end.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    // 디버그 로그 (개발 환경에서만)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('마감일 계산:', {
-        endDate: endDate,
-        parsedEndDate: end.toISOString(),
-        today: now.toISOString(),
-        diffDays: diffDays
-      });
-    }
+    // 마감일까지 남은 일수 계산
     
     return diffDays;
   };
@@ -110,7 +102,6 @@ const SurveyList: React.FC = () => {
     
     // 유효한 날짜인지 확인
     if (isNaN(birth.getTime())) {
-      console.warn('Invalid birth date:', birthDate);
       return null;
     }
     

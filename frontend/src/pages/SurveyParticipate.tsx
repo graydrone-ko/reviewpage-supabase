@@ -75,7 +75,6 @@ const SurveyParticipate: React.FC = () => {
     
     // 유효한 날짜인지 확인
     if (isNaN(birth.getTime())) {
-      console.warn('Invalid birth date:', birthDate);
       return null;
     }
     
@@ -274,27 +273,7 @@ const SurveyParticipate: React.FC = () => {
     setError('');
 
     try {
-      console.log('Submitting survey response:', {
-        surveyId: id,
-        responses,
-        responseCount: responses.length
-      });
-      
-      // 각 응답의 상세 구조 로깅
-      responses.forEach((resp, stepIndex) => {
-        console.log(`Step ${stepIndex} (${resp.stepId}):`, {
-          answersCount: resp.answers.length,
-          answers: resp.answers.map((ans, ansIndex) => ({
-            index: ansIndex,
-            questionId: ans.questionId,
-            value: ans.value,
-            valueType: typeof ans.value,
-            isNull: ans.value === null,
-            isUndefined: ans.value === undefined,
-            isEmpty: ans.value === ''
-          }))
-        });
-      });
+      // 설문 응답 제출
 
       // Validate all responses before submission
       const validationErrors = validateAllResponses();

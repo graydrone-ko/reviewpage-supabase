@@ -196,7 +196,7 @@ const CreateSurvey: React.FC = () => {
       };
 
 
-      const response = await api.post('/surveys', surveyData);
+      await api.post('/surveys', surveyData);
       
       
       alert(`설문이 성공적으로 생성되었습니다!\n제목: ${formData.title}\n총 예산: ${getTotalBudget().toLocaleString()}원\n\n입금 확인 후 설문이 승인됩니다.`);
