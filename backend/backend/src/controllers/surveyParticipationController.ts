@@ -104,7 +104,7 @@ export const getMyParticipations = async (req: AuthRequest, res: Response) => {
 
 export const getSurveyParticipationStatus = async (req: AuthRequest, res: Response) => {
   try {
-    const { surveyId } = req.params;
+    const surveyId = req.params.surveyId || req.params.id;
     
     if (!req.user) {
       return res.status(401).json({ error: 'Authentication required' });
@@ -181,13 +181,13 @@ export const getBulkParticipationStatus = async (req: AuthRequest, res: Response
 
 export const getUserSurveyResponse = async (req: AuthRequest, res: Response) => {
   try {
-    const { id } = req.params; // survey ID
+    const surveyId = req.params.id;
     
     if (!req.user) {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const response = await dbUtils.findResponseByUserAndSurvey(req.user.id, id);
+    const response = await dbUtils.findResponseByUserAndSurvey(req.user.id, surveyId);
 
     if (!response) {
       return res.status(404).json({ error: 'No response found for this survey' });
@@ -203,7 +203,7 @@ export const getUserSurveyResponse = async (req: AuthRequest, res: Response) => 
 
 export const updateSurveyResponse = async (req: AuthRequest, res: Response) => {
   try {
-    const { id } = req.params; // survey ID
+    const surveyId = req.params.id;
     const { responses } = req.body;
     
     if (!req.user) {
@@ -214,7 +214,7 @@ export const updateSurveyResponse = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Invalid response payload' });
     }
 
-    const existingResponse = await dbUtils.findResponseByUserAndSurvey(req.user.id, id);
+    const existingResponse = await dbUtils.findResponseByUserAndSurvey(req.user.id, surveyId);
 
     if (!existingResponse) {
       return res.status(404).json({ error: 'No existing response found to update' });
