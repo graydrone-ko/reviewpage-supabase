@@ -6,30 +6,42 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ReviewPage is a two-way platform connecting sellers and consumers for product detail page surveys. Sellers can create surveys for their product pages, and consumers participate to earn rewards while providing feedback.
 
-## Development Commands (Updated - Supabase + Vercel)
+## Development Commands
 
-### Project Structure
+### Monorepo Structure
+- Root `package.json` provides unified build commands for entire platform
 - `backend/backend/` - Express API server (Vercel Serverless Functions)
 - `frontend/` - React application (Vercel Static Site)
 - `supabase/` - Database schema and migrations
+
+### Root-Level Commands (Unified Build)
+```bash
+npm run build              # Build both frontend and backend
+npm run build:frontend     # Build React frontend only (CI='')
+npm run build:backend      # Build Node.js backend only
+npm start                  # Start production server (backend)
+npm run dev                # Start backend development server
+```
 
 ### Backend (Node.js + Express + Supabase)
 ```bash
 cd backend/backend          # Navigate to backend directory
 npm install                # Install dependencies (includes @supabase/supabase-js)
 npm run dev                 # Start development server with nodemon
-npm run build              # Build TypeScript for production
+npm run build               # Build TypeScript for production
+npm run vercel-build        # Vercel-specific build command
 npm start                  # Start production server
 npm run db:seed            # Create test users in Supabase
+npm run type-check          # TypeScript type checking
 ```
 
 ### Frontend (React + TypeScript)
 ```bash
 cd frontend
-npm install                # Install dependencies
-npm start                  # Start development server (port 3000, proxies to :3001)
-npm run build             # Build for production (Vercel deployment)
-npm test                  # Run tests with Jest
+npm install --legacy-peer-deps  # Install with legacy peer deps for compatibility
+npm start                       # Start development server (port 3000, proxies to :3001)
+npm run build                   # Build for production (NODE_OPTIONS=--openssl-legacy-provider)
+npm test                        # Run tests with Jest
 ```
 
 ### Database Setup (Supabase)
@@ -45,8 +57,8 @@ npm test                  # Run tests with Jest
 - **Routes**: Role-based routing (`/api/auth`, `/api/surveys`, `/api/admin`, `/api/frontend`)
 - **Controllers**: Business logic in `src/controllers/` (auth, survey, admin, SEO, finance, rewards)
 - **Middleware**: Authentication (`auth.ts`) and admin auth (`adminAuth.ts`) in `src/middleware/`
-- **Database**: Prisma ORM with PostgreSQL, schema in `prisma/schema.prisma`
-- **Generated Client**: Custom Prisma output location in `src/generated/prisma/`
+- **Database**: Supabase PostgreSQL with direct SQL queries
+- **Database Client**: Supabase client in `src/lib/supabase.ts`
 - **Scripts**: Extensive utility scripts in `scripts/` for data management, testing, and admin tasks
 - **Static Serving**: Built frontend served from `public/` directory
 
@@ -94,9 +106,12 @@ npm test                  # Run tests with Jest
 - `frontend/public/manifest.json` - PWA manifest with Korean content
 
 ## Testing
-- Frontend: Jest and React Testing Library configured (via react-scripts)
-- Backend: No test framework currently configured
-- Run frontend tests: `cd frontend && npm test`
+- **Frontend**: Jest and React Testing Library configured (via react-scripts)
+- **Backend**: No test framework currently configured
+- **E2E Testing**: Playwright configured for admin workflow testing
+- **Commands**:
+  - Frontend tests: `cd frontend && npm test`
+  - E2E tests: `npx playwright test` (admin-rewards.spec.ts available)
 
 ## Key Patterns
 - Controllers use middleware for authentication
@@ -135,12 +150,13 @@ node scripts/get-user-details.js          # Get user information
 node scripts/testSurveySystem.js          # Test survey workflow
 ```
 
-## Development Workflow (Updated)
+## Development Workflow
 1. **Database Setup**: Create Supabase project, run schema, configure RLS
 2. **Backend Development**: `cd backend/backend && npm run dev`
 3. **Frontend Development**: `cd frontend && npm start` (proxies to backend)
 4. **Database Changes**: Update `supabase/schema.sql`, apply via Supabase dashboard
-5. **Production Deployment**: 
+5. **Type Checking**: `cd backend/backend && npm run type-check` before commits
+6. **Production Deployment**: 
    - Backend: Deploy to Vercel (auto from git)
    - Frontend: Deploy to Vercel (auto from git)
    - Environment variables set in Vercel dashboard
@@ -156,3 +172,9 @@ GitHub 주소: https://github.com/graydrone-ko/reviewpage-supabase
 ## 모든 커뮤니케이션은 특정 명사를 제외하고 한글로 해
 
 ## 이 프로젝트는 배포를 목적으로함으로 코드 변경 시마다 깃허브에 커밋하고 깃포인트를 남길것
+
+## Build Configuration Notes
+- **Frontend Legacy**: Uses `--openssl-legacy-provider` for React build compatibility
+- **Dependency Management**: Frontend requires `--legacy-peer-deps` for package installation
+- **Vercel Configuration**: Separate `vercel.json` files for frontend (static) and backend (serverless)
+- **Environment Variables**: CI disabled for frontend builds, specific regions configured for backend

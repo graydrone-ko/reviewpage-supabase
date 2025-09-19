@@ -77,9 +77,10 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
     if (newType === 'MULTIPLE_CHOICE') {
       // 백업된 옵션이 있으면 복원, 없으면 기본 옵션 생성
       if (multipleChoiceBackup.length >= 2) {
-        newOptions = multipleChoiceBackup.map(opt => ({
+        newOptions = multipleChoiceBackup.map((opt, index) => ({
           ...opt,
-          id: opt.id.startsWith('opt_') ? opt.id : `opt_${Date.now()}_${opt.optionNumber}`
+          id: opt.id.startsWith('opt_') ? opt.id : `opt_${Date.now()}_${index + 1}`,
+          optionNumber: index + 1  // 옵션 번호 재정렬
         }));
       } else {
         // 기본 객관식 옵션 생성
@@ -104,6 +105,7 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
       }));
     }
     
+    // 타입과 옵션을 함께 업데이트
     onUpdate({ type: newType as any, options: newOptions });
   };
 

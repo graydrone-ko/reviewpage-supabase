@@ -4,7 +4,7 @@ import { api } from '../services/api';
 import { Survey, SurveyStep, StepResponse, SurveyResponse as StoredSurveyResponse } from '../types';
 import { validateSurveySubmission } from '../utils/validation';
 
-const isCheckboxQuestion = (type: any) => String(type).toUpperCase() === 'CHECKBOX';
+const isCheckboxQuestion = (type: any) => String(type).toUpperCase() === 'MULTIPLE_CHOICE';
 
 const buildAnswerArrayFromStoredResponses = (steps: SurveyStep[], storedResponses: StepResponse[] = []) => {
   const valueByQuestion = new Map<string, any>();
@@ -220,7 +220,7 @@ const EditSurveyResponse: React.FC = () => {
               <p className="text-blue-600 text-sm">
                 최초 참여: {existingResponse?.createdAt ? new Date(existingResponse.createdAt).toLocaleDateString('ko-KR') : ''}
                 {existingResponse?.updatedAt && existingResponse.updatedAt !== existingResponse?.createdAt && (
-                  <span> (마지막 수정: {new Date(existingResponse.updatedAt).toLocaleDateString('ko-KR')})</span>
+                  <span> (마지막 수정: {existingResponse.updatedAt ? new Date(existingResponse.updatedAt).toLocaleDateString('ko-KR') : ''})</span>
                 )}
               </p>
             </div>

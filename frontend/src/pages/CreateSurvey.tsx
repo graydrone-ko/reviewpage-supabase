@@ -160,7 +160,7 @@ const CreateSurvey: React.FC = () => {
     }
 
     fetchTemplates();
-  }, [fetchTemplates, initializeTemplates]);
+  }, []); // 의존성 배열에서 함수들 제거하고 빈 배열로 변경
 
   const markTemplateDirty = () => {
     if (!templateDirty) {
