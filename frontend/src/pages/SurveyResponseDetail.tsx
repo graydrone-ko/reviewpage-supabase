@@ -199,7 +199,7 @@ const SurveyResponseDetail: React.FC = () => {
         {questionType === 'SCORE' && stats.averageScore !== undefined && (
           <div className="text-center">
             <div className="text-3xl font-bold text-blue-600 mb-2">
-              {stats.averageScore.toFixed(1)}/5.0
+              {stats.averageScore.toFixed(1)}/10.0
             </div>
             <div className="text-sm text-gray-500">
               평균 점수 (총 {stats.totalResponses}명 응답)

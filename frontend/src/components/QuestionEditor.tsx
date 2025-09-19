@@ -98,7 +98,7 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
         { id: `opt_${Date.now()}_2`, optionNumber: 2, text: '아니오' }
       ];
     } else if (newType === 'SCORE') {
-      newOptions = Array.from({ length: 5 }, (_, i) => ({
+      newOptions = Array.from({ length: 10 }, (_, i) => ({
         id: `opt_${Date.now()}_${i + 1}`,
         optionNumber: i + 1,
         text: `${i + 1}점`

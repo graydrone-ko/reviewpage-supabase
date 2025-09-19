@@ -524,7 +524,7 @@ export const getSurveyResponses = async (req: AuthRequest, res: Response) => {
                 formattedValue = answer.value === true ? '예' : '아니오';
                 break;
               case 'SCORE':
-                formattedValue = `${answer.value}/5`;
+                formattedValue = `${answer.value}/10`;
                 break;
               case 'TEXT':
                 formattedValue = String(answer.value || '');

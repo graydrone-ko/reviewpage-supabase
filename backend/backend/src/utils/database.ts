@@ -78,6 +78,16 @@ export const dbUtils = {
       .single();
     
     if (error && error.code !== 'PGRST116') throw error;
+    
+    // custom_steps가 있으면 템플릿 대신 커스텀 스텝 사용
+    if (data && data.custom_steps && Array.isArray(data.custom_steps)) {
+      console.log('🔄 Using custom steps for survey:', id);
+      data.template = {
+        ...data.template,
+        steps: data.custom_steps
+      };
+    }
+    
     return data;
   },
 
@@ -372,6 +382,16 @@ export const dbUtils = {
       .single();
     
     if (error && error.code !== 'PGRST116') throw error;
+    
+    // custom_steps가 있으면 템플릿 대신 커스텀 스텝 사용
+    if (data && data.custom_steps && Array.isArray(data.custom_steps)) {
+      console.log('🔄 Using custom steps for survey:', id);
+      data.template = {
+        ...data.template,
+        steps: data.custom_steps
+      };
+    }
+    
     return data;
   },
 
