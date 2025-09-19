@@ -150,15 +150,10 @@ export const submitResponse = async (req: Request, res: Response) => {
 
     // 로그인한 사용자의 경우 중복 응답 사전 체크 및 자격 검증
     let consumerId = (req as any).user?.id;
+    let existingResponse = null;
     if (consumerId) {
       console.log('🔍 Checking for existing response from logged user:', consumerId);
-      const existingResponse = await dbUtils.findResponseByUserAndSurvey(consumerId, surveyId);
-      if (existingResponse) {
-        return res.status(400).json({ 
-          error: '이미 이 설문에 참여하셨습니다. 중복 참여는 불가능합니다.',
-          canEdit: false
-        });
-      }
+      existingResponse = await dbUtils.findResponseByUserAndSurvey(consumerId, surveyId);
 
       // 자격 검증 - 사용자 정보 조회
       console.log('🔍 Checking user eligibility for survey');
@@ -251,12 +246,21 @@ export const submitResponse = async (req: Request, res: Response) => {
       const responsePayload = {
         survey_id: surveyId,
         consumer_id: consumerId, // 로그인 사용자 ID 또는 NULL (익명)
-        responses
+        responses,
+        updated_at: new Date().toISOString()
       };
       
       console.log('💾 Database payload:', responsePayload);
       
-      const surveyResponse = await dbUtils.createSurveyResponse(responsePayload);
+      let surveyResponse;
+      if (existingResponse) {
+        surveyResponse = await dbUtils.updateSurveyResponse(existingResponse.id, {
+          responses,
+          updated_at: responsePayload.updated_at
+        });
+      } else {
+        surveyResponse = await dbUtils.createSurveyResponse(responsePayload);
+      }
 
       console.log('✅ Survey response created successfully:', surveyResponse.id);
       
