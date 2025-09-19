@@ -6,86 +6,73 @@ import { AuthRequest } from '../middleware/auth';
 // 관리자 대시보드 통계 현황
 export const getDashboardStats = async (req: AdminRequest, res: Response) => {
   try {
-    const [
-      totalUsersResult,
-      consumerUsersResult,
-      sellerUsersResult,
-      totalSurveysResult,
-      pendingSurveysResult,
-      approvedSurveysResult,
-      completedSurveysResult,
-      responseCountResult,
-      earnedRewardsResult,
-      pendingRewardsResult,
-      paidRewardsResult,
-      pendingWithdrawalResult,
-      pendingCancellationResult
-    ] = await Promise.all([
-      db.from('users').select('id', { count: 'exact', head: true }),
-      db.from('users').select('id', { count: 'exact', head: true }).eq('role', 'CONSUMER'),
-      db.from('users').select('id', { count: 'exact', head: true }).eq('role', 'SELLER'),
-      db.from('surveys').select('id', { count: 'exact', head: true }),
-      db.from('surveys').select('id', { count: 'exact', head: true }).eq('status', 'PENDING'),
-      db.from('surveys').select('id', { count: 'exact', head: true }).eq('status', 'APPROVED'),
-      db.from('surveys').select('id', { count: 'exact', head: true }).eq('status', 'COMPLETED'),
-      db.from('survey_responses').select('id', { count: 'exact', head: true }),
-      db.from('rewards').select('sum:sum(amount)', { head: false }).eq('status', 'EARNED').maybeSingle(),
-      db.from('rewards').select('sum:sum(amount)', { head: false }).eq('status', 'PENDING').maybeSingle(),
-      db.from('rewards').select('sum:sum(amount)', { head: false }).eq('status', 'PAID').maybeSingle(),
-      db.from('withdrawal_requests').select('id', { count: 'exact', head: true }).eq('status', 'PENDING'),
-      db.from('survey_cancellation_requests').select('id', { count: 'exact', head: true }).eq('status', 'PENDING')
+    const [stats, userStats, surveyStats, rewardStats, pendingWithdrawals, pendingCancellations] = await Promise.all([
+      dbUtils.getStats(),
+      db
+        .from('users')
+        .select('role')
+        .in('role', ['CONSUMER', 'SELLER']),
+      db
+        .from('surveys')
+        .select('status'),
+      db
+        .from('rewards')
+        .select('status, amount'),
+      db
+        .from('withdrawal_requests')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'PENDING'),
+      db
+        .from('survey_cancellation_requests')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'PENDING')
     ]);
 
-    const queryResults = [
-      totalUsersResult,
-      consumerUsersResult,
-      sellerUsersResult,
-      totalSurveysResult,
-      pendingSurveysResult,
-      approvedSurveysResult,
-      completedSurveysResult,
-      responseCountResult,
-      pendingWithdrawalResult,
-      pendingCancellationResult
-    ];
+    if (userStats.error) throw userStats.error;
+    if (surveyStats.error) throw surveyStats.error;
+    if (rewardStats.error) throw rewardStats.error;
+    if (pendingWithdrawals.error) throw pendingWithdrawals.error;
+    if (pendingCancellations.error) throw pendingCancellations.error;
 
-    queryResults.forEach((result) => {
-      if (result.error) throw result.error;
-    });
+    const consumers = userStats.data?.filter((u: any) => u.role === 'CONSUMER').length || 0;
+    const sellers = userStats.data?.filter((u: any) => u.role === 'SELLER').length || 0;
 
-    const rewardResults = [earnedRewardsResult, pendingRewardsResult, paidRewardsResult];
-    rewardResults.forEach((result) => {
-      if (result.error) throw result.error;
-    });
+    const pendingSurveys = surveyStats.data?.filter((s: any) => s.status === 'PENDING').length || 0;
+    const approvedSurveys = surveyStats.data?.filter((s: any) => s.status === 'APPROVED').length || 0;
+    const completedSurveys = surveyStats.data?.filter((s: any) => s.status === 'COMPLETED').length || 0;
 
-    const rewardTotals = {
-      total: 0,
-      earned: Number((earnedRewardsResult.data as any)?.sum) || 0,
-      pending: Number((pendingRewardsResult.data as any)?.sum) || 0,
-      paid: Number((paidRewardsResult.data as any)?.sum) || 0
-    };
-    rewardTotals.total = rewardTotals.earned + rewardTotals.pending + rewardTotals.paid;
+    const rewardTotals = (rewardStats.data || []).reduce(
+      (acc: { total: number; earned: number; pending: number; paid: number }, reward: any) => {
+        const amount = Number(reward.amount) || 0;
+        acc.total += amount;
+        if (reward.status === 'EARNED') acc.earned += amount;
+        else if (reward.status === 'PENDING') acc.pending += amount;
+        else if (reward.status === 'PAID') acc.paid += amount;
+        return acc;
+      },
+      { total: 0, earned: 0, pending: 0, paid: 0 }
+    );
 
     res.json({
       users: {
-        total: totalUsersResult.count || 0,
-        consumers: consumerUsersResult.count || 0,
-        sellers: sellerUsersResult.count || 0,
-        recent: 0 // 임시값 - 최근 7일 가입자
+        total: stats.totalUsers,
+        consumers,
+        sellers,
+        recent: 0
       },
       surveys: {
-        total: totalSurveysResult.count || 0,
-        pending: pendingSurveysResult.count || 0,
-        approved: approvedSurveysResult.count || 0,
-        completed: completedSurveysResult.count || 0
+        total: stats.totalSurveys,
+        pending: pendingSurveys,
+        approved: approvedSurveys,
+        completed: completedSurveys
       },
       responses: {
-        total: responseCountResult.count || 0
+        total: stats.totalResponses
       },
       rewards: rewardTotals,
       notifications: {
-        pendingWithdrawals: pendingWithdrawalResult.count || 0,
-        pendingCancellations: pendingCancellationResult.count || 0
+        pendingWithdrawals: pendingWithdrawals.count || 0,
+        pendingCancellations: pendingCancellations.count || 0
       }
     });
 

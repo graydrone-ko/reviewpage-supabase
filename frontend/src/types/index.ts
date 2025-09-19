@@ -73,7 +73,7 @@ export interface Survey {
 
 export interface QuestionAnswer {
   questionId: string;
-  value: string | number | boolean | null;
+  value: string | number | boolean | string[] | number[] | boolean[] | null;
 }
 
 export interface StepResponse {
