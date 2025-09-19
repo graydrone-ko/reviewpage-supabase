@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { Survey, SurveyResponse } from '../types';
 import { formatKoreanTime } from '../utils/timezone';
+import { useSEO } from '../hooks/useSEO';
 
 const SurveyDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -12,6 +13,8 @@ const SurveyDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showResponses, setShowResponses] = useState(false);
+  const siteUrl = process.env.REACT_APP_SITE_URL || 'https://reviewpage-frontend3.vercel.app';
+  const canonicalUrl = id ? `${siteUrl}/surveys/${id}` : `${siteUrl}/surveys`;
 
   useEffect(() => {
     if (id) {
@@ -40,6 +43,103 @@ const SurveyDetail: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const seoTitle = survey ? `${survey.title} | 설문 상세 | ReviewPage` : '설문 상세 | ReviewPage';
+  const rawDescription = survey?.description?.replace(/\s+/g, ' ').trim() || 'ReviewPage 설문 상세 페이지로 리워드 조건과 참여 정보를 확인하세요.';
+  const seoDescription = rawDescription.length > 160 ? `${rawDescription.slice(0, 157)}…` : rawDescription;
+  const baseKeywords = '상세페이지 설문,앱테크 리워드,ReviewPage 설문,리워드 설문';
+  const seoKeywords = survey ? `${survey.title},${baseKeywords}` : baseKeywords;
+
+  const structuredData = useMemo(() => {
+    if (!survey) {
+      return [] as Array<Record<string, unknown>>;
+    }
+
+    const targetGender = survey.target_gender || survey.targetGender;
+    const targetAgeMin = survey.target_age_min ?? survey.targetAgeMin;
+    const targetAgeMax = survey.target_age_max ?? survey.targetAgeMax;
+    const availability = survey.status === 'APPROVED' ? 'https://schema.org/InStock' : 'https://schema.org/LimitedAvailability';
+
+    const audience: Record<string, unknown> = {
+      '@type': 'PeopleAudience',
+      audienceType: targetGender && targetGender !== 'ALL'
+        ? `${targetGender === 'MALE' ? '남성' : '여성'} 참여자`
+        : '모든 참여자'
+    };
+
+    if (typeof targetAgeMin === 'number') {
+      audience.suggestedMinAge = targetAgeMin;
+    }
+
+    if (typeof targetAgeMax === 'number') {
+      audience.suggestedMaxAge = targetAgeMax;
+    }
+
+    const serviceStructuredData = {
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      '@id': `${canonicalUrl}#detail`,
+      name: survey.title,
+      description: rawDescription,
+      url: canonicalUrl,
+      provider: {
+        '@type': 'Organization',
+        name: 'ReviewPage',
+        url: siteUrl
+      },
+      serviceType: '상세페이지 설문',
+      areaServed: {
+        '@type': 'Country',
+        name: '대한민국'
+      },
+      offers: {
+        '@type': 'Offer',
+        price: survey.reward,
+        priceCurrency: 'KRW',
+        availability,
+        eligibleQuantity: survey.maxParticipants,
+        description: `설문 1건당 ${survey.reward}원 리워드, 최대 ${survey.maxParticipants}명 참여 가능`
+      },
+      audience
+    };
+
+    const breadcrumbStructuredData = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'ReviewPage 홈',
+          item: siteUrl
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: '참여 가능한 설문',
+          item: `${siteUrl}/surveys`
+        },
+        {
+          '@type': 'ListItem',
+          position: 3,
+          name: survey.title,
+          item: canonicalUrl
+        }
+      ]
+    };
+
+    return [serviceStructuredData, breadcrumbStructuredData];
+  }, [survey, canonicalUrl, rawDescription, siteUrl]);
+
+  useSEO({
+    title: seoTitle,
+    description: seoDescription,
+    keywords: seoKeywords,
+    ogTitle: seoTitle,
+    ogDescription: seoDescription,
+    canonical: canonicalUrl,
+    jsonLd: structuredData
+  });
 
   const handleCancelSurvey = async () => {
     if (!survey || !window.confirm('정말로 설문을 취소하시겠습니까?')) {

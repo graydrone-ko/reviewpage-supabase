@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { Survey } from '../types';
+import { useSEO } from '../hooks/useSEO';
 
 interface ParticipationStatus {
   status: 'PARTICIPATED' | 'AVAILABLE';
@@ -16,6 +17,52 @@ const SurveyList: React.FC = () => {
   const [error, setError] = useState('');
   const [participationStatus, setParticipationStatus] = useState<Record<string, ParticipationStatus>>({});
   const [user, setUser] = useState<any>(null);
+  const siteUrl = process.env.REACT_APP_SITE_URL || 'https://reviewpage-frontend3.vercel.app';
+  const canonicalUrl = `${siteUrl}/surveys`;
+
+  const structuredData = useMemo(() => {
+    const collection = {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      '@id': `${canonicalUrl}#collection`,
+      name: 'ReviewPage 참여 가능한 설문',
+      description: '실시간으로 참여 가능한 상세페이지 설문과 앱테크 리워드를 한 번에 확인하세요.',
+      url: canonicalUrl,
+      isPartOf: siteUrl
+    };
+
+    const topSurveys = surveys.slice(0, 10).map((survey, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: survey.title,
+      url: `${siteUrl}/surveys/${survey.id}`,
+      description: survey.description
+    }));
+
+    const data: Array<Record<string, unknown>> = [collection];
+
+    if (topSurveys.length > 0) {
+      data.push({
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        name: '인기 설문 TOP 10',
+        itemListOrder: 'https://schema.org/ItemListOrderAscending',
+        itemListElement: topSurveys
+      });
+    }
+
+    return data;
+  }, [canonicalUrl, siteUrl, surveys]);
+
+  useSEO({
+    title: '참여 가능한 설문 목록 | ReviewPage 설문 리워드',
+    description: '상세페이지 검증 설문과 앱테크 리워드를 동시에 챙길 수 있는 참여 가능한 설문 목록을 확인하세요. 목표 고객에게 보상을 제공하고, 참여자는 즉시 현금을 적립합니다.',
+    keywords: '설문 목록,앱테크 설문,상세페이지 설문,리워드 설문,ReviewPage 설문 참여',
+    ogTitle: 'ReviewPage 설문 목록 - 즉시 참여 가능한 리워드 설문',
+    ogDescription: '지금 참여 가능한 설문과 리워드 금액을 한 곳에서 확인하세요. ReviewPage가 최신 상세페이지 설문을 제공합니다.',
+    canonical: canonicalUrl,
+    jsonLd: structuredData
+  });
 
   useEffect(() => {
     fetchSurveys();

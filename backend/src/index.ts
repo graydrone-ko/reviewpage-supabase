@@ -24,9 +24,7 @@ app.use(helmet());
 const allowedOrigins = [
   'http://localhost:3000', // Local development
   'http://localhost:3001', // Local development backend
-  process.env.FRONTEND_URL, // Production frontend URL
-  'https://reviewpage.co.kr', // Production domain
-  'https://www.reviewpage.co.kr', // Production domain with www
+  process.env.FRONTEND_URL || 'https://reviewpage-frontend3.vercel.app', // Vercel preview/production URL
 ].filter(Boolean);
 
 app.use(cors({

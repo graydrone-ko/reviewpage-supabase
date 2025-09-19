@@ -6,6 +6,9 @@ Allow: /about
 Allow: /how-it-works
 Allow: /login
 Allow: /register
+Allow: /surveys
+Allow: /surveys/
+Allow: /surveys/*
 Disallow: /admin/
 Disallow: /api/
 Disallow: /dashboard
@@ -19,7 +22,7 @@ Disallow: /surveys/*/edit-response
 Crawl-delay: 1
 
 # 사이트맵 위치
-Sitemap: https://reviewpage.co.kr/sitemap.xml
+Sitemap: https://reviewpage-frontend3.vercel.app/sitemap.xml
 
 # 주요 검색엔진별 설정
 User-agent: Googlebot

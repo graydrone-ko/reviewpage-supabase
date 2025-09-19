@@ -1,9 +1,83 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSEO } from '../hooks/useSEO';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
+  const siteUrl = process.env.REACT_APP_SITE_URL || 'https://reviewpage-frontend3.vercel.app';
+
+  const serviceStructuredData = useMemo(() => ({
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    '@id': `${siteUrl}#reviewpage-service`,
+    name: 'ReviewPage 상세페이지 설문 & 앱테크 리워드 서비스',
+    description: '상세페이지 진단 설문을 통해 판매자는 전환율을 높이고, 소비자는 참여만으로 앱테크 리워드를 적립합니다.',
+    provider: {
+      '@type': 'Organization',
+      name: 'ReviewPage',
+      url: siteUrl
+    },
+    serviceType: '상세페이지 설문 분석 및 앱테크 리워드 플랫폼',
+    audience: {
+      '@type': 'Audience',
+      audienceType: '온라인 판매자 및 앱테크 참여자'
+    },
+    areaServed: {
+      '@type': 'Country',
+      name: '대한민국'
+    },
+    offers: {
+      '@type': 'Offer',
+      price: '1000',
+      priceCurrency: 'KRW',
+      description: '설문 1건 참여 시 최소 1,000원의 리워드를 제공합니다.'
+    }
+  }), [siteUrl]);
+
+  const faqStructuredData = useMemo(() => ({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    '@id': `${siteUrl}#faq`,
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'ReviewPage는 어떤 서비스인가요?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'ReviewPage는 상세페이지 설문을 통해 판매자가 고객 피드백을 빠르게 수집하고, 참여자는 설문에 응답하며 앱테크 형태의 현금 리워드를 적립할 수 있는 플랫폼입니다.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: '설문 참여로 얼마를 벌 수 있나요?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: '설문 1건당 최소 1,000원에서 최대 5,000원까지 지급되며, 누적 리워드는 일정 금액 이상이면 현금으로 출금할 수 있습니다.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: '셀러는 어떤 도움을 받을 수 있나요?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: '셀러는 타겟 고객을 지정하여 상세페이지에 대한 객관적인 설문 결과를 확보하고, 이를 기반으로 전환율을 높일 개선 인사이트를 얻을 수 있습니다.'
+        }
+      }
+    ]
+  }), [siteUrl]);
+
+  const structuredData = useMemo(() => [serviceStructuredData, faqStructuredData], [serviceStructuredData, faqStructuredData]);
+
+  useSEO({
+    title: 'ReviewPage | 상세페이지 설문 & 앱테크 리워드 플랫폼',
+    description: '상세페이지 설문으로 전환율을 높이고, 앱테크 리워드로 현금 수익을 만드는 ReviewPage. 설문 참여자는 건당 최대 5,000원, 판매자는 고객 데이터를 확보하세요.',
+    keywords: '상세페이지 설문,앱테크,앱테크 설문,설문 리워드,제품 피드백 설문,리워드 플랫폼,ReviewPage',
+    ogTitle: '상세페이지 설문 & 앱테크 리워드 플랫폼 - ReviewPage',
+    ogDescription: '설문 참여로 현금 리워드, 판매자는 상세페이지 개선 데이터 확보. ReviewPage에서 설문으로 매출과 수익을 동시에 올려보세요.',
+    canonical: siteUrl,
+    jsonLd: structuredData
+  });
 
   useEffect(() => {
     setIsVisible(true);
