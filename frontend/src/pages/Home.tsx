@@ -44,7 +44,7 @@ const Home: React.FC = () => {
           </h1>
           
           <p className="text-xl sm:text-2xl md:text-3xl text-gray-700 mb-12 max-w-4xl mx-auto font-medium leading-relaxed">
-            제품 피드백 설문조사로 <span className="text-green-600 font-bold">현금 리워드</span> 받고,<br />
+            상세페이지 설문 참여로 <span className="text-green-600 font-bold">현금 리워드</span> 받고,<br />
             판매자는 고객 의견으로 <span className="text-purple-600 font-bold">매출 증대</span>하는 윈윈 플랫폼
           </p>
           
