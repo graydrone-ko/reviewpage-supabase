@@ -119,13 +119,13 @@ export const login = async (req: Request, res: Response) => {
     const user = await dbUtils.findUserByEmail(email);
 
     if (!user) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(404).json({ error: '등록되지 않은 이메일입니다.' });
     }
 
     // Check password
     const isValidPassword = await comparePassword(password, user.password);
     if (!isValidPassword) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: '비밀번호가 다릅니다. 확인해주세요.' });
     }
 
     // Generate token
