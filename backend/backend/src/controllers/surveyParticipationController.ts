@@ -2,6 +2,20 @@ import { Request, Response } from 'express';
 import { dbUtils, db } from '../utils/database';
 import { AuthRequest } from '../middleware/auth';
 
+const serializeSurveyResponse = (row: any) => {
+  if (!row) return null;
+  return {
+    id: row.id,
+    surveyId: row.survey_id,
+    consumerId: row.consumer_id,
+    responses: row.responses || [],
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    rewardStatus: row.reward_status || null,
+    rewardAmount: row.reward_amount || null
+  };
+};
+
 export const getAvailableSurveys = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user || req.user.role !== 'CONSUMER') {
@@ -38,7 +52,10 @@ export const participateInSurvey = async (req: AuthRequest, res: Response) => {
     const existingResponse = await dbUtils.findResponseByUserAndSurvey(req.user.id, surveyId);
     
     if (existingResponse) {
-      return res.status(400).json({ error: 'You have already participated in this survey' });
+      return res.status(400).json({ 
+        error: 'You have already participated in this survey',
+        canEdit: true
+      });
     }
 
     // 응답 생성
@@ -94,10 +111,16 @@ export const getSurveyParticipationStatus = async (req: AuthRequest, res: Respon
     }
 
     const existingResponse = await dbUtils.findResponseByUserAndSurvey(req.user.id, surveyId);
+    const serialized = serializeSurveyResponse(existingResponse);
+    const status = existingResponse ? 'PARTICIPATED' : 'AVAILABLE';
 
     res.json({
+      status,
       hasParticipated: !!existingResponse,
-      participation: existingResponse
+      participation: serialized,
+      responseId: serialized?.id || null,
+      completedAt: serialized?.createdAt || null,
+      updatedAt: serialized?.updatedAt || null
     });
 
   } catch (error) {
@@ -119,17 +142,34 @@ export const getBulkParticipationStatus = async (req: AuthRequest, res: Response
       return res.status(400).json({ error: 'surveyIds must be an array' });
     }
 
-    const participationStatuses: any = {};
-
-    for (const surveyId of surveyIds) {
-      const existingResponse = await dbUtils.findResponseByUserAndSurvey(req.user.id, surveyId);
-      participationStatuses[surveyId] = {
-        status: existingResponse ? 'PARTICIPATED' : 'AVAILABLE',
-        responseId: existingResponse?.id,
-        completedAt: existingResponse?.completed_at || existingResponse?.created_at,
-        updatedAt: existingResponse?.updated_at
-      };
+    if (surveyIds.length === 0) {
+      return res.json({ participationStatus: {} });
     }
+
+    const { data, error } = await db
+      .from('survey_responses')
+      .select('id, survey_id, created_at, updated_at')
+      .eq('consumer_id', req.user.id)
+      .in('survey_id', surveyIds);
+
+    if (error) throw error;
+
+    const participationStatuses: Record<string, any> = {};
+
+    surveyIds.forEach((surveyId: string) => {
+      participationStatuses[surveyId] = {
+        status: 'AVAILABLE'
+      };
+    });
+
+    (data || []).forEach((row: any) => {
+      participationStatuses[row.survey_id] = {
+        status: 'PARTICIPATED',
+        responseId: row.id,
+        completedAt: row.created_at,
+        updatedAt: row.updated_at
+      };
+    });
 
     res.json({ participationStatus: participationStatuses });
 
@@ -153,7 +193,7 @@ export const getUserSurveyResponse = async (req: AuthRequest, res: Response) => 
       return res.status(404).json({ error: 'No response found for this survey' });
     }
 
-    res.json({ response });
+    res.json({ response: serializeSurveyResponse(response) });
 
   } catch (error) {
     console.error('Get user survey response error:', error);
@@ -170,6 +210,10 @@ export const updateSurveyResponse = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
+    if (!Array.isArray(responses) || responses.length === 0) {
+      return res.status(400).json({ error: 'Invalid response payload' });
+    }
+
     const existingResponse = await dbUtils.findResponseByUserAndSurvey(req.user.id, id);
 
     if (!existingResponse) {
@@ -177,13 +221,13 @@ export const updateSurveyResponse = async (req: AuthRequest, res: Response) => {
     }
 
     const updatedResponse = await dbUtils.updateSurveyResponse(existingResponse.id, {
-      responses: responses,
+      responses,
       updated_at: new Date().toISOString()
     });
 
     res.json({
       message: 'Survey response updated successfully',
-      response: updatedResponse
+      response: serializeSurveyResponse(updatedResponse)
     });
 
   } catch (error) {

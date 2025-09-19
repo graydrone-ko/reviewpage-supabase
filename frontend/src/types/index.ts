@@ -86,7 +86,10 @@ export interface SurveyResponse {
   surveyId: string;
   consumerId: string;
   responses: StepResponse[];
-  createdAt: Date;
+  createdAt: string;
+  updatedAt?: string;
+  rewardStatus?: string | null;
+  rewardAmount?: number | null;
 }
 
 export interface Reward {

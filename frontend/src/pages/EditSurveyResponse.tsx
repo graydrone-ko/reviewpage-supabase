@@ -1,51 +1,84 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { Survey } from '../types';
+import { Survey, SurveyStep, StepResponse, SurveyResponse as StoredSurveyResponse } from '../types';
 import { validateSurveySubmission } from '../utils/validation';
 
-interface SurveyResponse {
-  id: string;
-  responses: any[];
-  createdAt: string;
-  updatedAt: string;
-}
+const isCheckboxQuestion = (type: any) => String(type).toUpperCase() === 'CHECKBOX';
+
+const buildAnswerArrayFromStoredResponses = (steps: SurveyStep[], storedResponses: StepResponse[] = []) => {
+  const valueByQuestion = new Map<string, any>();
+
+  storedResponses.forEach((stepResponse) => {
+    const answers = stepResponse.answers || [];
+    answers.forEach((answer: any) => {
+      const questionId = answer.questionId || answer.question_id;
+      if (questionId) {
+        valueByQuestion.set(questionId, answer.value ?? null);
+      }
+    });
+  });
+
+  const flat: any[] = [];
+  steps.forEach((step) => {
+    (step.questions || []).forEach((question) => {
+      let value = valueByQuestion.has(question.id) ? valueByQuestion.get(question.id) : null;
+      if (isCheckboxQuestion(question.type) && !Array.isArray(value)) {
+        value = Array.isArray(value) ? value : [];
+      }
+      if (value === null || value === undefined) {
+        value = isCheckboxQuestion(question.type) ? [] : '';
+      }
+      flat.push(value);
+    });
+  });
+
+  return flat;
+};
 
 const EditSurveyResponse: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
   const [survey, setSurvey] = useState<Survey | null>(null);
-  const [existingResponse, setExistingResponse] = useState<SurveyResponse | null>(null);
+  const [existingResponse, setExistingResponse] = useState<StoredSurveyResponse | null>(null);
   const [answers, setAnswers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (id) {
-      fetchSurveyAndResponse();
-    }
-  }, [id]);
-
-  const fetchSurveyAndResponse = async () => {
+  const fetchSurveyAndResponse = useCallback(async () => {
+    if (!id) return;
     try {
       // 설문 정보 조회
       const surveyResponse = await api.get(`/surveys/${id}`);
-      setSurvey(surveyResponse.data);
+      const surveyData: Survey = surveyResponse.data?.survey;
+      setSurvey(surveyData);
 
       // 참여 상태 확인
       const statusResponse = await api.get(`/surveys/${id}/participation-status`);
+      const status = statusResponse.data?.status ?? (statusResponse.data?.hasParticipated ? 'PARTICIPATED' : 'AVAILABLE');
       
-      if (statusResponse.data.status !== 'PARTICIPATED') {
+      if (status !== 'PARTICIPATED') {
         setError('참여한 설문이 아닙니다.');
         return;
       }
 
-      // 기존 응답 조회 (API 구현 필요)
+      // 기존 응답 조회
       const responseResponse = await api.get(`/surveys/${id}/my-response`);
-      setExistingResponse(responseResponse.data);
-      setAnswers(responseResponse.data.responses || []);
+      const responseData: StoredSurveyResponse = responseResponse.data?.response;
+
+      if (!responseData) {
+        setError('기존 답변을 불러오지 못했습니다.');
+        return;
+      }
+
+      setExistingResponse(responseData);
+
+      if (surveyData?.template?.steps) {
+        const flatAnswers = buildAnswerArrayFromStoredResponses(surveyData.template.steps, responseData.responses);
+        setAnswers(flatAnswers);
+      }
       
     } catch (err: any) {
       console.error('데이터 조회 실패:', err);
@@ -59,12 +92,44 @@ const EditSurveyResponse: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchSurveyAndResponse();
+  }, [fetchSurveyAndResponse]);
 
   const handleAnswerChange = (questionIndex: number, value: any) => {
-    const newAnswers = [...answers];
-    newAnswers[questionIndex] = value;
-    setAnswers(newAnswers);
+    setAnswers(prev => {
+      const updated = [...prev];
+      updated[questionIndex] = value;
+      return updated;
+    });
+  };
+
+  const questions = useMemo(() => survey?.template?.steps?.flatMap(step => step.questions) || [], [survey]);
+
+  const buildStructuredResponses = (): StepResponse[] => {
+    if (!survey?.template?.steps) return [];
+
+    let answerIndex = 0;
+    return survey.template.steps.map((step) => {
+      const answersForStep = step.questions.map((question) => {
+        const rawValue = answers[answerIndex];
+        const value = rawValue !== undefined && rawValue !== null
+          ? rawValue
+          : (isCheckboxQuestion(question.type) ? [] : '');
+        answerIndex += 1;
+        return {
+          questionId: question.id,
+          value
+        };
+      });
+
+      return {
+        stepId: step.id,
+        answers: answersForStep
+      };
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,8 +138,7 @@ const EditSurveyResponse: React.FC = () => {
     if (!survey) return;
 
     // 유효성 검사 - survey.template.steps에서 모든 questions 추출
-    const allQuestions = survey.template?.steps?.flatMap(step => step.questions) || [];
-    const validationErrors = validateSurveySubmission(answers, allQuestions);
+    const validationErrors = validateSurveySubmission(answers, questions);
     if (validationErrors.length > 0) {
       setError(`수정 실패:\n${validationErrors.join('\n')}`);
       return;
@@ -84,8 +148,10 @@ const EditSurveyResponse: React.FC = () => {
     setError('');
 
     try {
+      const structuredResponses = buildStructuredResponses();
+
       await api.patch(`/surveys/${id}/response`, {
-        responses: answers
+        responses: structuredResponses
       });
 
       alert('응답이 성공적으로 수정되었습니다!');
@@ -152,8 +218,8 @@ const EditSurveyResponse: React.FC = () => {
             <div>
               <p className="text-blue-800 font-medium">기존 답변 수정</p>
               <p className="text-blue-600 text-sm">
-                최초 참여: {existingResponse ? new Date(existingResponse.createdAt).toLocaleDateString('ko-KR') : ''}
-                {existingResponse?.updatedAt && existingResponse.updatedAt !== existingResponse.createdAt && (
+                최초 참여: {existingResponse?.createdAt ? new Date(existingResponse.createdAt).toLocaleDateString('ko-KR') : ''}
+                {existingResponse?.updatedAt && existingResponse.updatedAt !== existingResponse?.createdAt && (
                   <span> (마지막 수정: {new Date(existingResponse.updatedAt).toLocaleDateString('ko-KR')})</span>
                 )}
               </p>
@@ -180,12 +246,12 @@ const EditSurveyResponse: React.FC = () => {
                     <input
                       type="radio"
                       name={`question-${index}`}
-                      value={option}
-                      checked={answers[index] === option}
+                      value={option.id || option}
+                      checked={answers[index] === (option.id || option)}
                       onChange={(e) => handleAnswerChange(index, e.target.value)}
                       className="mr-3 text-primary-600"
                     />
-                    <span>{option}</span>
+                    <span>{option.text ?? option}</span>
                   </label>
                 ))}
               </div>
@@ -195,19 +261,19 @@ const EditSurveyResponse: React.FC = () => {
                   <label key={optionIndex} className="flex items-center">
                     <input
                       type="checkbox"
-                      value={option}
-                      checked={Array.isArray(answers[index]) && answers[index].includes(option)}
+                      value={option.id || option}
+                      checked={Array.isArray(answers[index]) && answers[index].includes(option.id || option)}
                       onChange={(e) => {
                         const currentAnswers = Array.isArray(answers[index]) ? answers[index] : [];
                         if (e.target.checked) {
-                          handleAnswerChange(index, [...currentAnswers, option]);
+                          handleAnswerChange(index, [...currentAnswers, option.id || option]);
                         } else {
-                          handleAnswerChange(index, currentAnswers.filter((a: string) => a !== option));
+                          handleAnswerChange(index, currentAnswers.filter((a: string) => a !== (option.id || option)));
                         }
                       }}
                       className="mr-3 text-primary-600"
                     />
-                    <span>{option}</span>
+                    <span>{option.text ?? option}</span>
                   </label>
                 ))}
               </div>
