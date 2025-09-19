@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -15,6 +16,13 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   totalBudget,
   surveyTitle
 }) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -39,9 +47,9 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!mounted || !isOpen) return null;
 
-  return (
+  const modal = (
     <div className="fixed inset-0 z-50 flex min-h-full items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
         <div className="text-center mb-6">
@@ -111,6 +119,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 };
 
 export default PaymentModal;
