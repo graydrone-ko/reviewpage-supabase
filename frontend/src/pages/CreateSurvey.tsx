@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
@@ -35,6 +35,9 @@ interface EditableStep extends Omit<SurveyStep, 'id' | 'questions'> {
 
 // Question types are now managed in QuestionEditor component
 
+const TEMPLATE_CACHE_KEY = 'reviewpage.templates.v1';
+const TEMPLATE_CACHE_TTL = 5 * 60 * 1000; // 5분
+
 const CreateSurvey: React.FC = () => {
   const [formData, setFormData] = useState<SurveyFormData>({
     title: '',
@@ -59,6 +62,7 @@ const CreateSurvey: React.FC = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [templateDirty, setTemplateDirty] = useState(false);
   const navigate = useNavigate();
   const formId = 'create-survey-form';
 
@@ -68,46 +72,10 @@ const CreateSurvey: React.FC = () => {
     return toKoreanDateTimeLocal(koreanTime);
   }
 
-  useEffect(() => {
-    fetchTemplates();
-    setIsClient(true);
-  }, []);
-
-  const fetchTemplates = async () => {
-    try {
-      const response = await api.get('/surveys/templates/list');
-      const fetchedTemplates: SurveyTemplate[] = response.data.templates || [];
-      setTemplates(fetchedTemplates);
-
-      const defaultTemplate =
-        fetchedTemplates.find((t) => t.isDefault) || fetchedTemplates[0];
-
-      const hasValidSelection =
-        selectedTemplate && fetchedTemplates.some((t) => t.id === selectedTemplate.id);
-
-      if (defaultTemplate && (!hasValidSelection || editableSteps.length === 0)) {
-        const templateToUse = hasValidSelection
-          ? (selectedTemplate as SurveyTemplate)
-          : defaultTemplate;
-
-        if (!hasValidSelection) {
-          setSelectedTemplate(templateToUse);
-        }
-
-        setFormData((prev) => ({ ...prev, templateId: templateToUse.id }));
-        convertTemplateToEditable(templateToUse);
-      }
-    } catch (err) {
-      console.error('템플릿 로딩 실패:', err);
-    } finally {
-      setLoadingTemplates(false);
-    }
-  };
-
-  const convertTemplateToEditable = (template: SurveyTemplate) => {
-    const editableSteps: EditableStep[] = template.steps.map(step => ({
+  const convertTemplateToEditable = useCallback((template: SurveyTemplate, markClean = true) => {
+    const editableSteps: EditableStep[] = (template.steps || []).map(step => ({
       ...step,
-      questions: step.questions.map(question => ({
+      questions: (step.questions || []).map(question => ({
         ...question,
         tempId: `temp_${Date.now()}_${Math.random()}`
       }))
@@ -116,6 +84,88 @@ const CreateSurvey: React.FC = () => {
     
     // Expand all steps by default for new comprehensive template
     setExpandedSteps(new Set(Array.from({ length: editableSteps.length }, (_, i) => i)));
+
+    if (markClean) {
+      setTemplateDirty(false);
+    }
+  }, []);
+
+  const initializeTemplates = useCallback((
+    templateList: SurveyTemplate[],
+    options: { respectDirty?: boolean; preferredTemplateId?: string } = {}
+  ) => {
+    if (!templateList || templateList.length === 0) {
+      return;
+    }
+
+    setTemplates(templateList);
+
+    const { respectDirty = false, preferredTemplateId } = options;
+
+    if (respectDirty && templateDirty && selectedTemplate) {
+      return;
+    }
+
+    const candidate = templateList.find((t) => t.id === (preferredTemplateId || selectedTemplate?.id))
+      || templateList.find((t) => t.isDefault)
+      || templateList[0];
+
+    if (!candidate) return;
+
+    setSelectedTemplate(candidate);
+    setFormData((prev) => ({ ...prev, templateId: candidate.id }));
+    convertTemplateToEditable(candidate, true);
+  }, [convertTemplateToEditable, selectedTemplate, templateDirty]);
+
+  const fetchTemplates = useCallback(async () => {
+    try {
+      const response = await api.get('/surveys/templates/list');
+      const fetchedTemplates: SurveyTemplate[] = response.data.templates || [];
+      initializeTemplates(fetchedTemplates, { respectDirty: true, preferredTemplateId: selectedTemplate?.id });
+
+      if (typeof window !== 'undefined') {
+        try {
+          const payload = {
+            timestamp: Date.now(),
+            templates: fetchedTemplates
+          };
+          localStorage.setItem(TEMPLATE_CACHE_KEY, JSON.stringify(payload));
+        } catch (storageError) {
+          console.warn('템플릿 캐시 저장 실패:', storageError);
+        }
+      }
+    } catch (err) {
+      console.error('템플릿 로딩 실패:', err);
+    } finally {
+      setLoadingTemplates(false);
+    }
+  }, [initializeTemplates, selectedTemplate?.id]);
+
+  useEffect(() => {
+    setIsClient(true);
+
+    if (typeof window !== 'undefined') {
+      try {
+        const cachedRaw = localStorage.getItem(TEMPLATE_CACHE_KEY);
+        if (cachedRaw) {
+          const cached = JSON.parse(cachedRaw);
+          if (cached?.templates && cached?.timestamp && Date.now() - cached.timestamp < TEMPLATE_CACHE_TTL) {
+            initializeTemplates(cached.templates, { respectDirty: false });
+            setLoadingTemplates(false);
+          }
+        }
+      } catch (cacheError) {
+        console.warn('템플릿 캐시 로드 실패:', cacheError);
+      }
+    }
+
+    fetchTemplates();
+  }, [fetchTemplates, initializeTemplates]);
+
+  const markTemplateDirty = () => {
+    if (!templateDirty) {
+      setTemplateDirty(true);
+    }
   };
 
   const validateForm = (): boolean => {
@@ -258,7 +308,7 @@ const CreateSurvey: React.FC = () => {
   const handleTemplateSelect = (template: SurveyTemplate) => {
     setSelectedTemplate(template);
     setFormData(prev => ({ ...prev, templateId: template.id }));
-    convertTemplateToEditable(template);
+    convertTemplateToEditable(template, true);
   };
 
   const getTotalBudget = (): number => {
@@ -284,6 +334,7 @@ const CreateSurvey: React.FC = () => {
 
   // 문항 편집 함수들
   const updateQuestion = (stepIndex: number, questionIndex: number, updates: Partial<EditableQuestion>) => {
+    markTemplateDirty();
     const newSteps = [...editableSteps];
     newSteps[stepIndex].questions[questionIndex] = {
       ...newSteps[stepIndex].questions[questionIndex],
@@ -293,6 +344,7 @@ const CreateSurvey: React.FC = () => {
   };
 
   const addQuestion = (stepIndex: number) => {
+    markTemplateDirty();
     const newSteps = [...editableSteps];
     const newQuestion: EditableQuestion = {
       id: `temp_${Date.now()}_${Math.random()}`,
@@ -315,6 +367,7 @@ const CreateSurvey: React.FC = () => {
       alert('각 단계는 최소 1개의 질문이 필요합니다.');
       return;
     }
+    markTemplateDirty();
     
     const newSteps = [...editableSteps];
     newSteps[stepIndex].questions.splice(questionIndex, 1);
@@ -331,6 +384,7 @@ const CreateSurvey: React.FC = () => {
     const newIndex = direction === 'up' ? questionIndex - 1 : questionIndex + 1;
     
     if (newIndex < 0 || newIndex >= questions.length) return;
+    markTemplateDirty();
     
     [questions[questionIndex], questions[newIndex]] = [questions[newIndex], questions[questionIndex]];
     
@@ -343,12 +397,14 @@ const CreateSurvey: React.FC = () => {
   };
 
   const updateQuestionOption = (stepIndex: number, questionIndex: number, optionIndex: number, text: string) => {
+    markTemplateDirty();
     const newSteps = [...editableSteps];
     newSteps[stepIndex].questions[questionIndex].options[optionIndex].text = text;
     setEditableSteps(newSteps);
   };
 
   const addQuestionOption = (stepIndex: number, questionIndex: number) => {
+    markTemplateDirty();
     const newSteps = [...editableSteps];
     const question = newSteps[stepIndex].questions[questionIndex];
     const newOption: QuestionOption = {
@@ -368,6 +424,7 @@ const CreateSurvey: React.FC = () => {
       alert('객관식 질문은 최소 2개의 선택지가 필요합니다.');
       return;
     }
+    markTemplateDirty();
     
     question.options.splice(optionIndex, 1);
     // 선택지 번호 재정렬
@@ -380,6 +437,7 @@ const CreateSurvey: React.FC = () => {
 
   // Enhanced Step Management Functions
   const updateStep = (stepIndex: number, updates: Partial<EditableStep>) => {
+    markTemplateDirty();
     const newSteps = [...editableSteps];
     newSteps[stepIndex] = { ...newSteps[stepIndex], ...updates };
     setEditableSteps(newSteps);

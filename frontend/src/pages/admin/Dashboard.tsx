@@ -42,55 +42,58 @@ const AdminDashboard: React.FC = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchStats();
-    fetchCancellationStats();
+    let isCancelled = false;
+
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('token');
+        const headers = {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        };
+
+        const [statsResponse, cancellationResponse] = await Promise.all([
+          fetch(`${API_URL}/admin/dashboard/stats`, { headers }),
+          fetch(`${API_URL}/admin/cancellation-requests/recent`, { headers })
+        ]);
+
+        if (!statsResponse.ok) {
+          if (statsResponse.status === 403) {
+            if (!isCancelled) setError('관리자 권한이 필요합니다.');
+            return;
+          }
+          throw new Error('통계 데이터 불러오기 실패');
+        }
+
+        const statsData = await statsResponse.json();
+        if (!isCancelled) {
+          setStats(statsData);
+        }
+
+        if (cancellationResponse.ok) {
+          const cancellationData = await cancellationResponse.json();
+          if (!isCancelled) {
+            setCancellationStats({ count: cancellationData.count });
+          }
+        }
+      } catch (err) {
+        if (!isCancelled) {
+          setError(err instanceof Error ? err.message : '오류가 발생했습니다.');
+        }
+      } finally {
+        if (!isCancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchDashboardData();
+
+    return () => {
+      isCancelled = true;
+    };
   }, []);
-
-  const fetchStats = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/admin/dashboard/stats`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        if (response.status === 403) {
-          setError('관리자 권한이 필요합니다.');
-          return;
-        }
-        throw new Error('통계 데이터 불러오기 실패');
-      }
-
-      const data = await response.json();
-      setStats(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '오류가 발생했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchCancellationStats = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/admin/cancellation-requests/recent`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setCancellationStats({ count: data.count });
-      }
-    } catch (err) {
-      console.error('Cancellation stats fetch error:', err);
-    }
-  };
 
   if (loading) {
     return (
