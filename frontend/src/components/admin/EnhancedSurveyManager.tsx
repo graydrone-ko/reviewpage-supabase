@@ -716,15 +716,6 @@ const EnhancedSurveyManager: React.FC = () => {
                     >
                       {previewLoadingId === survey.id ? '불러오는 중...' : '템플릿 미리보기'}
                     </button>
-                    
-                    {(survey._count?.responses ?? survey.responseCount ?? 0) > 0 && (
-                      <Link
-                        to={`/admin/surveys/${survey.id}/responses`}
-                        className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium text-center transition-colors"
-                      >
-                        응답 검토 ({survey._count?.responses ?? survey.responseCount ?? 0}개)
-                      </Link>
-                    )}
                   </div>
                 </div>
               </div>
