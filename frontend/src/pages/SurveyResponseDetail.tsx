@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { api } from '../services/api';
 import { Survey } from '../types';
 import { formatKoreanTime } from '../utils/timezone';
@@ -52,6 +52,7 @@ interface Question {
 
 const SurveyResponseDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const [survey, setSurvey] = useState<Survey | null>(null);
   const [responses, setResponses] = useState<ResponseDetail[]>([]);
   const [statistics, setStatistics] = useState<QuestionStatistics[]>([]);
@@ -61,6 +62,13 @@ const SurveyResponseDetail: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'table' | 'statistics' | 'individual'>('table');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
+
+  const searchParams = new URLSearchParams(location.search);
+  const fromAdminQuery = searchParams.get('fromAdmin');
+  const fromAdminState = (location.state as { fromAdmin?: boolean } | null)?.fromAdmin;
+  const fromAdmin = fromAdminState || fromAdminQuery === 'true';
+  const backLink = fromAdmin ? '/admin/surveys' : '/dashboard';
+  const backLabel = fromAdmin ? '설문 관리로' : '대시보드로';
 
   useEffect(() => {
     if (id) {
@@ -334,10 +342,11 @@ const SurveyResponseDetail: React.FC = () => {
           </div>
           <div className="flex space-x-3">
             <Link
-              to="/dashboard"
+              to={backLink}
+              state={fromAdmin ? { fromAdmin: true } : undefined}
               className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
             >
-              대시보드로
+              {backLabel}
             </Link>
             <button
               onClick={downloadExcel}

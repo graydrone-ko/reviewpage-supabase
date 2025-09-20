@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { API_URL } from '../../services/api';
-import { SurveyTemplate } from '../../types';
+import { API_URL, api } from '../../services/api';
+import { SurveyTemplate, SurveyStep, SurveyQuestion, QuestionOption } from '../../types';
 import SurveyTemplatePreview from '../SurveyTemplatePreview';
 
 interface Survey {
@@ -17,12 +17,14 @@ interface Survey {
   endDate: string;
   approvedAt?: string;
   completedAt?: string;
+  templateId?: string;
   seller: {
     id: string;
     name: string;
     email: string;
   };
   template?: SurveyTemplate;
+  responseCount?: number;
   _count: {
     responses: number;
   };
@@ -43,6 +45,106 @@ const EnhancedSurveyManager: React.FC = () => {
   const [previewSurvey, setPreviewSurvey] = useState<Survey | null>(null);
   const [sortField, setSortField] = useState<'createdAt' | 'endDate' | 'title' | 'status'>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [previewLoadingId, setPreviewLoadingId] = useState<string | null>(null);
+
+  const normalizeTemplateData = (template: any, customSteps?: any[]): SurveyTemplate | undefined => {
+    const hasCustomSteps = Array.isArray(customSteps) && customSteps.length > 0;
+
+    if (!template && !hasCustomSteps) {
+      return undefined;
+    }
+
+    const templateBase = template || {};
+    const stepsSource = hasCustomSteps
+      ? customSteps
+      : Array.isArray(templateBase.steps)
+        ? templateBase.steps
+        : [];
+
+    const normalizedSteps: SurveyStep[] = stepsSource
+      .map((step: any, stepIndex: number): SurveyStep => {
+        const questionsSource = Array.isArray(step.questions) ? step.questions : [];
+        const normalizedQuestions: SurveyQuestion[] = questionsSource
+          .map((question: any, questionIndex: number): SurveyQuestion => {
+            const optionsSource = Array.isArray(question.options) ? question.options : [];
+            const normalizedOptions: QuestionOption[] = optionsSource
+              .map((option: any, optionIndex: number): QuestionOption => ({
+                id: option.id,
+                optionNumber: option.optionNumber ?? option.option_number ?? optionIndex + 1,
+                text: option.text ?? ''
+              }))
+              .sort((a: QuestionOption, b: QuestionOption) => (a.optionNumber || 0) - (b.optionNumber || 0));
+
+            const questionType = (question.type ?? 'TEXT') as SurveyQuestion['type'];
+            const isRequired = typeof question.required === 'boolean'
+              ? question.required
+              : !!question.is_required;
+
+            return {
+              id: question.id,
+              questionNumber: question.questionNumber ?? question.question_number ?? questionIndex + 1,
+              text: question.text ?? '',
+              type: questionType,
+              required: isRequired,
+              options: normalizedOptions
+            };
+          })
+          .sort((a: SurveyQuestion, b: SurveyQuestion) => (a.questionNumber || 0) - (b.questionNumber || 0));
+
+        return {
+          id: step.id,
+          stepNumber: step.stepNumber ?? step.step_number ?? stepIndex + 1,
+          title: step.title ?? `단계 ${stepIndex + 1}`,
+          description: step.description ?? '',
+          questions: normalizedQuestions
+        };
+      })
+      .sort((a: SurveyStep, b: SurveyStep) => (a.stepNumber || 0) - (b.stepNumber || 0));
+
+    return {
+      id: templateBase.id ?? 'custom-template',
+      name: templateBase.name ?? templateBase.title ?? '커스텀 템플릿',
+      description: templateBase.description ?? '',
+      isDefault: templateBase.isDefault ?? templateBase.is_default ?? false,
+      createdAt: templateBase.createdAt ?? templateBase.created_at ?? '',
+      updatedAt: templateBase.updatedAt ?? templateBase.updated_at ?? '',
+      steps: normalizedSteps
+    };
+  };
+
+  const normalizeSurveyData = (survey: any): Survey => {
+    const responseCount = typeof survey.responseCount === 'number'
+      ? survey.responseCount
+      : survey._count?.responses ?? 0;
+
+    const normalizedTemplate = normalizeTemplateData(survey.template, survey.custom_steps);
+
+    return {
+      id: survey.id,
+      title: survey.title,
+      description: survey.description ?? '',
+      url: survey.url,
+      reward: survey.reward,
+      maxParticipants: survey.maxParticipants ?? survey.max_participants ?? 0,
+      totalBudget: survey.totalBudget ?? survey.total_budget ?? 0,
+      status: survey.status,
+      createdAt: survey.createdAt ?? survey.created_at,
+      endDate: survey.endDate ?? survey.end_date,
+      approvedAt: survey.approvedAt ?? survey.approved_at ?? undefined,
+      completedAt: survey.completedAt ?? survey.completed_at ?? undefined,
+      seller: {
+        id: survey.seller?.id ?? survey.seller_id ?? '',
+        name: survey.seller?.name ?? '',
+        email: survey.seller?.email ?? ''
+      },
+      template: normalizedTemplate,
+      templateId: survey.templateId ?? survey.template_id ?? undefined,
+      responseCount,
+      _count: {
+        responses: responseCount
+      }
+    };
+  };
 
   useEffect(() => {
     fetchAllSurveys();
@@ -67,7 +169,10 @@ const EnhancedSurveyManager: React.FC = () => {
       }
 
       const data = await response.json();
-      setSurveys(data.surveys);
+      const normalizedSurveys = Array.isArray(data.surveys)
+        ? data.surveys.map((item: any) => normalizeSurveyData(item))
+        : [];
+      setSurveys(normalizedSurveys);
     } catch (err) {
       setError(err instanceof Error ? err.message : '오류가 발생했습니다.');
     } finally {
@@ -234,9 +339,49 @@ const EnhancedSurveyManager: React.FC = () => {
     setSelectedSurveys(new Set());
   };
 
-  const previewSurveyTemplate = (survey: Survey) => {
-    setPreviewSurvey(survey);
-    setShowPreview(true);
+  const previewSurveyTemplate = async (survey: Survey) => {
+    setPreviewLoadingId(survey.id);
+
+    try {
+      let surveyForPreview = survey;
+
+      const needsTemplateFetch = !survey.template || survey.template.steps.length === 0;
+
+      if (needsTemplateFetch) {
+        const response = await api.get(`/surveys/${survey.id}`);
+        const fetchedSurveyRaw = response.data?.survey;
+
+        if (!fetchedSurveyRaw) {
+          throw new Error('설문 정보를 찾을 수 없습니다.');
+        }
+
+        const fetchedSurvey = normalizeSurveyData(fetchedSurveyRaw);
+
+        surveyForPreview = {
+          ...survey,
+          template: fetchedSurvey.template
+        };
+
+        setSurveys(prev => prev.map(item =>
+          item.id === survey.id
+            ? { ...item, template: fetchedSurvey.template }
+            : item
+        ));
+      }
+
+      if (!surveyForPreview.template || surveyForPreview.template.steps.length === 0) {
+        alert('템플릿 정보를 찾을 수 없습니다.');
+        return;
+      }
+
+      setPreviewSurvey(surveyForPreview);
+      setShowPreview(true);
+    } catch (err) {
+      console.error('템플릿 미리보기 로드 실패:', err);
+      alert('템플릿 정보를 불러오는 중 오류가 발생했습니다.');
+    } finally {
+      setPreviewLoadingId(null);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -533,7 +678,7 @@ const EnhancedSurveyManager: React.FC = () => {
                           </div>
                           <div>
                             <span className="font-medium text-gray-700">현재 응답:</span>
-                            <p>{survey._count.responses}명</p>
+                            <p>{survey._count?.responses ?? survey.responseCount ?? 0}명</p>
                           </div>
                         </div>
                       </div>
@@ -553,30 +698,31 @@ const EnhancedSurveyManager: React.FC = () => {
                       </button>
                     ))}
                     
-                    <a
-                      href={survey.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <Link
+                      to={{
+                        pathname: `/surveys/${survey.id}/responses`,
+                        search: '?fromAdmin=true'
+                      }}
+                      state={{ fromAdmin: true }}
                       className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-center transition-colors"
                     >
                       설문 확인
-                    </a>
+                    </Link>
                     
-                    {survey.template && (
-                      <button
-                        onClick={() => previewSurveyTemplate(survey)}
-                        className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium transition-colors"
-                      >
-                        템플릿 미리보기
-                      </button>
-                    )}
+                    <button
+                      onClick={() => previewSurveyTemplate(survey)}
+                      disabled={previewLoadingId === survey.id}
+                      className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {previewLoadingId === survey.id ? '불러오는 중...' : '템플릿 미리보기'}
+                    </button>
                     
-                    {survey._count.responses > 0 && (
+                    {(survey._count?.responses ?? survey.responseCount ?? 0) > 0 && (
                       <Link
                         to={`/admin/surveys/${survey.id}/responses`}
                         className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium text-center transition-colors"
                       >
-                        응답 검토 ({survey._count.responses}개)
+                        응답 검토 ({survey._count?.responses ?? survey.responseCount ?? 0}개)
                       </Link>
                     )}
                   </div>

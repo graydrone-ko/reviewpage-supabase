@@ -95,16 +95,23 @@ export const getSurveys = async (req: AdminRequest, res: Response) => {
     const surveys = await dbUtils.findSurveysByConditions(where);
 
     // 프론트엔드가 기대하는 구조로 데이터 변환
-    const formattedSurveys = (surveys || []).map((survey: any) => ({
-      ...survey,
-      createdAt: survey.created_at,
-      endDate: survey.end_date,
-      maxParticipants: survey.max_participants,
-      totalBudget: survey.total_budget,
-      _count: {
-        responses: survey.responses?.length || 0
-      }
-    }));
+    const formattedSurveys = (surveys || []).map((survey: any) => {
+      const responseCount = typeof survey.responseCount === 'number'
+        ? survey.responseCount
+        : survey._count?.responses || 0;
+
+      return {
+        ...survey,
+        createdAt: survey.created_at,
+        endDate: survey.end_date,
+        maxParticipants: survey.max_participants,
+        totalBudget: survey.total_budget,
+        responseCount,
+        _count: {
+          responses: responseCount
+        }
+      };
+    });
 
     res.json({
       surveys: formattedSurveys,

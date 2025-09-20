@@ -323,7 +323,16 @@ export const dbUtils = {
     let query = db.from('surveys').select(`
       *,
       seller:users!surveys_seller_id_fkey(id, name, email),
-      template:survey_templates!surveys_template_id_fkey(*)
+      template:survey_templates!surveys_template_id_fkey(
+        *,
+        steps:survey_steps(
+          *,
+          questions:survey_questions(
+            *,
+            options:question_options(*)
+          )
+        )
+      )
     `);
     
     // 조건 적용
@@ -340,25 +349,95 @@ export const dbUtils = {
     
     const { data, error } = await query;
     if (error) throw error;
-    
-    // 각 설문에 대해 응답 수 계산
-    if (data && data.length > 0) {
-      for (const survey of data) {
-        const { count, error: countError } = await db
-          .from('survey_responses')
-          .select('*', { count: 'exact', head: true })
-          .eq('survey_id', survey.id);
-        
-        if (countError) {
-          console.error('응답 수 계산 오류:', countError);
-          survey.responseCount = 0;
-        } else {
-          survey.responseCount = count || 0;
-        }
-      }
+
+    if (!data || data.length === 0) {
+      return [];
     }
-    
-    return data || [];
+
+    const normalizeTemplate = (survey: any, baseTemplate: any) => {
+      const hasCustomSteps = Array.isArray(survey.custom_steps) && survey.custom_steps.length > 0;
+      const templateSource = hasCustomSteps
+        ? {
+            ...(baseTemplate || {}),
+            steps: survey.custom_steps
+          }
+        : baseTemplate;
+
+      if (!templateSource) {
+        return null;
+      }
+
+      const steps = Array.isArray(templateSource.steps)
+        ? [...templateSource.steps]
+        : [];
+
+      const sortedSteps = steps
+        .map((step: any) => {
+          const stepNumber = step.stepNumber ?? step.step_number ?? 0;
+          const questions = Array.isArray(step.questions) ? [...step.questions] : [];
+
+          const sortedQuestions = questions
+            .map((question: any) => {
+              const questionNumber = question.questionNumber ?? question.question_number ?? 0;
+              const options = Array.isArray(question.options) ? [...question.options] : [];
+
+              const sortedOptions = options
+                .map((option: any) => ({
+                  ...option,
+                  optionNumber: option.optionNumber ?? option.option_number ?? 0
+                }))
+                .sort((a, b) => (a.optionNumber || 0) - (b.optionNumber || 0));
+
+              return {
+                ...question,
+                questionNumber,
+                options: sortedOptions
+              };
+            })
+            .sort((a, b) => (a.questionNumber || 0) - (b.questionNumber || 0));
+
+          return {
+            ...step,
+            stepNumber,
+            questions: sortedQuestions
+          };
+        })
+        .sort((a, b) => (a.stepNumber || 0) - (b.stepNumber || 0));
+
+      return {
+        ...templateSource,
+        isDefault: templateSource.isDefault ?? templateSource.is_default ?? false,
+        createdAt: templateSource.createdAt ?? templateSource.created_at ?? null,
+        updatedAt: templateSource.updatedAt ?? templateSource.updated_at ?? null,
+        steps: sortedSteps
+      };
+    };
+
+    const surveysWithMeta = await Promise.all(
+      data.map(async (survey: any) => {
+        let responseCount = 0;
+
+        try {
+          const { count } = await db
+            .from('survey_responses')
+            .select('id', { count: 'exact', head: true })
+            .eq('survey_id', survey.id);
+          responseCount = count || 0;
+        } catch (countError) {
+          console.error('응답 수 계산 오류:', countError);
+        }
+
+        const normalizedTemplate = normalizeTemplate(survey, survey.template);
+
+        return {
+          ...survey,
+          responseCount,
+          template: normalizedTemplate || survey.template
+        };
+      })
+    );
+
+    return surveysWithMeta;
   },
 
   async findSurveyWithTemplate(id: string) {
